@@ -1,5 +1,72 @@
 <?php
 
+class GPC {
+
+	// private
+	
+	// protected
+	
+	// public
+	public static function strToInt($str) {
+		return intval($str);
+	}
+	public static function strToFloat($str) {
+		return floatval($str);
+	}
+	public static function strToLetterGrade($str) {
+		$str = strtoupper(substr($str,0,1));
+		if(!in_array($str,array('A','B','C','D','F'))) {
+			$str = 'F';
+		}
+		return $str;
+	}
+};
+
+const CLASSNAME_DATETIME='Datetime';
+class Datetime {
+
+	// private
+	private $ut;
+	private function __construct($ut) {
+		$this->ut = $ut;
+	}
+	
+	// protected
+	
+	// public
+	public function toDay() {
+		return date("Y-m-d", $this->ut);
+	}
+	public function toSQLStr() {
+		return date("m/d/y g:i A", $this->ut);
+	}
+	public function toUT() {
+		return $this->ut;
+	}
+	public function diffDays($otherDay) {
+		return ($otherDay->ut-$this->ut)/(60*60*24);
+	}
+	public function shiftDays($numDays) {
+		return new Datetime($this->ut+$numDays*60*60*24);
+	}
+	public function timeSince() {
+		return timeSince($this->ut);
+	}
+	public static function fromDay($day) {
+		return new Datetime(strtotime($day));
+	}
+	public static function fromSQLStr($str) {
+		return new Datetime(strtotime($str));
+	}
+	public static function fromUT($ut) {
+		return new Datetime($ut);
+	}
+	public static function now() {
+		return new Datetime(time());
+	}
+
+};
+
 class Database {
 
 	// private
@@ -20,21 +87,55 @@ class Database {
 		Database::$db = @mysql_select_db(Database::NAME,Database::$conn)or die(mysql_error());
 		Database::$initialized = true;
 	}
-	public static function doQuery($sql) {
-		assert(Database::$initialized && isset(Database::$db) && isset(Database::$conn));
+	public static function doQueryBase($args) {
+		assert(Database::$initialized && isset(Database::$db) && isset(Database::$conn) && (count($args)>0));
+		$printArgs = array();
+		for($i=1; $i<count($args) ++$i) {
+			$val = null;
+			$arg = $args[0];
+			switch(gettype($arg)) {
+				case 'boolean':
+					$val = $arg?"TRUE":"FALSE";
+					break;
+				case 'integer':
+				case 'double':
+					$val = strval($arg);
+					break;
+				case 'string':
+					$val = "'".mysql_real_escape_string($val)."'";
+					break;
+				case 'object':
+					$className = get_class($arg);
+					if($className == CLASSNAME_DATETIME) {
+						$val = "'".$arg->toSQLStr()."'";
+					}
+					break;
+				default:
+					break;
+			}
+			$printArgs[] = $val;
+		}
+		$sql = vsprintf($arg[0],$printArgs);
+		
 		$rs = @mysql_query($sql,Database::$conn) or die(mysql_error());
 		return $rs;
 	}
-	public static function doQueryRFR($sql) { // do query & Return First Row or null
-		$rs = Database::doQuery($sql);
+	public static function doQuery() {
+		$args = func_get_args();
+		return Database::doQueryBase($args);
+	}
+	public static function doQueryRFR() { // do query & Return First Row or null
+		$args = func_get_args();
+		$rs = Database::doQueryBase($args);
 		$obj = null;
 		if(mysql_num_rows($rs)>0) {
 			$obj = mysql_fetch_object($rs);
 		}
 		return $obj;
 	}
-	public static function doQueryOne($sql) { // do query & Return First Row or null
-		$rs = Database::doQuery($sql);
+	public static function doQueryOne() { // do query & Return First Row or null
+		$args = func_get_args();
+		$rs = Database::doQueryBase($args);
 		$result = null;
 		if(mysql_num_rows($rs)>0) {
 			$result = mysql_result($rs,0);
@@ -44,12 +145,6 @@ class Database {
 
 };
 
-function doQueryRFR($sql) {
-	return Database::doQueryRFR($sql);
-}
-function doQueryOne($sql) {
-	return Database::doQueryOne($sql);
-}
 
 class User {
 
@@ -67,13 +162,6 @@ class User {
 	}
 	private static function visitHistoryFromStr($blob) {
 		return deserialize($blob);
-	}
-	private static function utToDayObj($ut) {
-		$dateInfo = getdate($ut);
-		$dayObj["year"] = $dateInfo["year"];
-		$dayObj["month"] = $dateInfo["mon"];
-		$dayObj["day"] = $dateInfo["mday"];
-		return $dayObj;
 	}
 	private static function printUserListBase($userIDList) {
 		const FIRST_CHAR_CODE=65;
@@ -120,11 +208,12 @@ class User {
 
 		// update SG DB
 		$visitHistoryStr = User::visitHistoryToStr($this->visitHistory);
-		Database::doQuery("UPDATE users SET	picture_url=$this->pictureURL, _
-											visit_history=$visitHistoryStr, _
-											last_daily_entry=$this->lastDailyEntry, _
-											daily_entry_story_posted=$this->dailyEntryStoryPosted _
-											WHERE id=$this->id");
+		Database::doQuery("UPDATE users SET	picture_url=%s, _
+											visit_history=%s, _
+											last_daily_entry=%s, _
+											daily_entry_story_posted=%s _
+											WHERE id=%d",
+											$this->pictureURL, $visitHistoryStr, $this->lastDailyEntry, $this->dailyEntryStoryPosted, $this->id);
 	}
 	
 	// protected
@@ -132,10 +221,10 @@ class User {
 	// public
 	public static function doSignup($pictureURL) {
 		$authID = Session::getAuthUserID();
-		$authObj = doQueryRFR("SELECT * FROM auth_users WHERE id=$authID");
+		$authObj = Database::doQueryRFR("SELECT * FROM auth_users WHERE id=%d", $authID);
 		assert(!is_null($authObj));
-		$visitHistoryStr = User::visitHistoryToStr(array(time()));
-		Database::doQuery("INSERT INTO users (auth_id, picture_url, visit_history, full_name) VALUES ($authID, '$pictureURL', '$visitHistoryStr', '$authObj->firstname $authObj->lastname')");
+		$visitHistoryStr = User::visitHistoryToStr(array(Datetime::now()));
+		Database::doQuery("INSERT INTO users (auth_id, picture_url, visit_history, full_name) VALUES (%d, %s, %s, %s)", $authID, $pictureURL, $visitHistoryStr, "$authObj->firstname $authObj->lastname");
 		$newID = mysql_insert_id();
 		setLoggedInUserID($newID);
 		$success = true;
@@ -143,9 +232,9 @@ class User {
 	}
 	public static function getObjFromUserID($userID) {
 		$user = null;
-		$sgObj = doQueryRFR("SELECT * FROM users WHERE id=$userID");
+		$sgObj = Database::doQueryRFR("SELECT * FROM users WHERE id=%d", $userID);
 		if(!is_null($sgObj)) {
-			$authObj = doQueryRFR("SELECT * FROM auth_users WHERE id=$sgObj->auth_id");
+			$authObj = Database::doQueryRFR("SELECT * FROM auth_users WHERE id=%d", $sgObj->auth_id);
 			assert(!is_null($authObj));
 			$user = new User($authObj, $sgObj);
 		}
@@ -154,7 +243,7 @@ class User {
 	public static function login() {
 		$success = false;
 		$authUserID = Session::getAuthUserID();
-		$sgObj = doQueryRFR("SELECT * FROM users WHERE auth_id=$authUserID");
+		$sgObj = Database::doQueryRFR("SELECT * FROM users WHERE auth_id=%d", $authUserID);
 		if(!is_null($sgObj)) {
 			$success = true;
 			$userID = $sgObj->id;
@@ -182,7 +271,7 @@ class User {
 		User::printUserListBase($userIDList);
 	}
 	public static function printListByGoal($goalID) {
-		$rs = Database::doQuery("SELECT user_id FROM goal_status WHERE goal_id=$goalID");
+		$rs = Database::doQuery("SELECT user_id FROM goal_status WHERE goal_id=%d", $goalID);
 		$userIDList = array();
 		while($obj = mysql_fetch_object($rs)) {
 			$userIDList[] = $obj->user_id;
@@ -193,9 +282,9 @@ class User {
 		assert(!is_null($user));
 		echo "<hr/>";
 		$profLink = $user->getPagePath();
-		echo "<a href='$profLink'><img src='$user->pictureURL' /></a><br/>";
+		echo "<a href='$profLink'><img src='".htmlspecialchars($user->pictureURL)."' /></a><br/>";
 		echo "<a href='$profLink'>$user->firstName $user->lastName</a><br/>";
-		$rs = Database::doQuery("SELECT goal_id FROM goals WHERE user_id=$user->id");
+		$rs = Database::doQuery("SELECT goal_id FROM goals WHERE user_id=%d", $user->id);
 		$numGoals = mysql_num_rows($rs);
 		echo "$numGoals goals<br/>";
 		$visitFrequency = $user->getVisitFrequency();
@@ -229,19 +318,19 @@ class User {
 		Session::clearLoggedInUserID();
 	}
 	public function updateLastDailyEntry() {
-		$this->lastDailyEntry = time();
+		$this->lastDailyEntry = Datetime::now();
 		$this->dailyEntryStoryPosted = false;
 		$this->save();
 	}
 	public function hasMadeDailyEntry() {
-		return dayFromUT($this->lastDailyEntry)==dayFromUT(time());
+		return $this->lastDailyEntry->diffDays(Datetime::now())==0;
 	}
 	public function trackVisit() {
 		$needUpdate = true;
 		if(!is_null($this->visitHistory) && (count($this->visitHistory)>0)) {
 			$lastVisit = $this->visitHistory[0];
-			$today = User::utToDayObj(time());
-			if(array_diff($today, User::utToDayObj($lastVisit))==array()) {
+			$today = Datetime::now();
+			if($today->diffDays($lastVisit)==0) {
 				$needUpdate = false;
 			}
 		}
@@ -249,7 +338,7 @@ class User {
 			if(!is_array($this->visitHistory)) {
 				$this->visitHistory = array();
 			}
-			array_unshift($this->visitHistory, time());
+			array_unshift($this->visitHistory, Datetime::now());
 			if(count($this->visitHistory)>User::NUM_VISITS_TO_TRACK) {
 				array_splice($this->visitHistory, User::NUM_VISITS_TO_TRACK);
 			}
@@ -262,7 +351,7 @@ class User {
 			$diffs = array();
 			$numPeriods = count($this->visitHistory)-1;
 			for($i=0; $i<$numPeriods; ++$i) {
-				$diffs[] = ($this->visitHistory[$i]-$this->visitHistory[$i+1])/(60*60*24);
+				$diffs[] = $this->visitHistory[$i+1]->diffDays($this->visitHistory[$i]);
 			}
 			$sum = array_sum($diffs);
 			$avgGap = $sum/$numPeriods;
@@ -290,7 +379,7 @@ class User {
 		$this->authID = $sgDBData->auth_id;
 		$this->pictureURL = $sgDBData->picture_url;
 		$this->visitHistory = User::visitHistoryFromStr($sgDBData->visit_history);
-		$this->lastDailyEntry = $sgDBData->last_daily_entry;
+		$this->lastDailyEntry = Datetime::fromSQLStr($sgDBData->last_daily_entry);
 		$this->dailyEntryStoryPosted = $sgDBData->daily_entry_story_posted;
 		
 		// data from auth DB
@@ -303,7 +392,7 @@ class User {
 		$this->authGroups[] = $authDBData->group3;
 		$this->email = $authDBData->email;
 		$this->verified = $authDBData->verified;
-		$this->lastLogin = $authDBData->last_login;
+		$this->lastLogin = Datetime::fromSQLStr($authDBData->last_login);
 	}
 	public function __get($name) {
 		static $publicGetVars = array("id","pictureURL","firstName","lastName","email","lastLogin","authID");
@@ -395,7 +484,7 @@ class StatusMessages {
 					$style="Bad: ";
 					break;
 			}
-			echo $style."$message->text<br/>";
+			echo $style.htmlspecialchars($message->text)."<br/>";
 		}
 		echo "<hr/>";
 	}
@@ -411,12 +500,12 @@ class Goal {
 	
 	// public
 	public static function createNew($name, $description) {
-		Database::doQuery("INSERT INTO goals (name, description) VALUES ('$name','$description')");
+		Database::doQuery("INSERT INTO goals (name, description) VALUES (%s,%s)", $name, $description);
 		$newID = mysql_insert_id();
 		return $newID;
 	}
 	public static function getObjFromGoalID($goalID) {
-		$goal = new Goal(doQueryRFR("SELECT * FROM goals WHERE id=$goalID"));
+		$goal = new Goal(Database::doQueryRFR("SELECT * FROM goals WHERE id=%d", $goalID));
 		return $goal;
 	}
 
@@ -466,7 +555,7 @@ class Story {
 		$this->id = $dbData->id;
 		$this->userID = $dbData->user_id;
 		$this->isPublic = $dbData->is_public;
-		$this->enteredAt = $dbData->entered_at;
+		$this->enteredAt = Datetime::fromSQLStr($dbData->entered_at);
 	}
 	protected function __get($name) {
 		static $publicGetVars = array("userID","isPublic","enteredAt","id");
@@ -530,11 +619,14 @@ class EventStory extends Story {
 	// public
 	const STORY_TYPENAME = 'event';
 	public static function createNew($userID, $isPublic, $goalID, $newLevel, $oldLevel, $letterGrade, $description) {
+		$today = Datetime::now()->toDay();
 		Database::doQuery("INSERT INTO stories (user_id, type, is_public, entered_at, event_goal_id, event_new_level, event_old_level, event_score_snapshot, event_description, entered_at_day) _
-							VALUES ($userID, '".EventStory::STORY_TYPENAME."', $isPublic, NOW(), $goalID, $newLevel, $oldLevel, '$letterGrade', '$description', ".dayFromUT(time()).")");
+							VALUES (%d, '".EventStory::STORY_TYPENAME."', %s, NOW(), %d, %f, %f, %s, %s, %s)",
+							$userID, $isPublic, $goalID, $newLevel, $oldLevel, $letterGrade, $description, $today);
 	}
 	public static function getTodayStory($userID, $goalID) {
-		$dbData = doQueryRFR("SELECT * FROM stories WHERE user_id=$userID AND event_goal_id=$goalID AND entered_at_day='".dayFromUT(time())."'");
+		$today = Datetime::now()->toDay();
+		$dbData = Database::doQueryRFR("SELECT * FROM stories WHERE user_id=%d AND event_goal_id=%d AND entered_at_day=%s", $userID, $goalID, $today);
 		if(is_null($dbData)) {
 			return null;
 		}
@@ -550,7 +642,7 @@ class EventStory extends Story {
 			EventStory::createNew($userID, true, $goalID, $newLevel, $oldLevel, $letterGrade, $why, $pageSession);
 		}
 		else {
-			Database::doQuery("UPDATE stories SET event_new_level=$newLevel, event_score_snapshot='$letterGrade', event_description='$why' WHERE id=$story->id");
+			Database::doQuery("UPDATE stories SET event_new_level=%f, event_score_snapshot=%s, event_description=%s WHERE id=%d", $newLevel, $letterGrade, $why, $story->id);
 		}
 		
 		User::getObjFromUserID($userID)->updateLastDailyEntry();
@@ -559,37 +651,37 @@ class EventStory extends Story {
 		return new EventStory($dbData);
 	}
 	public static function getLevelHistory($userID, $goalID, $daysBack) {
-		$rs = Database::doQuery("SELECT entered_at_day, event_new_level, event_old_level FROM stories WHERE user_id=$userID AND event_goal_id=$goalID AND UNIX_TIMESTAMP(entered_at)>(NOW()-$daysBack*60*60*24) ORDER BY entered_at DESC");
+		$rs = Database::doQuery("SELECT entered_at_day, event_new_level, event_old_level FROM stories WHERE user_id=%d AND event_goal_id=%d AND UNIX_TIMESTAMP(entered_at)>(NOW()-%d*60*60*24) ORDER BY entered_at DESC", $userID, $goalID, $daysBack);
 
 		$history = array();
 		if(mysql_num_rows($rs)>0) {
 			$obj=null;
-			$lastUT = dayToUT(dayFromUT(time()));
+			$lastDT = Datetime::now();
 			$lastLevel = 0;
 			$firstEntry = true;
 			$daysSoFar = 0;
 			while($obj=mysql_fetch_object($rs)) {
-				$entryUT = dayToUT($obj->entered_at_day);
+				$entryDT = Datetime::fromDay($obj->entered_at_day);
 				$newLevel = $obj->event_new_level;
 				$oldLevel = $obj->event_old_level;
-				$dayDiff = round(($lastUT-$entryUT)/(60*60*24));
+				$dayDiff = round($entryDT->diffDays($lastDT));
 				if($firstEntry) {
 					$lastLevel = $newLevel;
 					$firstEntry = false;
 				}
 				for($i=0; $i<$dayDiff; ++$i) {
 					$level = ($lastLevel*($dayDiff-$i-1)/$dayDiff)+($newLevel*($i+1)/$dayDiff);
-					$history[date("M j",$lastUT+($i+1)*60*60*24)]=$level;
+					$history[date("M j",$lastDT->shiftDays($i+1)->toUT())]=$level;
 					++$daysSoFar;
 				}
 				$lastLevel = $newLevel;
-				$lastUT = $entryUT;
+				$lastDT = $entryDT;
 			}
 			$dayDiff = $daysBack-$daysSoFar;
 			for($i=0; $i<$dayDiff; ++$i) {
 				// HACK
 				$level = ($newLevel*($dayDiff-$i-1)/$dayDiff)+($oldLevel*($i+1)/$dayDiff);
-				$history[date("M j",$lastUT+($i+1)*60*60*24)]=$level;
+				$history[date("M j",$lastDT->shiftDays($i+1)->toUT())]=$level;
 			}
 		}
 		return $history;
@@ -631,16 +723,16 @@ class EventStory extends Story {
 		$goal = Goal::getObjFromGoalID($this->goalID);
 		$userPagePath = $user->getPagePath();
 		$goalPagePath = $goal->getPagePath();
-		echo "<a href='$userPagePath'><img src='$user->pictureURL' /></a><br/>";
+		echo "<a href='$userPagePath'><img src='".htmlspecialchars($user->pictureURL)."' /></a><br/>";
 		$changeWord = "raised";
 		if($this->newLevel<$this->oldLevel) {
 			$changeWord = "lowered";
 		}
 		echo "<a href='$userPagePath'>$user->firstName $user->lastName</a> $changeWord his score for _
-				<a href='$goalPagePath'>$goal->name</a> from $this->oldLevel to $this->newLevel.<br/>";
+				<a href='$goalPagePath'>".htmlspecialchars($goal->name)."</a> from $this->oldLevel to $this->newLevel.<br/>";
 		echo "Letter: $this->letterScore<br/>";
-		echo "Description: \"$this->description\"<br/>";
-		$timeSinceStr = timeSince($this->enteredAt);
+		echo "Description: '".htmlspecialchars($this->description)."'<br/>";
+		$timeSinceStr = $this->enteredAt->timeSince();
 		echo "Time: $timeSinceStr ago<br/>";
 	}
 };
@@ -663,7 +755,8 @@ class DailyscoreStory extends Story {
 	public static function createNew($userID, $isPublic, $goalsTouched) {
 		$progressStr = DailyscoreStory::progressToStr($goalsTouched);
 		Database::doQuery("INSERT INTO stories (user_id, type, is_public, entered_at, dailyscore_progress) VALUES _
-							($userID, '".DailyscoreStory::STORY_TYPENAME."', $isPublic, NOW(), '$progressStr')");
+							(%d, '".DailyscoreStory::STORY_TYPENAME."', %s, NOW(), %s)",
+							$userID, $isPublic, $progressStr);
 	}
 	public function __construct($dbData) {
 		parent::__construct($dbData);
@@ -673,8 +766,8 @@ class DailyscoreStory extends Story {
 	public function printStory() {
 		$user = User::getObjFromUserID($this->userID);
 		$userPagePath = $user->getPagePath();
-		echo "<a href='$userPagePath'><img src='$user->pictureURL' /></a><br/>";
-		$totalGoals = doQueryOne("SELECT COUNT(*) FROM goals_status WHERE user_id=$user->id");
+		echo "<a href='$userPagePath'><img src='".htmlspecialchars($user->pictureURL)."' /></a><br/>";
+		$totalGoals = Database::doQueryOne("SELECT COUNT(*) FROM goals_status WHERE user_id=%d", $user->id);
 		$numGoalsTouched = count($this->progress);
 		echo "<a href='$userPagePath'>$user->firstName $user->lastName</a> just entered his daily goal progress, touching $numGoalsTouched out of $totalGoals of his goals.<br/>";
 		$score = floor(($numGoalsTouched/$totalGoals)*100);
@@ -682,10 +775,10 @@ class DailyscoreStory extends Story {
 		foreach($progress as $goalID) {
 			$goal = Goal::getObjFromGoalID($goalID);
 			$goalPagePath = $goal->getPagePath();
-			echo "<a href='$goalPagePath'>$goal->name</a>, ";
+			echo "<a href='$goalPagePath'>".htmlspecialchars($goal->name)."</a>, ";
 		}
 		echo "<br/>";
-		$timeSinceStr = timeSince($this->enteredAt);
+		$timeSinceStr = $this->enteredAt->timeSince();
 		echo "Time: $timeSinceStr ago<br/>";
 	}
 };
@@ -699,12 +792,12 @@ class Dailytest {
 	
 	// public
 	public static function createNew($goalID, $name, $description) {
-		Database::doQuery("INSERT INTO dailytests (goal_id, name, description) VALUES ($goalID, '$name','$description')");
+		Database::doQuery("INSERT INTO dailytests (goal_id, name, description) VALUES (%d, %s, %s)", $goalID, $name, $description);
 		$newID = mysql_insert_id();
 		return $newID;
 	}
 	public static function getListFromGoalID($goalID) {
-		$rs = Database::doQuery("SELECT id FROM dailytests WHERE goal_id=$goalID");
+		$rs = Database::doQuery("SELECT id FROM dailytests WHERE goal_id=%d", $goalID);
 		$list = array();
 		$obj = null;
 		while($obj = mysql_fetch_object($rs)) {
@@ -753,21 +846,21 @@ class GoalStatus {
 	
 	// public
 	public static function doesUserHaveGoal($userID, $goalID) {
-		$rs = Database::doQuery("SELECT goal_id FROM goals_status WHERE user_id=$userID AND goal_id=$goalID");
+		$rs = Database::doQuery("SELECT goal_id FROM goals_status WHERE user_id=%d AND goal_id=%d", $userID, $goalID);
 		$userHasGoal = mysql_num_rows($rs)>0;
 		return $userHasGoal;
 	}
 	public static function getAverageGoalScore($goalID) {
-		return doQueryOne("SELECT AVERAGE(level) FROM goals_status WHERE goal_id=$goalID");
+		return Database::doQueryOne("SELECT AVERAGE(level) FROM goals_status WHERE goal_id=%d", $goalID);
 	}
 	public static function userAdoptGoal($userID, $goalID) {
-		$nextIndex = doQueryOne("SELECT MAX(position_index)+1 FROM goals_status WHERE goal_id=$goalID AND user_id=$userID");
+		$nextIndex = Database::doQueryOne("SELECT MAX(position_index)+1 FROM goals_status WHERE goal_id=%d AND user_id=%d", $goalID, $userID);
 		// by default all goals are public until we put up goal adoption page
 		Database::doQuery("INSERT INTO goals_status (goal_id, user_id, level, is_active, is_public, position_index) _
-											VALUES ($goalID, $userID, 0, TRUE, TRUE, $nextIndex)");
+											VALUES (%d, %d, 0, TRUE, TRUE, %d)", $goalID, $userID, $nextIndex);
 	}
 	public static function getNumGoalAdopters($goalID) {
-		$rs2 = Database::doQuery("SELECT user_id FROM goals_status WHERE goal_id=$goalID");
+		$rs2 = Database::doQuery("SELECT user_id FROM goals_status WHERE goal_id=%d", $goalID);
 		$numAdopters = mysql_num_rows($rs2);
 		return $numAdopters;
 	}
@@ -776,7 +869,7 @@ class GoalStatus {
 	}
 	public static function printRowList($userID, $dayUT, $isEditable) {
 		// ignore dayUT for now
-		$rs = Database::doQuery("SELECT * FROM goals_status WHERE user_id=$userID");
+		$rs = Database::doQuery("SELECT * FROM goals_status WHERE user_id=%d", $userID);
 		while($obj = mysql_fetch_object($rs)) {
 			$goalStatus = GoalStatus::getObjFromDBData($obj);
 			$goalStatus->printRow($isEditable);
@@ -801,11 +894,10 @@ class GoalStatus {
 		echo "<hr/>";
 		// overall level
 		$goal = Goal::getObjFromGoalID($this->goalID);
-		echo "<a href='".$goal->getPagePath()."'>$goal->name</a><br/>";
+		echo "<a href='".$goal->getPagePath()."'>".htmlspecialchars($goal->name)."</a><br/>";
 		echo "$this->level<br/>";
 		if($isEditable) {
 			$ajaxSaveEventPath = PAGE_AJAX_SAVEEVENT;
-			$pageSession = rand(10000000, 99999999);
 			$newScoreVal = "";
 			$letterGradeVal = "";
 			$whyVal = "";
@@ -813,7 +905,7 @@ class GoalStatus {
 			if(!is_null($eventStory)) {
 				$newScoreVal = $eventStory->newScore;
 				$letterGradeVal = $eventStory->letterGrade;
-				$whyVal = $eventStory->description;
+				$whyVal = htmlspecialchars($eventStory->description);
 			}
 			$eventDivStr = <<< EOT
 <script language="text/javascript">
@@ -847,7 +939,7 @@ class GoalStatus {
 				//document.getElementById("ratingBox").innerHTML="<center>Thanks :)</center>";
 			}
 		}
-		xmlhttp.open("GET","$ajaxSaveEventPath?userID=$this->userID&goalID=$goal->id&pageSession=$pageSession&oldLevel=$this->level&newLevel="+document.getElementById("eventNewScore$divID").value+"&letterGrade="+document.getElementById("eventLetterGrade$divID").value+"&why="+escape(document.getElementById("eventWhy$divID").value),true);
+		xmlhttp.open("GET","$ajaxSaveEventPath?userID=$this->userID&goalID=$goal->id&oldLevel=$this->level&newLevel="+document.getElementById("eventNewScore$divID").value+"&letterGrade="+document.getElementById("eventLetterGrade$divID").value+"&why="+escape(document.getElementById("eventWhy$divID").value),true);
 		xmlhttp.send();
 	}
 </script>
@@ -913,15 +1005,15 @@ EOT;
 			echo $htmlStr;
 			++$divID;
 		
-			echo "$dailytest->name<br/>";
+			echo htmlspecialchars($dailytest->name)."<br/>";
 			$dailytestStatuses = DailytestStatus::getListFromUserID($this->userID, $dailytest->id, NUM_DAYS_BACK);
 			$dailytestStatusDays = array();
 			foreach($dailytestStatuses as $dailytestStatus) {
-				$dailytestStatusDays[] = dayFromUT($dailytestStatus->enteredAt);
+				$dailytestStatusDays[] = $dailytestStatus->enteredAt->toDay();
 			}
 			for($i=0; $i<NUM_DAYS_BACK; ++$i) {
 				$char = " ";
-				$currentDay = dayFromUT(time()-($i+1)*60*60*24);
+				$currentDay = (new Datetime(time()-($i+1)*60*60*24))->toDay();
 				if(in_array($currentDay,$dailytestStatusDays)) {
 					$char="X";
 				}
@@ -946,7 +1038,7 @@ class DailytestStatus {
 	
 	// public
 	public static function createNew($dailytestID, $userID, $result) {
-		Database::doQuery("INSERT INTO dailytests_status (dailytest_id, user_id, result, entered_at) VALUES ($dailytestID, $userID, $result, NOW())");
+		Database::doQuery("INSERT INTO dailytests_status (dailytest_id, user_id, result, entered_at) VALUES (%d, %d, %d, NOW())", $dailytestID, $userID, $result);
 		$newID = mysql_insert_id();
 		return $newID;
 	}
@@ -955,7 +1047,7 @@ class DailytestStatus {
 		return $status;
 	}
 	public static function getListFromUserID($userID, $dailytestID, $daysBack) {
-		$rs = Database::doQuery("SELECT * FROM dailytests_status WHERE user_id=$userID AND dailytest_id=$dailytestID AND UNIX_TIMESTAMP(entered_at)>(NOW()-$daysBack*60*60*24) ORDER BY entered_at DESC");
+		$rs = Database::doQuery("SELECT * FROM dailytests_status WHERE user_id=%d AND dailytest_id=%d AND UNIX_TIMESTAMP(entered_at)>(NOW()-%d*60*60*24) ORDER BY entered_at DESC", $userID, $dailytestID, $daysBack);
 		$obj = null;
 		$list = array();
 		while($obj = mysql_fetch_object($rs)) {
@@ -964,19 +1056,19 @@ class DailytestStatus {
 		return $list;
 	}
 	public static function getTodayStatus($userID, $dailytestID) {
-		$today = dayFromUT(time());
-		$rs = Database::doQuery("SELECT result FROM dailytests_status WHERE user_id=$userID AND dailytest_id=$dailytestID AND entered_at_day=$today");
+		$today = Datetime::now()->toDay();
+		$rs = Database::doQuery("SELECT result FROM dailytests_status WHERE user_id=%d AND dailytest_id=%d AND entered_at_day=%s", $userID, $dailytestID, $today);
 		return mysql_num_rows($rs)>0;
 	}
 	public static function setTodayStatus($userID, $dailytestID, $newStatus) {
 		$currentStatus = DailytestStatus::getTodayStatus($userID, $dailytestID);
-		$today = dayFromUT(time());
+		$today = Datetime::now()->toDay();
 		if($currentStatus!=$newStatus) {
 			if($currentStatus) {
-				Database::doQuery("DELETE FROM dailytests_status WHERE user_id=$userID AND dailytest_id=$dailytestID AND entered_at_day=$today");
+				Database::doQuery("DELETE FROM dailytests_status WHERE user_id=%d AND dailytest_id=%d AND entered_at_day=%s", $userID, $dailytestID, $today);
 			}
 			else {
-				Database::doQuery("INSERT INTO dailytests_status (dailytest_id, user_id, result, entered_at, entered_at_day) VALUES ($dailytestID, $userID, 1, NOW(), $today)");
+				Database::doQuery("INSERT INTO dailytests_status (dailytest_id, user_id, result, entered_at, entered_at_day) VALUES (%d, %d, 1, NOW(), %s)", $dailytestID, $userID, $today);
 			}
 		}
 		
@@ -987,7 +1079,7 @@ class DailytestStatus {
 		$this->dailytestID = $dbData->dailytest_id;
 		$this->userID = $dbData->user_id;
 		$this->result = $dbData->result;
-		$this->enteredAt = $dbData->entered_at;
+		$this->enteredAt = Datetime::fromSQLStr($dbData->entered_at);
 	}
 	public function __get($name) {
 		static $publicGetVars = array("result","enteredAt");

@@ -5,7 +5,7 @@ include("template/userFacingForceLogin.php");
 if(!isset($_GET["id"])) {
 	redirect(PAGE_USERS);
 }
-$userID = $_GET["id"];
+$userID = GPC::strToInt($_GET["id"]);
 $viewingSelf = $userID == $user->id;
 
 
@@ -15,7 +15,7 @@ printHeader("User page");
 
 $daysBack = 0;
 if(isset($_GET["db"])) {
-	$daysBack = $_GET["db"];
+	$daysBack = GPC::strToInt($_GET["db"]);
 }
 $daysBack = min(0,$daysBack);
 $currentTime = $daysBack*60*60*24;

@@ -36,11 +36,4 @@ function verifyLogin() {
 	$user->trackVisit();
 }
 
-function dayToUT($day) {
-	return strtotime($day);
-}
-function dayFromUT($ut) {
-	return date("Y-m-d", $ut);
-}
-
 ?>

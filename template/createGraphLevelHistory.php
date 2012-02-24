@@ -5,8 +5,8 @@ if(	!isset($_GET["userID"]) ||
 	!isset($_GET["goalID"])) {
 	exit;
 }
-$userID = $_GET["userID"];
-$goalID = $_GET["goalID"];
+$userID = GPC::strToInt($_GET["userID"]);
+$goalID = GPC::strToInt($_GET["goalID"]);
 
 const NUM_DAYS_BACK = 45;
 $graphData = EventStory::getLevelHistory($userID, $goalID, NUM_DAYS_BACK);

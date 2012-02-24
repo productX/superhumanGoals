@@ -5,7 +5,7 @@ include("template/userFacingForceLogin.php");
 if(isset($_POST["newGoalName"])) {
 	$name = $_POST["newGoalName"];
 	$description = $_POST["newGoalDescription"];
-	$numDailytests = $_POST["numDailytests"];
+	$numDailytests = GPC::strToInt($_POST["numDailytests"]);
 
 	$newID = Goal::createNew($name, $description);
 	if($numDailytests>0) {
@@ -51,7 +51,7 @@ for($i=0; $i<NUM_COLS; ++$i) {
 		foreach($colContents[$i] as $goal) {
 			$pagePath = $goal->getPagePath();
 			$numAdopters = $goal->getNumAdopters();
-			echo "<a href='$pagePath'>$goal->name</a> ($numAdopters)<br/>";
+			echo "<a href='$pagePath'>".htmlspecialchars($goal->name)."</a> ($numAdopters)<br/>";
 		}
 	}
 }

@@ -5,7 +5,7 @@ include("template/userFacingForceLogin.php");
 if(!isset($_GET["id"])) {
 	redirect(PAGE_GOALS);
 }
-$goalID = $_GET["id"];
+$goalID = GPC::strToInt($_GET["id"]);
 $userHasGoal = GoalStatus::doesUserHaveGoal($user->id, $goalID);
 
 if(!$userHasGoal && isset($_POST["adopt"])) {
@@ -40,7 +40,7 @@ switch($mode) {
 		break;
 	case PAGEMODE_ACTIVITY:
 		// only returns event type stories for this goal
-		$rs = Database::doQuery("SELECT * FROM stories WHERE is_public=TRUE AND type='".EventStory::STORY_TYPENAME."' AND event_goal_id=$goalID ORDER BY entered_at DESC LIMIT 100");
+		$rs = Database::doQuery("SELECT * FROM stories WHERE is_public=TRUE AND type='".EventStory::STORY_TYPENAME."' AND event_goal_id=%d ORDER BY entered_at DESC LIMIT 100", $goalID);
 		Story::printListForRS($rs);
 		break;
 	case PAGEMODE_PEOPLE:

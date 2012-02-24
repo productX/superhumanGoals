@@ -25,8 +25,8 @@ class Session {
 	// public
 	public static function init() {
 		session_start();
-		Session::$userID = $_SESSION[Session::VARNAME_USERID];
-		Session::$authUserID = $_SESSION[Session::VARNAME_AUTH_USERID];
+		Session::$userID = GPC::strToInt($_SESSION[Session::VARNAME_USERID]);
+		Session::$authUserID = GPC::strToInt($_SESSION[Session::VARNAME_AUTH_USERID]);
 	}
 	public static function isStarted() {
 		return Session::$sessionStarted;
