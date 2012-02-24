@@ -1,0 +1,12 @@
+<?php
+include("template/userFacingForceLogin.php");
+
+// RENDER PAGE
+require_once("include/header.php");
+printHeader("Activity page");
+
+$rs = Database::doQuery("SELECT * FROM stories WHERE is_public=TRUE ORDER BY entered_at DESC LIMIT 100");
+Story::printListForRS($rs);
+
+printFooter();
+?>
