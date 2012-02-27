@@ -1,6 +1,6 @@
 <?php
 
-require_once("include/constants.php");
+require_once("constants.php");
 require_once(dirname(__FILE__)."/../../common/include/functions.php"); 
 
 $authCodePath="../intranet/auth";
@@ -25,6 +25,24 @@ function verifyIntranetLogin() {
 function getIntranetLogoutPath() {
 	global $authWebPath;
 	return $authWebPath."/logout.php";
+}
+
+// HACK: probably best to do another class for this, but not worth the bother right now to untangle how to mesh this with the global static "Database" class
+function getAuthUserData($authID) {
+	static $server = "localhost";
+	static $username = "root";
+	static $password = "";
+	static $dbName = "intranet_user_auth";
+
+	$conn = @mysql_connect($server, $username, $password) or die(mysql_error());
+	@mysql_select_db($dbName,$conn)or die(mysql_error());
+	$rs = @mysql_query("SELECT * FROM auth_users WHERE id=$authID",$conn) or die(mysql_error());
+	$obj = null;
+	if(mysql_num_rows($rs)>0) {
+		$obj = mysql_fetch_object($rs);
+	}
+	Database::reInit();
+	return $obj;
 }
 
 ?>

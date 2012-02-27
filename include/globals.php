@@ -6,10 +6,11 @@ require_once("constants.php");
 // global vars
 $user = null;
 $userLoggedIn = false;
+$userEmail = "";
 
 // pertinent functions
 function initGlobals() {
-	global $user, $userLoggedIn;
+	global $user, $userLoggedIn, $userEmail;
 	
 	// set up assert options
 	assert_options(ASSERT_ACTIVE, 1);
@@ -25,6 +26,7 @@ function initGlobals() {
 	// user
 	$user = User::getLoggedInUser();
 	$userLoggedIn = !is_null($user);
+	$userEmail = $userLoggedIn?$user->email:Session::getAuthEmail();
 }
 function verifyLogin() {
 	global $user, $userLoggedIn;

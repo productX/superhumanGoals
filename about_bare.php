@@ -2,7 +2,7 @@
 include("template/userFacingForceLogin.php");
 
 // RENDER PAGE
-require_once("include/header.php");
+require_once("include/chrome.php");
 printHeader("About page");
 ?>
 

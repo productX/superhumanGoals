@@ -15,8 +15,8 @@ const PAGE_USER = 'user_bare.php';
 const PAGE_USERS = 'users_bare.php';
 const PAGE_GOAL = 'goal_bare.php';
 const PAGE_GOALS = 'goals_bare.php';
-const PAGE_AJAX_SAVEEVENT = 'ajax_saveEvent.php';
-const PAGE_AJAX_SAVEDAILYTEST = 'ajax_saveDailytest.php';
-const PAGE_AJAX_GETSEARCHOPTIONS = 'ajax_getSearchOptions.php';
+const PAGE_AJAX_SAVEEVENT = 'ajax/ajax_saveEvent.php';
+const PAGE_AJAX_SAVEDAILYTEST = 'ajax/ajax_saveDailytest.php';
+const PAGE_AJAX_GETSEARCHOPTIONS = 'ajax/ajax_getSearchOptions.php';
 
 ?>

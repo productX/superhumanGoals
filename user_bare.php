@@ -2,15 +2,15 @@
 include("template/userFacingForceLogin.php");
 
 // DO PROCESSING
-if(!isset($_GET["id"])) {
-	redirect(PAGE_USERS);
+$userID = $user->id;
+if(isset($_GET["id"])) {
+	$userID = GPC::strToInt($_GET["id"]);
 }
-$userID = GPC::strToInt($_GET["id"]);
 $viewingSelf = $userID == $user->id;
 
 
 // RENDER PAGE
-require_once("include/header.php");
+require_once("include/chrome.php");
 printHeader("User page");
 
 $daysBack = 0;

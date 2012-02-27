@@ -6,7 +6,7 @@ if($userLoggedIn) {
 	$redirectTo = PAGE_ACTIVITY;
 }
 else {
-	$success = User::login();
+	$success = User::tryLogin();
 	if($success) {
 		$redirectTo = PAGE_ACTIVITY;
 	}

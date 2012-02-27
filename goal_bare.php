@@ -14,7 +14,7 @@ if(!$userHasGoal && isset($_POST["adopt"])) {
 }
 
 // RENDER PAGE
-require_once("include/header.php");
+require_once("include/chrome.php");
 printHeader("Goal page");
 
 const PAGEMODE_FACTS='facts';
@@ -40,7 +40,7 @@ switch($mode) {
 		break;
 	case PAGEMODE_ACTIVITY:
 		// only returns event type stories for this goal
-		$rs = Database::doQuery("SELECT * FROM stories WHERE is_public=TRUE AND type='".EventStory::STORY_TYPENAME."' AND event_goal_id=%d ORDER BY entered_at DESC LIMIT 100", $goalID);
+		$rs = Database::doQuery("SELECT * FROM stories WHERE is_public=TRUE AND type='".EventStory::STORY_TYPENAME."' AND event_goal_id=%s ORDER BY entered_at DESC LIMIT 100", $goalID);
 		Story::printListForRS($rs);
 		break;
 	case PAGEMODE_PEOPLE:

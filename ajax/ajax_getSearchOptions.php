@@ -1,5 +1,5 @@
 <?php
-include("template/userFacingBase.php");
+include("../template/userFacingBase.php");
 
 if(	!isset($_GET["inputText"]) ) {
 	exit;
@@ -7,17 +7,16 @@ if(	!isset($_GET["inputText"]) ) {
 $inputText = $_GET["inputText"];
 ?>
 
-<?xml version="1.0" encoding="ISO-8859-1"?>
 <!-- ProductX Rox Your Sox -->
 <results>
 <?php
 $results = array();
-$rs = Database::doQuery("SELECT id,name FROM goals WHERE name LIKE '%%%s%%'", $inputText);
+$rs = Database::doQuery("SELECT id,name FROM goals WHERE name LIKE %s", new SQLArgLike($inputText));
 $obj = null;
 while($obj = mysql_fetch_object($rs)) {
 	$results[] = array("type"=>"Goals", "name"=>$obj->name, "link"=>Goal::getObjFromGoalID($obj->id)->getPagePath());
 }
-$rs = Database::doQuery("SELECT id,full_name FROM users WHERE full_name LIKE '%%%s%%'", $inputText);
+$rs = Database::doQuery("SELECT id,full_name FROM users WHERE full_name LIKE %s", new SQLArgLike($inputText));
 $obj = null;
 while($obj = mysql_fetch_object($rs)) {
 	$results[] = array("type"=>"People", "name"=>$obj->full_name, "link"=>User::getObjFromUserID($obj->id)->getPagePath());

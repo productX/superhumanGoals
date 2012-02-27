@@ -1,5 +1,5 @@
 <?php
-include("template/userFacingBase.php");
+include("../template/userFacingBase.php");
 
 if(	!isset($_GET["userID"]) ||
 	!isset($_GET["goalID"]) ||
@@ -18,5 +18,7 @@ $letterGrade = GPC::strToLetterGrade($_GET["letterGrade"]);
 $why = $_GET["why"];
 
 EventStory::createNewOrUpdate($userID, $goalID, $newLevel, $oldLevel, $letterGrade, $why);
+GoalStatus::setUserGoalLevel($userID, $goalID, $newLevel);
 
+echo "ok";
 ?>
