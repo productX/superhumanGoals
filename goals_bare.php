@@ -23,7 +23,7 @@ if(isset($_POST["newGoalName"])) {
 
 // RENDER PAGE
 require_once("include/chrome.php");
-printHeader("Goals page");
+printHeader(NAVNAME_GOALS, array(new ChromeTitleElementHeader("All Goals")));
 
 $rs = Database::doQuery("SELECT id FROM goals");
 $numGoals = mysql_num_rows($rs);
@@ -45,40 +45,59 @@ while($obj = mysql_fetch_object($rs)) {
 		$i=0;
 	}
 }
-echo "All Goals<br/>";
+?>
+					<!-- Case -->
+					<div class="case goals">
+						<!-- Cols -->
+						<div class="cols">
+							<p>Goals</p>
+<?php
 for($i=0; $i<NUM_COLS; ++$i) {
 	if(isset($colContents[$i])) {
-		echo "Column $i<br/>";
+		echo "<div class='col'><ul>";
 		foreach($colContents[$i] as $goal) {
 			$pagePath = $goal->getPagePath();
 			$numAdopters = $goal->getNumAdopters();
-			echo "<a href='$pagePath'>".htmlspecialchars($goal->name)."</a> ($numAdopters)<br/>";
+			echo "<li><a href='$pagePath'>".htmlspecialchars($goal->name)."</a> ($numAdopters)</li>";
 		}
+		echo "</ul></div>";
 	}
 }
-echo "<br/>";
 ?>
+							<div class="cl">&nbsp;</div>
+						</div>
+						<!-- End Cols -->
 
-Don't see your goal? Add here:<br/>
-<form method="post" action="<?php echo PAGE_GOALS;?>" name="goalForm">
-Goal name: <input type="text" name="newGoalName" /><br/>
-Description: <input type="text" name="newGoalDescription" /><br/>
+						<div class="form">
+							<p>Don't see your goal? Add one here:</p>
+							<form action="<?php echo PAGE_GOALS;?>" method="post" name="goalForm">
+								<label for="name">Goal Name:</label>
+								<input type="text" class="field" value="" id="newGoalName" name="newGoalName" />
+								<div class="cl">&nbsp;</div>
+								<label for="description">Description:</label>
+								<textarea id="newGoalDescription" name="newGoalDescription" rows="2" cols="40"></textarea>
+								<div class="cl">&nbsp;</div>
 
-<script type="text/javascript">
-	var numDailytests = 0;
-	
-	function addDailytest(postedTo) {
-		document.getElementById("dailytests").innerHTML=document.getElementById("dailytests").innerHTML+"Name: <input type='text' name='dailytestName"+(numDailytests+1)+"' /><br/>Description: <input type='text' name='dailytestDescription"+(numDailytests+1)+"' /><br/>";
-		document.goalForm.numDailytests=++numDailytests;
-		document.getElementById("numDailytests").value=numDailytests;
-	}
-</script>
-<div id="dailytests"></div>
-<input type="button" value="Add daily test" onclick="addDailytest();"/><br/>
-<input type="hidden" name="numDailytests" id="numDailytests" value="0" />
+								<script type="text/javascript">
+									var numDailytests = 0;
+									
+									function addDailytest(postedTo) {
+										document.goalForm.numDailytests=++numDailytests;
+										document.getElementById("dailytests").innerHTML=document.getElementById("dailytests").innerHTML+
+											"<label class='small-label'>Test "+numDailytests+" Name:</label><input type='text' class='small-field' name='dailytestName"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='dailytestDescription"+numDailytests+"' /><div class='cl'>&nbsp;</div>";
+										document.getElementById("numDailytests").value=numDailytests;
+									}
+								</script>
+								<div id="dailytests"></div>
 
-<input type="submit" value="Submit" />
-</form>
+								<input type="button" value="+" onclick="addDailytest();" class="small-add-btn"/>
+								<input type="hidden" name="numDailytests" id="numDailytests" value="0" />
+								<div class="cl" style="height:5px;">&nbsp;</div>
+								<input type="submit" value="Add Goal &raquo;" class="add-btn" />
+							</form>
+						</div>
+					</div>
+					<!-- End Case -->
 
 <?php
 printFooter();

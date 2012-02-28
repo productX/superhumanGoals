@@ -12,16 +12,24 @@ if(isset($_POST["submit"])) {
 
 // RENDER PAGE
 require_once("include/chrome.php");
-printHeader("Signup page");
+printHeader(NAVNAME_NONE, array(), true);
 ?>
 
-Signed in as: <?php echo $userEmail; ?><br/>
-<form method="post" action="<?php echo PAGE_SIGNUP; ?>">
-Picture URL: <input type="text" name="pictureURL" /><br/>
-<input type="submit" name="submit" value="Sign up ->" />
-</form><br/>
-<a href="<?php echo PAGE_LOGIN; ?>">Log in</a><br/>
+			<div class="signup-box">
+				<h2>Be Amazing.</h2>
+				<a href="#" class="signup-btn">Sign up &raquo;</a>
+				<div class="upload-box">
+					<p>Signed in as: <strong><?php echo $userEmail; ?></strong></p>
+					<p>Profile pic URL (50x50):</p>
+					<form action="<?php echo PAGE_SIGNUP; ?>" method="post">
+						<!--<input type="file" name="file" id="file" value="" />-->
+						<input type="text" name="pictureURL" />
+						<input type="submit" value="Sign up &raquo;" class="submit-btn" />
+						<div class="cl">&nbsp;</div>
+					</form>
+				</div>
+			</div>
 
 <?php
-printFooter();
+printFooter(true);
 ?>

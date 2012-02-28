@@ -240,8 +240,14 @@ class User {
 		array_multisort($lnListNonletters, $userListNonletters);
 		array_multisort($lnListLetters, $userListLetters);
 
+?>
+					<!-- Case -->
+					<div class="case">
+						<!-- Users -->
+						<div class="users">
+<?php
 		if(count($userListNonletters)>0) {
-			echo "<b>?</b><br/><hr/>";
+			echo "<p>?</p>";
 			foreach($userListNonletters as $lUser) {
 				User::printCard($lUser);
 			}
@@ -251,10 +257,17 @@ class User {
 			$currentLetter = strtoupper(substr($lUser->lastName, 0, 1));
 			if($currentLetter != $lastLetter) {
 				$lastLetter = $currentLetter;
-				echo "<b>$currentLetter</b><br/><hr/>";
+				echo "<p>$currentLetter</p>";
 			}
 			User::printCard($lUser);
 		}
+?>
+							<div class="cl">&nbsp;</div>
+						</div>
+						<!-- End Users -->
+					</div>
+					<!-- End Case -->
+<?php
 	}
 	private function save() {
 		// currently cannot update intranet auth DB
@@ -339,12 +352,8 @@ class User {
 	}
 	public static function printCard($user) {
 		assert(!is_null($user));
-		echo "<hr/>";
 		$profLink = $user->getPagePath();
-		echo "<a href='$profLink'><img src='".htmlspecialchars($user->pictureURL)."' /></a><br/>";
-		echo "<a href='$profLink'>$user->firstName <b>$user->lastName</b></a><br/>";
 		$numGoals = GoalStatus::getNumUserGoals($user->id);
-		echo "$numGoals goals<br/>";
 		$visitFrequency = $user->getVisitFrequency();
 		$visitFreqText = "";
 		switch($visitFrequency) {
@@ -365,8 +374,21 @@ class User {
 				$visitFreqText = "Visits monthly";
 				break;
 		}
-		echo "$visitFreqText<br/>";
-		echo "<hr/>";
+?>
+							<!-- Card -->
+							<div class="card">
+								<div class="user-image">
+						    		<a href="<?php echo $profLink;?>"><img src="<?php echo htmlspecialchars($user->pictureURL);?>" alt="<?php echo "$user->firstName $user->lastName";?>" /></a>
+						    	</div>
+						    	<div class="info">
+						    		<a href="<?php echo $profLink;?>"><?php echo "$user->firstName <b>$user->lastName</b>";?></a>
+						    		<span><?php echo $numGoals;?> goals</span>
+						    		<span><?php echo $visitFreqText;?></span>
+						    	</div>
+						    	<div class="cl">&nbsp;</div>
+							</div>
+							<!-- End Card -->
+<?php
 	}
 
 	public function adoptGoal($goalID) {
@@ -381,14 +403,14 @@ class User {
 		$this->save();
 	}
 	public function hasMadeDailyEntry() {
-		return $this->lastDailyEntry->diffDays(Date::now())==0;
+		return floor($this->lastDailyEntry->diffDays(Date::now()))==0;
 	}
 	public function trackVisit() {
 		$needUpdate = true;
 		if(!is_null($this->visitHistory) && (count($this->visitHistory)>0)) {
 			$lastVisit = $this->visitHistory[0];
 			$today = Date::now();
-			if($today->diffDays($lastVisit)==0) {
+			if(floor($today->diffDays($lastVisit))==0) {
 				$needUpdate = false;
 			}
 		}
@@ -460,6 +482,7 @@ class User {
 			$returnVal = $this->$name;
 		}
 		else {
+			var_dump(debug_backtrace());
 			assert(false);
 		}
 		return $returnVal;
@@ -530,21 +553,35 @@ class StatusMessages {
 		if(count(StatusMessages::$messages)==0) {
 			return;
 		}
-		echo "<hr/>";
+?>
+					<!-- Case -->
+					<div class="case boxes">
+<?php
 		foreach(StatusMessages::$messages as $message) {
 			$style = "";
 			switch($message->type) {
 				case StatusMessage::ENUM_GOOD:
-					$style="Good: ";
+					$style="good";
 					break;
 				default:
 				case StatusMessage::ENUM_BAD:
-					$style="Bad: ";
+					$style="bad";
 					break;
 			}
-			echo $style.htmlspecialchars($message->text)."<br/>";
+?>
+						<!-- Box -->
+						<div class="status-message-<?php echo $style;?>">
+<?php
+			echo htmlspecialchars($message->text);
+?>
+						</div>
+						<!-- End Post -->
+<?php
 		}
-		echo "<hr/>";
+?>
+					</div>
+					<!-- End Case -->
+<?php
 	}
 
 };
@@ -639,7 +676,6 @@ abstract class Story {
 			$story = Story::getObjFromDBData($obj);
 			assert(!is_null($story));
 			$story->printStory();
-			echo "<hr/>";
 		}
 	}
 	public function __get($name) {
@@ -797,17 +833,40 @@ class EventStory extends Story {
 		$goal = Goal::getObjFromGoalID($this->goalID);
 		$userPagePath = $user->getPagePath();
 		$goalPagePath = $goal->getPagePath();
-		echo "<a href='$userPagePath'><img src='".htmlspecialchars($user->pictureURL)."' /></a><br/>";
 		$changeWord = "raised";
 		if($this->newLevel<$this->oldLevel) {
 			$changeWord = "lowered";
 		}
-		echo "<a href='$userPagePath'>$user->firstName $user->lastName</a> $changeWord his score for 
-				<a href='$goalPagePath'>".htmlspecialchars($goal->name)."</a> from $this->oldLevel to $this->newLevel.<br/>";
-		echo "Letter: $this->letterGrade<br/>";
-		echo "Description: '".htmlspecialchars($this->description)."'<br/>";
 		$timeSinceStr = $this->enteredAt->timeSince();
-		echo "Time: $timeSinceStr ago<br/>";
+		$goodBad="bad";
+		if(($this->letterGrade=="A") || ($this->letterGrade=="B")) {
+			$goodBad="good";
+		}
+?>
+					<!-- Case -->
+					<div class="case">
+						<!-- Post -->
+						<div class="post">
+							<div class="user-image">
+								<a href="<?php echo $userPagePath; ?>"><img src="<?php echo htmlspecialchars($user->pictureURL); ?>" alt="<?php echo "$user->firstName $user->lastName"; ?>" />
+							</div>
+							<div class="cnt">
+								<p class="post-title"><a href="<?php echo $userPagePath; ?>"><?php echo "$user->firstName $user->lastName"; ?></a> <?php echo $changeWord; ?> his level for <a href="<?php echo $goalPagePath; ?>"><?php echo htmlspecialchars($goal->name); ?></a> from <?php echo $this->oldLevel; ?> to <?php echo $this->newLevel; ?>.</p>
+								<div class="quote-image-<?php echo $goodBad;?>">
+									<span><?php echo $this->letterGrade; ?></span>
+								</div>
+								<div class="quote">
+									<p><?php echo htmlspecialchars($this->description); ?></p>
+									<span class="time"><?php echo $timeSinceStr; ?> ago</span>
+								</div>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<div class="cl">&nbsp;</div>
+						</div>
+						<!-- End Post -->
+					</div>
+					<!-- End Case -->
+<?php
 	}
 };
 
@@ -840,20 +899,49 @@ class DailyscoreStory extends Story {
 	public function printStory() {
 		$user = User::getObjFromUserID($this->userID);
 		$userPagePath = $user->getPagePath();
-		echo "<a href='$userPagePath'><img src='".htmlspecialchars($user->pictureURL)."' /></a><br/>";
 		$totalGoals = Database::doQueryOne("SELECT COUNT(*) FROM goals_status WHERE user_id=%s", $user->id);
 		$numGoalsTouched = count($this->progress);
-		echo "<a href='$userPagePath'>$user->firstName $user->lastName</a> just entered his daily goal progress, touching $numGoalsTouched out of $totalGoals of his goals.<br/>";
 		$score = floor(($numGoalsTouched/$totalGoals)*100);
-		echo "Score: $score<br/>";
+		$timeSinceStr = $this->enteredAt->timeSince();
+		$goodBad="bad";
+		if($score>70) {
+			$goodBad="good";
+		}
+?>
+					<!-- Case -->
+					<div class="case">
+						<!-- Post -->
+						<div class="post">
+							<div class="user-image">
+								<a href="<?php echo $userPagePath; ?>"><img src="<?php echo htmlspecialchars($user->pictureURL); ?>" alt="<?php echo "$user->firstName $user->lastName"; ?>" />
+							</div>
+							<div class="cnt">
+								<p class="post-title"><a href="<?php echo $userPagePath; ?>"><?php echo "$user->firstName $user->lastName"; ?></a> just entered daily goal progress, touching <?php echo $numGoalsTouched; ?> out of <?php echo $totalGoals; ?> of their goals.</p>
+								<div class="result-image-<?php echo $goodBad;?>">
+									<span><?php echo $score; ?><span class="sub">%</span></span>
+								</div>
+								<div class="result">
+									<p>
+<?php
+		$goalList=array();
 		foreach($progress as $goalID) {
 			$goal = Goal::getObjFromGoalID($goalID);
 			$goalPagePath = $goal->getPagePath();
-			echo "<a href='$goalPagePath'>".htmlspecialchars($goal->name)."</a>, ";
+			$goalList[] = "<a href='$goalPagePath'>".htmlspecialchars($goal->name)."</a>";
 		}
-		echo "<br/>";
-		$timeSinceStr = $this->enteredAt->timeSince();
-		echo "Time: $timeSinceStr ago<br/>";
+		echo implode(", ",$goalList);
+?>
+									</p>
+									<span class="time"><?php echo $timeSinceStr; ?> ago</span>
+								</div>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<div class="cl">&nbsp;</div>
+						</div>
+						<!-- End Post -->
+					</div>
+					<!-- End Case -->
+<?php
 	}
 };
 
@@ -957,11 +1045,19 @@ class GoalStatus {
 	}
 	public static function printRowList($userID, $dayUT, $isEditable) {
 		// ignore dayUT for now
+?>
+					<!-- Case -->
+					<div class="case boxes">
+<?php
 		$rs = Database::doQuery("SELECT * FROM goals_status WHERE user_id=%s", $userID);
 		while($obj = mysql_fetch_object($rs)) {
 			$goalStatus = GoalStatus::getObjFromDBData($obj);
 			$goalStatus->printRow($isEditable);
 		}
+?>
+					</div>
+					<!-- End Case -->
+<?php
 	}
 
 	public function __construct($dbData) {
@@ -975,23 +1071,17 @@ class GoalStatus {
 	public function printRow($isEditable) {
 		static $rowID = 1;
 		static $testID = 1;
-		
 		if(!$this->isActive) {
 			return;
 		}
 		
-		echo "<hr/>";
-		// overall level
 		$goal = Goal::getObjFromGoalID($this->goalID);
-		echo "<a href='".$goal->getPagePath()."'>".htmlspecialchars($goal->name)."</a><br/>";
-		echo "Level: <div id='currentLevel$rowID'>$this->level</div><br/>";
+		$newLevelVal = "";
+		$letterGradeVal = "A";
+		$whyVal = "";
+		$plusButtonDefaultDisplay = "block";
+		$eventDivDefaultDisplay = "none";
 		if($isEditable) {
-			$ajaxSaveEventPath = PAGE_AJAX_SAVEEVENT;
-			$newLevelVal = "";
-			$letterGradeVal = "A";
-			$whyVal = "";
-			$plusButtonDefaultDisplay = "block";
-			$eventDivDefaultDisplay = "none";
 			$eventStory = EventStory::getTodayStory($this->userID, $this->goalID);
 			if(!is_null($eventStory)) {
 				$newLevelVal = $eventStory->newLevel;
@@ -1000,141 +1090,195 @@ class GoalStatus {
 				$plusButtonDefaultDisplay = "none";
 				$eventDivDefaultDisplay = "block";
 			}
+		}
+?>
+						<!-- Box -->
+						<div class="box">
+							<!-- GOAL TITLE & LEVEL -->
+							<div class="fitness" style="width:120px">
+								<a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo htmlspecialchars($goal->name);?></a>
+								<span class="number" id="currentLevel<?php echo $rowID;?>"><?php echo $this->level;?> <a href="#" class="add" id="plusButton<?php echo $rowID;?>" onclick="expandEvent<?php echo $rowID;?>();" style="display:<?php echo $plusButtonDefaultDisplay;?>;">Add</a></span>
+							</div>
+<?php
+		static $numDaysBack = 15;
+		$dailytests = Dailytest::getListFromGoalID($this->goalID);
+		if(count($dailytests)) {
+?>
+							<!-- ADHERENCE TESTS -->
+							<div class="tests">
+<?php
+			foreach($dailytests as $dailytest) {
+				$checkedVal = DailytestStatus::getTodayStatus($this->userID, $dailytest->id)?"checked":"";
+				$ajaxSaveDailytestPath = PAGE_AJAX_SAVEDAILYTEST;
+?>
+								<div class="row">
+<?php
+				if($isEditable) {
+?>
+									<script type="text/javascript">										
+										var timer=null;
+										function onChangeCheck<?php echo $testID; ?>() {
+											if(timer != null) {
+												clearTimeout(timer);
+											}
+											timer=setTimeout("doSaveCheck<?php echo $testID; ?>()",200);
+										}
+										
+										function doSaveCheck<?php echo $testID; ?>() {
+											// make request
+											var xmlhttp;
+											if (window.XMLHttpRequest) {
+												// code for IE7+, Firefox, Chrome, Opera, Safari
+												xmlhttp=new XMLHttpRequest();
+											}
+											else {
+												// code for IE6, IE5
+												xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+											}
+											xmlhttp.onreadystatechange=function() {
+												if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+													response = xmlhttp.responseText;
+													// DONE
+													//document.getElementById("ratingBox").innerHTML="<center>Thanks :)</center>";
+												}
+											}
+											var isChecked = document.getElementById("testCheck<?php echo $testID; ?>").checked;
+											xmlhttp.open("GET","<?php echo $ajaxSaveDailytestPath; ?>?userID=<?php echo $this->userID; ?>&dailytestID=<?php echo $dailytest->id; ?>&result="+(isChecked?"1":"0"),true);
+											xmlhttp.send();
+										}
+									</script>
+									<label for="testCheck<?php echo $testID; ?>"><input type="checkbox" value="Check" id="testCheck<?php echo $testID; ?>" <?php echo $checkedVal; ?> onchange="onChangeCheck<?php echo $testID; ?>();" /></label>
+<?php
+				}
+?>									
+									<div class="test-cnt">
+										<p><?php echo htmlspecialchars($dailytest->name);?></p>
+										<div class="scale">
+											<ul>
+<?php
+				$dailytestStatuses = DailytestStatus::getListFromUserID($this->userID, $dailytest->id, $numDaysBack);
+				$dailytestStatusDays = array();
+				foreach($dailytestStatuses as $dailytestStatus) {
+					$dailytestStatusDays[] = $dailytestStatus->enteredAt->toDay();
+				}
+				for($i=0; $i<$numDaysBack; ++$i) {
+					$current = Date::fromUT(time()-($i+1)*60*60*24);
+					$currentDay = $current->toDay();
+					$style = "";
+					if(in_array($currentDay,$dailytestStatusDays)) {
+						$style="background: #7bc545;";
+					}
+?>
+												<li><a href="#" style="<?php echo $style; ?>">&nbsp;</a></li>
+<?php
+				}
+?>
+											</ul>
+											<div class="cl">&nbsp;</div>
+										</div>
+									</div>
+									<div class="cl">&nbsp;</div>
+								</div>
+<?php
+				++$testID;
+			}
+?>
+							</div>
+<?php
+		}
+?>
+							<!-- LEVEL HISTORY GRAPH -->
+							<div class="placeholder">
+								<div class="image">
+									<img src="<?php echo "template/createGraphLevelHistory.php?userID=$this->userID&goalID=$this->goalID";?>" id="graph<?php echo $rowID;?>" alt="Level History" />
+								</div>
+							</div>
+							<div class="cl">&nbsp;</div>
+<?php
+		if($isEditable) {
+			$ajaxSaveEventPath = PAGE_AJAX_SAVEEVENT;
+			// other vars defined above
 			$optionSelectedA = ($letterGradeVal=="A")?"selected":"";
 			$optionSelectedB = ($letterGradeVal=="B")?"selected":"";
 			$optionSelectedC = ($letterGradeVal=="C")?"selected":"";
 			$optionSelectedD = ($letterGradeVal=="D")?"selected":"";
 			$optionSelectedF = ($letterGradeVal=="F")?"selected":"";
-			$eventDivStr = <<< EOT
-<script type="text/javascript">
-	function expandEvent$rowID() {
-		document.all['eventDiv$rowID'].style.display = 'block';
-		document.all['plusButton$rowID'].style.display = 'none';
-	}
-	
-	var timer=null;
-	function onChangeEvent$rowID() {
-		// validate
-		if(parseFloat(document.all['eventNewScore$rowID'].value)==0) {
-			return;
+?>
+							<!-- EVENT ENTRY BOX -->
+							<script type="text/javascript">
+								function expandEvent<?php echo $rowID;?>() {
+									document.all['eventDiv<?php echo $rowID;?>'].style="display:block;";
+									document.all['plusButton<?php echo $rowID;?>'].style.display = 'none';
+								}
+								
+								var timer=null;
+								function onChangeEvent<?php echo $rowID;?>() {
+									// validate
+									if(parseFloat(document.all['eventNewScore<?php echo $rowID;?>'].value)==0) {
+										return;
+									}
+								
+									// trigger save timer
+									if(timer != null) {
+										clearTimeout(timer);
+									}
+									timer=setTimeout("doSaveEvent<?php echo $rowID;?>()",200);
+								}
+								
+								function doSaveEvent<?php echo $rowID;?>() {
+									// make request
+									var xmlhttp;
+									if (window.XMLHttpRequest) {
+										// code for IE7+, Firefox, Chrome, Opera, Safari
+										xmlhttp=new XMLHttpRequest();
+									}
+									else {
+										// code for IE6, IE5
+										xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+									}
+									xmlhttp.onreadystatechange=function() {
+										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											response = xmlhttp.responseText;
+											// DONE
+											document.all['currentLevel<?php echo $rowID;?>'].innerHTML = document.all['eventNewScore<?php echo $rowID;?>'].value;
+											document.all['graph<?php echo $rowID;?>'].src = "template/createGraphLevelHistory.php?userID=<?php echo $this->userID;?>&goalID=<?php echo $goal->id;?>&r="+(Math.random()*1000000);
+										}
+									}
+									xmlhttp.open("GET","<?php echo $ajaxSaveEventPath;?>?userID=<?php echo $this->userID;?>&goalID=<?php echo $goal->id;?>&oldLevel=<?php echo $this->level;?>&newLevel="+parseFloat(document.getElementById("eventNewScore<?php echo $rowID;?>").value)+"&letterGrade="+document.getElementById("eventLetterGrade<?php echo $rowID;?>").value+"&why="+escape(document.getElementById("eventWhy<?php echo $rowID;?>").value),true);
+									xmlhttp.send();
+								}
+							</script>
+							<div class="dd-row" id="eventDiv<?php echo $rowID;?>" style="display:<?php echo $eventDivDefaultDisplay;?>;">
+								<div class="left">
+									<div class="newscore-row">
+										<label for="score-1">New Level:</label><input type="text" class="field" id="eventNewScore<?php echo $rowID;?>" onkeyup="onChangeEvent<?php echo $rowID;?>();" value="<?php echo $newLevelVal;?>" />
+										<div class="cl">&nbsp;</div>
+									</div>
+									<div class="grade-row">
+										<label>Letter grade:</label>
+										<select name="grade" id="eventLetterGrade<?php echo $rowID;?>" onchange="onChangeEvent<?php echo $rowID;?>();" size="1">
+											<option value="A" <?php echo $optionSelectedA;?>>A</option>
+											<option value="B" <?php echo $optionSelectedB;?>>B</option>
+											<option value="C" <?php echo $optionSelectedC;?>>C</option>
+											<option value="D" <?php echo $optionSelectedD;?>>D</option>
+											<option value="F" <?php echo $optionSelectedF;?>>F</option>
+										</select>
+										<div class="cl">&nbsp;</div>
+									</div>
+								</div>
+								<div class="right">
+									<label for="textarea-1">Why:</label>
+									<textarea name="textarea" id="eventWhy<?php echo $rowID;?>" onkeyup="onChangeEvent<?php echo $rowID;?>();" class="field" rows="8" cols="40"><?php echo $whyVal;?></textarea>
+								</div>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<!-- End Dd Row -->
+<?php
 		}
-	
-		// trigger save timer
-		if(timer != null) {
-			clearTimeout(timer);
-		}
-		timer=setTimeout("doSaveEvent$rowID()",200);
-	}
-	
-	function doSaveEvent$rowID() {
-		// make request
-		var xmlhttp;
-		if (window.XMLHttpRequest) {
-			// code for IE7+, Firefox, Chrome, Opera, Safari
-			xmlhttp=new XMLHttpRequest();
-		}
-		else {
-			// code for IE6, IE5
-			xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-		}
-		xmlhttp.onreadystatechange=function() {
-			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-				response = xmlhttp.responseText;
-				// DONE
-				document.all['currentLevel$rowID'].innerHTML = document.all['eventNewScore$rowID'].value;
-				document.all['graph$rowID'].src = "template/createGraphLevelHistory.php?userID=$this->userID&goalID=$goal->id&r="+(Math.random()*1000000);
-			}
-		}
-		xmlhttp.open("GET","$ajaxSaveEventPath?userID=$this->userID&goalID=$goal->id&oldLevel=$this->level&newLevel="+parseFloat(document.getElementById("eventNewScore$rowID").value)+"&letterGrade="+document.getElementById("eventLetterGrade$rowID").value+"&why="+escape(document.getElementById("eventWhy$rowID").value),true);
-		xmlhttp.send();
-	}
-</script>
-<input type='button' value='+' id="plusButton$rowID" onclick="expandEvent$rowID();" style="display:$plusButtonDefaultDisplay;" />
-<div id="eventDiv$rowID" style="display:$eventDivDefaultDisplay;">
-	New level: <input type="text" id="eventNewScore$rowID" onkeyup="onChangeEvent$rowID();" value="$newLevelVal"/><br/>
-	Letter grade:
-	<select id="eventLetterGrade$rowID" onchange="onChangeEvent$rowID();">
-		<option value="A" $optionSelectedA>A</option>
-		<option value="B" $optionSelectedB>B</option>
-		<option value="C" $optionSelectedC>C</option>
-		<option value="D" $optionSelectedD>D</option>
-		<option value="F" $optionSelectedF>F</option>
-	</select><br/>
-	Why: <input type="text" id="eventWhy$rowID" onkeyup="onChangeEvent$rowID();" value="$whyVal" /><br/>
-</div>
-EOT;
-			echo $eventDivStr;
-		}
-		echo "<br/>";
-		// daily tests
-		//const NUM_DAYS_BACK = 10;
-		static $numDaysBack = 10;
-		$dailytests = Dailytest::getListFromGoalID($this->goalID);
-		foreach($dailytests as $dailytest) {
-			$checkedVal = DailytestStatus::getTodayStatus($this->userID, $dailytest->id)?"checked":"";
-			$ajaxSaveDailytestPath = PAGE_AJAX_SAVEDAILYTEST;
-			$htmlStr = <<< EOT
-<script type="text/javascript">
-	
-	var timer=null;
-	function onChangeCheck$testID() {
-		if(timer != null) {
-			clearTimeout(timer);
-		}
-		timer=setTimeout("doSaveCheck$testID()",200);
-	}
-	
-	function doSaveCheck$testID() {
-		// make request
-		var xmlhttp;
-		if (window.XMLHttpRequest) {
-			// code for IE7+, Firefox, Chrome, Opera, Safari
-			xmlhttp=new XMLHttpRequest();
-		}
-		else {
-			// code for IE6, IE5
-			xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-		}
-		xmlhttp.onreadystatechange=function() {
-			if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-				response = xmlhttp.responseText;
-				// DONE
-				//document.getElementById("ratingBox").innerHTML="<center>Thanks :)</center>";
-			}
-		}
-		var isChecked = document.getElementById("testCheck$testID").checked;
-		xmlhttp.open("GET","$ajaxSaveDailytestPath?userID=$this->userID&dailytestID=$dailytest->id&result="+(isChecked?"1":"0"),true);
-		xmlhttp.send();
-	}
-</script>
-<input type='checkbox' id="testCheck$testID" $checkedVal onchange="onChangeCheck$testID();" />
-EOT;
-			echo $htmlStr;
-			echo htmlspecialchars($dailytest->name)."<br/>";
-
-			$dailytestStatuses = DailytestStatus::getListFromUserID($this->userID, $dailytest->id, $numDaysBack);
-			$dailytestStatusDays = array();
-			foreach($dailytestStatuses as $dailytestStatus) {
-				$dailytestStatusDays[] = $dailytestStatus->enteredAt->toDay();
-			}
-			for($i=0; $i<$numDaysBack; ++$i) {
-				$char = " ";
-				$current = Date::fromUT(time()-($i+1)*60*60*24);
-				$currentDay = $current->toDay();
-				if(in_array($currentDay,$dailytestStatusDays)) {
-					$char="X";
-				}
-				echo "[$char]";
-			}
-			echo "<br/>";
-
-			++$testID;
-		}
-		echo "<br/>";
-
-		// level history graph
-		echo "<img src='template/createGraphLevelHistory.php?userID=$this->userID&goalID=$this->goalID' id='graph$rowID' /><br/>";
-		echo "<hr/>";
+?>
+						</div>
+						<!-- End Box -->
+<?php
 		++$rowID;
 	}
 	
