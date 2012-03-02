@@ -4,7 +4,7 @@ require_once("constants.php");
 require_once("core.php");
 
 function printHeader($navSelect, $chromeTitleElements, $justOuterChrome=false) {
-	global $user, $userLoggedIn;
+	global $user, $appAuth;
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="en-US" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
@@ -32,7 +32,7 @@ function printHeader($navSelect, $chromeTitleElements, $justOuterChrome=false) {
 			<div class="shell">
 				<h1 id="logo"><a href="<?php echo PAGE_INDEX; ?>" class="notext">Superhuman</a></h1>
 <?php
-	if($userLoggedIn) {
+	if($appAuth->isLoggedIn()) {
 ?>
 				<div class="user-image">
 					<a href="<?php echo $user->getPagePath(); ?>"><img src="<?php echo $user->pictureURL; ?>" alt="<?php echo "$user->firstName $user->lastName";?>" /></a>
@@ -270,7 +270,7 @@ class ChromeTitleElementTabs {
 
 
 function printFooter($justOuterChrome=false) {
-	global $user, $userLoggedIn;
+	global $user, $appAuth;
 ?>
 
 <?php
@@ -291,7 +291,7 @@ function printFooter($justOuterChrome=false) {
 			<div class="shell">
 				<p class="nav"><a href="<?php echo PAGE_ABOUT; ?>">About</a><span>|</span><a href="<?php echo PAGE_HELP; ?>">Help</a></p>
 <?php
-	if($userLoggedIn && !$user->hasMadeDailyEntry()) {
+	if($appAuth->isLoggedIn() && !$user->hasMadeDailyEntry()) {
 ?>
 				<a href="<?php echo PAGE_USER; ?>" class="entry-btn">Make your daily entry &raquo;</a>
 <?php

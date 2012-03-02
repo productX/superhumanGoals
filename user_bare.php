@@ -56,7 +56,7 @@ echo "<br/>";
 
 switch($mode) {
 	case PAGEMODE_ACTIVITY:
-		$rs = Database::doQuery("SELECT * FROM stories WHERE is_public=TRUE AND user_id=%s ORDER BY entered_at DESC LIMIT 100", $viewUserID);
+		$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE AND user_id=%s ORDER BY entered_at DESC LIMIT 100", $viewUserID);
 		Story::printListForRS($rs);
 		break;
 	case PAGEMODE_GOALS:

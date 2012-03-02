@@ -2,11 +2,11 @@
 include("template/userFacingBase.php");
 
 $redirectTo = "";
-if($userLoggedIn) {
+if($appAuth->isLoggedIn()) {
 	$redirectTo = PAGE_ACTIVITY;
 }
 else {
-	$success = User::tryLogin();
+	$success = $appAuth->tryAutoLogin();
 	if($success) {
 		$redirectTo = PAGE_ACTIVITY;
 	}
