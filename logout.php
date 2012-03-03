@@ -1,6 +1,6 @@
 <?php
 include("template/userFacingForceLogin.php");
 
-User::logout();
+$appAuth->doLogout();
 redirect(PAGE_SIGNUP);
 ?>

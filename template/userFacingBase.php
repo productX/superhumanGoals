@@ -1,8 +1,5 @@
 <?php
-require_once(dirname(__FILE__)."/../include/intranetAuth.php");
-
-verifyIntranetLogin();
-
+include("template/enforceLogin.php");
 include("baseIncludes.php");
 
 ?>

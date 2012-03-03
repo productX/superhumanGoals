@@ -85,7 +85,7 @@ switch($mode) {
 		break;
 	case PAGEMODE_ACTIVITY:
 		// only returns event type stories for this goal
-		$rs = Database::doQuery("SELECT * FROM stories WHERE is_public=TRUE AND type='".EventStory::STORY_TYPENAME."' AND event_goal_id=%s ORDER BY entered_at DESC LIMIT 100", $goalID);
+		$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE AND type='".EventStory::STORY_TYPENAME."' AND event_goal_id=%s ORDER BY entered_at DESC LIMIT 100", $goalID);
 		Story::printListForRS($rs);
 		break;
 	case PAGEMODE_PEOPLE:

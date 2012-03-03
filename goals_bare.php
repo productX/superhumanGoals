@@ -25,7 +25,7 @@ if(isset($_POST["newGoalName"])) {
 require_once("include/chrome.php");
 printHeader(NAVNAME_GOALS, array(new ChromeTitleElementHeader("All Goals")));
 
-$rs = Database::doQuery("SELECT id FROM goals");
+$rs = $db->doQuery("SELECT id FROM goals");
 $numGoals = mysql_num_rows($rs);
 const NUM_COLS = 5;
 $numPerColumn = max($numGoals/NUM_COLS,4);
