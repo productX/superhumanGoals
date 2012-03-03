@@ -96,7 +96,7 @@ class Database {
 	// private
 	const SERVER = 'localhost';
 	const USERNAME = 'root';
-	const PASSWORD = '';
+	const PASSWORD = 'faramir';
 	const DBNAME = 'superhuman_goals';
 	private static $initialized = false;
 	private static $conn;
@@ -304,8 +304,10 @@ class User {
 		else {
 			$authID = Session::getAuthUserID();
 			$authObj = getAuthUserData($authID);
+
 			assert(!is_null($authObj));
 			$visitHistoryStr = User::visitHistoryToStr(array(Date::now()));
+
 			Database::doQuery("INSERT INTO users (auth_id, picture_url, visit_history, full_name) VALUES (%s, %s, %s, %s)", $authID, $pictureURL, $visitHistoryStr, "$authObj->firstname $authObj->lastname");
 			$newID = mysql_insert_id();
 			Session::setLoggedInUserID($newID);
@@ -326,6 +328,7 @@ class User {
 	public static function getLoggedInUser() {
 		$user = null;
 		$loggedInUserID = Session::getLoggedInUserID();
+		
 		if(!is_null($loggedInUserID)) {
 			$user = User::getObjFromUserID($loggedInUserID);
 			assert(!is_null($user));

@@ -4,7 +4,6 @@ include("template/userFacingBase.php");
 // DO PROCESSING
 if(isset($_POST["submit"])) {
 	$pictureURL = $_POST["pictureURL"];
-	
 	User::doSignup($pictureURL);
 	StatusMessages::addMessage("Signed up.",StatusMessage::ENUM_GOOD);
 	redirect(PAGE_INDEX);
@@ -24,7 +23,7 @@ printHeader(NAVNAME_NONE, array(), true);
 					<form action="<?php echo PAGE_SIGNUP; ?>" method="post">
 						<!--<input type="file" name="file" id="file" value="" />-->
 						<input type="text" name="pictureURL" />
-						<input type="submit" value="Sign up &raquo;" class="submit-btn" />
+						<input name="submit" type="submit" value="Sign up &raquo;" class="submit-btn" />
 						<div class="cl">&nbsp;</div>
 					</form>
 				</div>

@@ -11,7 +11,7 @@ $userEmail = "";
 // pertinent functions
 function initGlobals() {
 	global $user, $userLoggedIn, $userEmail;
-	
+
 	// set up assert options
 	assert_options(ASSERT_ACTIVE, 1);
 	assert_options(ASSERT_BAIL, 1);
@@ -27,6 +27,7 @@ function initGlobals() {
 	$user = User::getLoggedInUser();
 	$userLoggedIn = !is_null($user);
 	$userEmail = $userLoggedIn?$user->email:Session::getAuthEmail();
+	
 }
 function verifyLogin() {
 	global $user, $userLoggedIn;
