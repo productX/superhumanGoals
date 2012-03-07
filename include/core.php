@@ -1146,7 +1146,7 @@ class GoalStatus {
 										<div class="cl">&nbsp;</div>
 									</div>
 								</div>
-								<div class="right">
+								<div class="right-side">
 									<label for="textarea-1">Why:</label>
 									<textarea name="textarea" id="eventWhy<?php echo $rowID;?>" onkeyup="onChangeEvent<?php echo $rowID;?>();" class="field" rows="8" cols="40"><?php echo $whyVal;?></textarea>
 								</div>
