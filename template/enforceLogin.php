@@ -1,3 +1,3 @@
 <?php
-include("auth/client/template/intranetEnforceLogin.php");
+include(dirname(__FILE__)."/../auth/client/template/intranetEnforceLogin.php");
 ?>

@@ -12,6 +12,9 @@ class Date {
 	// protected
 	
 	// public
+	public static function setTimezone() {
+		date_default_timezone_set('America/Los_Angeles');
+	}
 	public function toDay() {
 		return date("Y-m-d", $this->ut);
 	}
@@ -356,11 +359,12 @@ class StatusMessage {
 class StatusMessages {
 
 	// private
-	private static $messages=array();
+	private static $messages=null;
 	private static $init=false;
+	const SESSVAR_STATUSMESSAGES = 'superhumanGoals_statusMessages3';
 	
 	private static function save() {
-		Session::setStatusMessages(StatusMessages::$messages);
+		Session::setVar(StatusMessages::SESSVAR_STATUSMESSAGES, StatusMessages::$messages);
 	}
 	private function __construct() {} // static-only class
 		
@@ -369,7 +373,11 @@ class StatusMessages {
 	// public
 	public static function init() {
 		assert(Session::isStarted());
-		StatusMessages::$messages = Session::getStatusMessages();
+		$messages = array();
+		if(Session::issetVar(StatusMessages::SESSVAR_STATUSMESSAGES)) {
+			$messages = Session::getVar(StatusMessages::SESSVAR_STATUSMESSAGES);
+		}
+		StatusMessages::$messages = $messages;
 		StatusMessages::$init=true;
 	}
 	public static function isInit() {
@@ -417,6 +425,7 @@ class StatusMessages {
 					</div>
 					<!-- End Case -->
 <?php
+		Session::clearVar(StatusMessages::SESSVAR_STATUSMESSAGES);
 	}
 
 };

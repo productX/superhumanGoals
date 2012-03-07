@@ -199,7 +199,7 @@ h1#logo a:hover { background-position: 0 bottom; }
 .box .tests .test-cnt ul li { display: inline; float: left; border-left: solid 1px #868686; }
 .box .tests .test-cnt ul li a { float: left; width: 15px; height: 12px; background: #fff; font-size: 0; line-height: 0; text-indent: -4000px; }
 .box .placeholder { padding: 9px 0 0 0; float: right; display: inline; }
-.box .placeholder .image { border: solid 1px #868686; width: 290px; height: 89px; }
+.box .placeholder .image { border: solid 1px #868686; width: 270px; height: 89px; }
 .box .placeholder .image img { display: block; }
 
 .box .dd-row { display: none; padding: 10px 0 0 0; }

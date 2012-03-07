@@ -1,4 +1,4 @@
 <?php
-include("template/enforceLogin.php");
+include("enforceLogin.php");
 include("baseIncludes.php");
 ?>

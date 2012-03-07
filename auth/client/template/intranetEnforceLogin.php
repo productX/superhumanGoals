@@ -1,5 +1,5 @@
 <?php
-require_once("auth/client/include/intranetAuthClient.php");
+require_once(dirname(__FILE__)."/../include/intranetAuthClient.php");
 
 $intranetAuth = createIntranetAuth();
 $intranetAuth->enforceLogin();

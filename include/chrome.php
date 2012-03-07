@@ -2,6 +2,7 @@
 require_once(dirname(__FILE__)."/../../common/include/functions.php"); 
 require_once("constants.php");
 require_once("core.php");
+require_once("globals.php");
 
 function printHeader($navSelect, $chromeTitleElements, $justOuterChrome=false) {
 	global $user, $appAuth;
