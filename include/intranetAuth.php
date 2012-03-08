@@ -32,7 +32,7 @@ function getAuthUserData($authID) {
 	static $server = "localhost";
 	static $username = "root";
 	static $password = "faramir";
-	static $dbName = "intranet_user_auth";
+	static $dbName = "intranet";
 
 	$conn = @mysql_connect($server, $username, $password) or die(mysql_error());
 	@mysql_select_db($dbName,$conn)or die(mysql_error());
