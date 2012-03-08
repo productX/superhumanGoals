@@ -183,37 +183,37 @@ h1#logo a:hover { background-position: 0 bottom; }
 .status-message-good { display: block; padding: 7px 16px 10px 11px; margin: 0 0 16px 0; background: #20e020; border: solid 1px #103010; box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
 .status-message-bad { display: block; padding: 7px 16px 10px 11px; margin: 0 0 16px 0; background: #e02020; border: solid 1px #301010; box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
 
-.box { display: block; padding: 7px 16px 10px 11px; margin: 0 0 16px 0; background: #f3f3f3; border: solid 1px #868686; box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
+.box { display: block; width:680px; padding: 7px 16px 10px 11px; margin: 0 0 16px 0; background: #f3f3f3; border: solid 1px #868686; box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
 .box .fitness { padding: 0 18px 0 0; border-right: solid 1px #dedede; text-align: center; float: left; }
-.box .fitness a.title { display: block; }
-.box .fitness .number { padding: 0 15px; font-size: 48px; line-height: 70px; position: relative; background: #fff; border: solid 1px #d0d0d0; }
+.box .fitness a.title { display: block; font-size: 16px; line-height:26px; }
+.box .fitness .number { padding: 0 15px; font-size: 28px; line-height: 44px; position: relative; background: #fff; border: solid 1px #d0d0d0; }
 .box .fitness .number .add { position: absolute; right: -8px; bottom: -1px; width: 17px; height: 17px; display: block; background: url(images/add-btn.png) no-repeat 0 0; font-size: 0; line-height: 0; text-indent: -4000px; }
 .box .tests { float: left; display: inline; padding: 0 13px 0 16px; border-right: solid 1px #dedede; }
-.box .tests .row { padding: 9px 0; }
+.box .tests .row { padding: 4px 0; }
 .box .tests .row input { display: none; }
-.box .tests .row label { background: #fff; width: 34px; height: 34px; border: solid 1px #868686; float: left; display: inline; margin-right: 7px; cursor: pointer; }
+.box .tests .row label { background: #fff; width: 22px; height: 22px; border: solid 1px #868686; float: left; display: inline; margin-right: 7px; cursor: pointer; }
 .box .tests .row label.checked { background: url(images/check.png) no-repeat 0 0; }
-.box .tests .test-cnt { float: left; display: inline; padding: 0 0 0 7px; font-size: 14px; line-height: 14px; }
+.box .tests .test-cnt { float: left; display: inline; padding: 0 0 0 7px; font-size: 11px; line-height: 11px; }
 .box .tests .test-cnt p { padding: 0 0 5px 0; }
 .box .tests .test-cnt .scale { border: solid 1px #868686; border-left: 0; }
 .box .tests .test-cnt ul li { display: inline; float: left; border-left: solid 1px #868686; }
 .box .tests .test-cnt ul li a { float: left; width: 15px; height: 12px; background: #fff; font-size: 0; line-height: 0; text-indent: -4000px; }
-.box .placeholder { padding: 9px 0 0 0; float: right; display: inline; }
-.box .placeholder .image { border: solid 1px #868686; width: 290px; height: 89px; }
+.box .placeholder { padding: 16px 0 0 0; float: right; display: inline; }
+.box .placeholder .image { border: solid 1px #868686; width: 200px; height: 40px; }
 .box .placeholder .image img { display: block; }
 
 .box .dd-row { display: none; padding: 10px 0 0 0; }
-.box .dd-row label { font-size: 14px; line-height: 28px; color: #4c4c4c; float: left; display: inline; }
-.box .dd-row select { float: left; display: inline; border: solid 1px #b2b2b2; padding: 0 0 0 2px; text-align: center; }
-.box .dd-row textarea { float: right; display: inline; width: 521px; height: 46px; padding: 10px; font-size: 14px; line-height: 16px; background: #fff; border: solid 1px #7d7d7d; }
-.box .dd-row textarea  { border-radius: 5px; -webkit-border-radius: 5px; -moz-border-radius: 5px; box-shadow: #b2b1b1 0 0 3px; -webkit-box-shadow: #b2b1b1 0 0 3px; -moz-box-shadow: #b2b1b1 0 0 3px; }
+.box .dd-row label { font-size: 11px; line-height: 20px; color: #4c4c4c; float: left; display: inline; padding: 0 12px 0 0; }
+.box .dd-row select { float: left; display: inline; border: solid 1px #b2b2b2; padding: 0 0 0 2px; text-align: center; font-size:13px;}
+.box .dd-row textarea { float: left; display: inline; width: 400px; height: 36px; padding: 5px; font-size: 11px; line-height: 15px; background: #fff; border: solid 1px #7d7d7d; }
+.box .dd-row textarea  { border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; box-shadow: #b2b1b1 0 0 1px; -webkit-box-shadow: #b2b1b1 0 0 1px; -moz-box-shadow: #b2b1b1 0 0 1px; }
 .box .dd-row .left { width: 150px; }
-.box .dd-row .right { width: 590px; }
-.box .dd-row .newscore-row { padding: 0 0 15px 0; }
-.box .dd-row .newscore-row label { width: 80px; }
-.box .dd-row .newscore-row input.field { float: left; display: inline; width: 36px; height: 26px; font-size: 14px; padding: 0 3px; color: #4c4c4c; background: #fff; border: solid 1px #7d7d7d; }
-.box .dd-row .newscore-row input.field { border-radius: 5px; -webkit-border-radius: 5px; -moz-border-radius: 5px; box-shadow: #b2b1b1 0 0 3px; -webkit-box-shadow: #b2b1b1 0 0 3px; -moz-box-shadow: #b2b1b1 0 0 3px; }
-.box .dd-row .grade-row label { width: 92px; }
+.box .dd-row .right-side { width: 500px; display:inline; }
+.box .dd-row .newscore-row { padding: 0 0 8px 0; }
+.box .dd-row .newscore-row label { width: 65px; }
+.box .dd-row .newscore-row input.field { float: left; display: inline; width: 24px; height: 20px; font-size: 11px; padding: 0 3px; color: #4c4c4c; background: #fff; border: solid 1px #7d7d7d; }
+.box .dd-row .newscore-row input.field { border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; box-shadow: #b2b1b1 0 0 1px; -webkit-box-shadow: #b2b1b1 0 0 1px; -moz-box-shadow: #b2b1b1 0 0 1px; }
+.box .dd-row .grade-row label { width: 75px; }
 
 #footer { position: fixed; bottom: 0; left: 0; height: 69px; background: #000; border-top: solid 1px #e8e8e8; width: 100%; z-index: 30; }
 #footer .shell { padding: 18px 17px 0 30px; width: 977px; }

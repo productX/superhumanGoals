@@ -1,6 +1,5 @@
 <?php
 require_once("core.php");
-require_once("session.php");
 require_once("constants.php");
 
 // global vars
@@ -23,9 +22,12 @@ function handleSQLArgObj($className, $arg) {
 function initGlobals() {
 	global $user, $appAuth, $db;
 	
-	// set up assert options
+	// assert options
 	assert_options(ASSERT_ACTIVE, 1);
 	assert_options(ASSERT_BAIL, 1);
+	
+	// timezone
+	Date::setTimezone(/* everybody is on PST */);
 	
 	// database
 	$db = Database::init("localhost", "root", "", "superhuman_goals", FUNCNAME_HANDLESQLARGOBJ);
@@ -55,6 +57,11 @@ class AppAuth {
 		$this->autoLoginFunc = $autoLoginFunc;
 		$this->createNewUserFunc = $createNewUserFunc;
 		$this->userID = null;
+		// HACK: certainly could put this somewhere better
+		if(isset($_GET['logout'])) {
+			$this->doLogout();
+			return;
+		}
 		if(Session::issetVar(AppAuth::SESSVAR_USERID)) {
 			$this->userID = Session::getVar(AppAuth::SESSVAR_USERID);
 		}
