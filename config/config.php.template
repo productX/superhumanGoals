@@ -1,0 +1,12 @@
+<?php
+// db
+const CONFIG_DBSERVER = 'localhost';
+const CONFIG_DBNAME = 'superhuman_goals';
+const CONFIG_DBUSER = 'root';
+const CONFIG_DBPASS = '';
+
+// auth client for intranet
+const CONFIG_AUTHCHECKUSERURL = "http://localhost/intranet/auth/server/intranetCheckUser.php";
+const CONFIG_AUTHPAGEURL = "http://localhost/intranet/auth/server/intranetAuthPage.php";
+const CONFIG_AUTHGETUSERVARSURL = "http://localhost/intranet/auth/server/intranetGetUserVars.php";
+?>

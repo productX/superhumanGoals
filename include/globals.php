@@ -1,6 +1,7 @@
 <?php
 require_once("core.php");
 require_once("constants.php");
+require_once(dirname(__FILE__)."/../config/config.php");
 
 // global vars
 $user = null;
@@ -30,7 +31,7 @@ function initGlobals() {
 	Date::setTimezone(/* everybody is on PST */);
 	
 	// database
-	$db = Database::init("localhost", "root", "", "superhuman_goals", FUNCNAME_HANDLESQLARGOBJ);
+	$db = Database::init(CONFIG_DBSERVER, CONFIG_DBUSER, CONFIG_DBPASS, CONFIG_DBNAME, FUNCNAME_HANDLESQLARGOBJ);
 	
 	// sessions
 	Session::init();

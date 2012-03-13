@@ -1,9 +1,5 @@
 <?php
 
-// paths
-//const BASE_DIR = 'http://intranet.productx.co/goals';
-const BASE_DIR = 'http://localhost/intranet/goals'; // Windows Debug
-
 // pages
 const PAGE_INDEX = 'index.php';
 const PAGE_ACTIVITY = 'activity.php';

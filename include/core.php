@@ -167,7 +167,6 @@ class User {
 		}
 		return $user;
 	}
-
 	public static function createNewForSignup($appData) {
 		global $intranetAuth, $db;
 		$pictureURL = $appData["pictureURL"];
@@ -178,7 +177,6 @@ class User {
 		$db->doQuery("INSERT INTO users (auth_id, picture_url, visit_history, full_name) VALUES (%s, %s, %s, %s)", $authID, $pictureURL, $visitHistoryStr, $fullName);
 		$newID = mysql_insert_id();
 		return $newID;
-
 	}
 	public static function printListAll() {
 		global $db;
