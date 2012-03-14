@@ -38,7 +38,7 @@ function initGlobals() {
 	StatusMessages::init();
 
 	// app auth
-	$appAuth = AppAuth::init("appTryAutoLogin", "User::createNewForSignup");
+	$appAuth = AppAuth::init("appTryAutoLogin", "appCreateNewUser");
 	if($appAuth->isLoggedIn()) {
 		$userID = $appAuth->getUserID();
 		$user = User::getObjFromUserID($userID);
@@ -127,6 +127,10 @@ function appTryAutoLogin() {
 		$success = $userID;
 	}
 	return $success;
+}
+
+function appCreateNewUser($appData) {
+	User::createNewForSignup($appData);
 }
 
 ?>
