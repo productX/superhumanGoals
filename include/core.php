@@ -1,4 +1,5 @@
 <?php
+require_once(dirname(__FILE__)."/../../common/include/functions.php"); 
 
 const CLASSNAME_DATETIME='Date';
 class Date {
@@ -119,12 +120,14 @@ class User {
 			foreach($userListNonletters as $lUser) {
 				User::printCard($lUser);
 			}
+			echo "<div class='cl'>&nbsp;</div>";
 		}
 		$lastLetter = "?";
 		foreach($userListLetters as $lUser) {
 			$currentLetter = strtoupper(substr($lUser->lastName, 0, 1));
 			if($currentLetter != $lastLetter) {
 				$lastLetter = $currentLetter;
+				echo "<div class='cl'>&nbsp;</div>";
 				echo "<p>$currentLetter</p>";
 			}
 			User::printCard($lUser);

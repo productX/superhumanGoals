@@ -2,6 +2,7 @@
 require_once("core.php");
 require_once("constants.php");
 require_once(dirname(__FILE__)."/../config/config.php");
+require_once(dirname(__FILE__)."/../../common/include/functions.php"); 
 
 // global vars
 $user = null;
@@ -21,7 +22,7 @@ function handleSQLArgObj($className, $arg) {
 }
 
 function initGlobals() {
-	global $user, $appAuth, $db;
+	global $db;
 	
 	// assert options
 	assert_options(ASSERT_ACTIVE, 1);
@@ -36,6 +37,10 @@ function initGlobals() {
 	// sessions
 	Session::init();
 	StatusMessages::init();
+}
+
+function initUser() {
+	global $user, $appAuth;
 
 	// app auth
 	$appAuth = AppAuth::init("appTryAutoLogin", "appCreateNewUser");
