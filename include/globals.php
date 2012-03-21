@@ -1,6 +1,7 @@
 <?php
 require_once("core.php");
 require_once("constants.php");
+require_once("view.php");
 require_once(dirname(__FILE__)."/../config/config.php");
 require_once(dirname(__FILE__)."/../../common/include/functions.php"); 
 
@@ -8,6 +9,7 @@ require_once(dirname(__FILE__)."/../../common/include/functions.php");
 $user = null;
 $appAuth = null;
 $db = null;
+$view = null;
 
 const FUNCNAME_HANDLESQLARGOBJ='handleSQLArgObj';
 function handleSQLArgObj($className, $arg) {
@@ -47,6 +49,21 @@ function initUser() {
 	if($appAuth->isLoggedIn()) {
 		$userID = $appAuth->getUserID();
 		$user = User::getObjFromUserID($userID);
+	}
+}
+
+function initView() {
+	global $view;
+	
+	// do some magic to figure out if we're mobile or PC
+	$isWeb = true;
+	
+	// create view
+	if($isWeb) { // web
+		$view = new WebView();
+	}
+	else { // mobile
+		$view = new MobileView();
 	}
 }
 
