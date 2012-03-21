@@ -14,12 +14,13 @@ $view = null;
 const FUNCNAME_HANDLESQLARGOBJ='handleSQLArgObj';
 function handleSQLArgObj($className, $arg) {
 	$val="";
-	if($className == CLASSNAME_DATETIME) {
+	// this function is left here as an example. the below cases are now built into the Database class in common
+	/*if($className == CLASSNAME_DATETIME) {
 		$val = $arg->toSQLStr();
 	}
 	elseif($className == CLASSNAME_SQLARGLIKE) {
 		$val = $arg->toSQLStr();
-	}
+	}*/
 	return $val;
 }
 

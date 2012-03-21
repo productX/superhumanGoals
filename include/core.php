@@ -1,74 +1,7 @@
 <?php
 require_once(dirname(__FILE__)."/../../common/include/functions.php"); 
 
-const CLASSNAME_DATETIME='Date';
-class Date {
-
-	// private
-	private $ut;
-	private function __construct($ut) {
-		$this->ut = $ut;
-	}
-	
-	// protected
-	
-	// public
-	public static function setTimezone() {
-		date_default_timezone_set('America/Los_Angeles');
-	}
-	public function toDay() {
-		return date("Y-m-d", $this->ut);
-	}
-	public function toSQLStr() {
-		return date("Y-m-d H:i:s", $this->ut);
-	}
-	public function toUT() {
-		return $this->ut;
-	}
-	public function diffDays($otherDay) {
-		return ($otherDay->ut-$this->ut)/(60*60*24);
-	}
-	public function shiftDays($numDays) {
-		return new Date($this->ut+$numDays*60*60*24);
-	}
-	public function timeSince() {
-		return timeSince($this->ut);
-	}
-	public static function fromDay($day) {
-		return new Date(strtotime($day));
-	}
-	public static function fromSQLStr($str) {
-		return new Date(strtotime($str));
-	}
-	public static function fromUT($ut) {
-		return new Date($ut);
-	}
-	public static function now() {
-		return new Date(time());
-	}
-
-};
-
-const CLASSNAME_SQLARGLIKE='SQLArgLike';
-class SQLArgLike {
-
-	//private
-	private $likeArg;
-	
-	//protected
-	
-	//public
-	public function __construct($arg) {
-		$this->likeArg=$arg;
-	}
-	public function toSQLStr() {
-		return "%$this->likeArg%";
-	}
-	
-};
-
 class User {
-
 	// private
 	const ENUM_VISITS_DAILY = 1;
 	const ENUM_VISITS_EVERYFEWDAYS = 2;
@@ -84,61 +17,6 @@ class User {
 	}
 	private static function visitHistoryFromStr($blob) {
 		return unserialize($blob);
-	}
-	private static function printUserListBase($userIDList) {
-		static $firstCharCode = 65;
-		static $lastCharCode = 90;
-
-		$userListNonletters = array();
-		$lnListNonletters = array();
-		$userListLetters = array();
-		$lnListLetters = array();
-		foreach($userIDList as $lUserID) {
-			$lUser = User::getObjFromUserID($lUserID);
-			assert(!is_null($lUser));
-			$charCode = ord(strtoupper($lUser->lastName));
-			if(($charCode >= $firstCharCode) && ($charCode <= $lastCharCode)) {
-				$userListLetters[] = $lUser;
-				$lnListLetters[] = $lUser->lastName;
-			}
-			else {
-				$userListNonletters[] = $lUser;
-				$lnListNonletters[] = $lUser->lastName;
-			}
-		}
-		array_multisort($lnListNonletters, $userListNonletters);
-		array_multisort($lnListLetters, $userListLetters);
-
-?>
-					<!-- Case -->
-					<div class="case">
-						<!-- Users -->
-						<div class="users">
-<?php
-		if(count($userListNonletters)>0) {
-			echo "<p>?</p>";
-			foreach($userListNonletters as $lUser) {
-				User::printCard($lUser);
-			}
-			echo "<div class='cl'>&nbsp;</div>";
-		}
-		$lastLetter = "?";
-		foreach($userListLetters as $lUser) {
-			$currentLetter = strtoupper(substr($lUser->lastName, 0, 1));
-			if($currentLetter != $lastLetter) {
-				$lastLetter = $currentLetter;
-				echo "<div class='cl'>&nbsp;</div>";
-				echo "<p>$currentLetter</p>";
-			}
-			User::printCard($lUser);
-		}
-?>
-							<div class="cl">&nbsp;</div>
-						</div>
-						<!-- End Users -->
-					</div>
-					<!-- End Case -->
-<?php
 	}
 	private function save() {
 		global $db;
@@ -181,67 +59,6 @@ class User {
 		$newID = mysql_insert_id();
 		return $newID;
 	}
-	public static function printListAll() {
-		global $db;
-		
-		$rs = $db->doQuery("SELECT id FROM users");
-		$userIDList = array();
-		while($obj = mysql_fetch_object($rs)) {
-			$userIDList[] = $obj->id;
-		}
-		User::printUserListBase($userIDList);
-	}
-	public static function printListByGoal($goalID) {
-		global $db;
-		
-		$rs = $db->doQuery("SELECT user_id FROM goals_status WHERE goal_id=%s", $goalID);
-		$userIDList = array();
-		while($obj = mysql_fetch_object($rs)) {
-			$userIDList[] = $obj->user_id;
-		}
-		User::printUserListBase($userIDList);
-	}
-	public static function printCard($user) {
-		assert(!is_null($user));
-		$profLink = $user->getPagePath();
-		$numGoals = GoalStatus::getNumUserGoals($user->id);
-		$visitFrequency = $user->getVisitFrequency();
-		$visitFreqText = "";
-		switch($visitFrequency) {
-			case User::ENUM_VISITS_DAILY:
-				$visitFreqText = "Visits daily";
-				break;
-			case User::ENUM_VISITS_EVERYFEWDAYS:
-				$visitFreqText = "Visits most days";
-				break;
-			case User::ENUM_VISITS_WEEKLY:
-				$visitFreqText = "Visits weekly";
-				break;
-			case User::ENUM_VISITS_EVERYFEWWEEKS:
-				$visitFreqText = "Visits most weeks";
-				break;
-			default:
-			case User::ENUM_VISITS_MONTHLY:
-				$visitFreqText = "Visits monthly";
-				break;
-		}
-?>
-							<!-- Card -->
-							<div class="card">
-								<div class="user-image">
-						    		<a href="<?php echo $profLink;?>"><img src="<?php echo htmlspecialchars($user->pictureURL);?>" alt="<?php echo "$user->firstName $user->lastName";?>" /></a>
-						    	</div>
-						    	<div class="info">
-						    		<a href="<?php echo $profLink;?>"><?php echo "$user->firstName <b>$user->lastName</b>";?></a>
-						    		<span><?php echo $numGoals;?> goals</span>
-						    		<span><?php echo $visitFreqText;?></span>
-						    	</div>
-						    	<div class="cl">&nbsp;</div>
-							</div>
-							<!-- End Card -->
-<?php
-	}
-
 	public function adoptGoal($goalID) {
 		GoalStatus::userAdoptGoal($this->id, $goalID);
 	}
@@ -418,7 +235,7 @@ class StatusMessages {
 						<!-- Box -->
 						<div class="status-message-<?php echo $style;?>">
 <?php
-			echo htmlspecialchars($message->text);
+			echo GPC::strToPrintable($message->text);
 ?>
 						</div>
 						<!-- End Post -->
@@ -491,7 +308,10 @@ class Goal {
 
 };
 
+
 abstract class Story {
+	const VIEWFORMAT_EVENT = "svf_event";
+	const VIEWFORMAT_DAILYSCORE = "svf_dailyscore";
 
 	// private
 	private $id, $userID, $isPublic, $enteredAt;
@@ -505,8 +325,7 @@ abstract class Story {
 	}
 	
 	// public
-	abstract public function printStory();
-	
+	abstract public function getViewFormat();
 	public static function getObjFromDBData($dbData) {
 		$newStory = null;
 		switch($dbData->type) {
@@ -520,14 +339,6 @@ abstract class Story {
 				break;
 		}
 		return $newStory;
-	}
-	public static function printListForRS($rs) {
-		$obj=null;
-		while($obj=mysql_fetch_object($rs)) {
-			$story = Story::getObjFromDBData($obj);
-			assert(!is_null($story));
-			$story->printStory();
-		}
 	}
 	public function __get($name) {
 		static $publicGetVars = array("userID","isPublic","enteredAt","id");
@@ -551,18 +362,17 @@ abstract class Story {
 			assert(false);
 		}
 	}
-	
 };
 
 class EventStory extends Story {
-
 	// private
 	private $goalID, $newLevel, $oldLevel, $letterGrade, $description;
 	
-	// protected
-	
 	// public
 	const STORY_TYPENAME = 'event';
+	public function getViewFormat() {
+		return Story::VIEWFORMAT_EVENT;
+	}
 	public static function createNew($userID, $isPublic, $goalID, $newLevel, $oldLevel, $letterGrade, $description) {
 		global $db;
 		
@@ -660,7 +470,7 @@ class EventStory extends Story {
 		$this->description = $dbData->event_description;
 	}
 	public function __get($name) {
-		static $publicGetVars = array("enteredAt","id","newLevel","letterGrade","description","userID");
+		static $publicGetVars = array("enteredAt","id","newLevel","oldLevel","letterGrade","description","userID", "goalID");
 		
 		$returnVal = null;
 		if(in_array($name, $publicGetVars)) {
@@ -687,50 +497,9 @@ class EventStory extends Story {
 			assert(false);
 		}
 	}
-	public function printStory() {
-		$user = User::getObjFromUserID($this->userID);
-		$goal = Goal::getObjFromGoalID($this->goalID);
-		$userPagePath = $user->getPagePath();
-		$goalPagePath = $goal->getPagePath();
-		$changeWord = "raised";
-		if($this->newLevel<$this->oldLevel) {
-			$changeWord = "lowered";
-		}
-		$timeSinceStr = $this->enteredAt->timeSince();
-		$goodBad="bad";
-		if(($this->letterGrade=="A") || ($this->letterGrade=="B")) {
-			$goodBad="good";
-		}
-?>
-					<!-- Case -->
-					<div class="case">
-						<!-- Post -->
-						<div class="post">
-							<div class="user-image">
-								<a href="<?php echo $userPagePath; ?>"><img src="<?php echo htmlspecialchars($user->pictureURL); ?>" alt="<?php echo "$user->firstName $user->lastName"; ?>" />
-							</div>
-							<div class="cnt">
-								<p class="post-title"><a href="<?php echo $userPagePath; ?>"><?php echo "$user->firstName $user->lastName"; ?></a> <?php echo $changeWord; ?> his level for <a href="<?php echo $goalPagePath; ?>"><?php echo htmlspecialchars($goal->name); ?></a> from <?php echo $this->oldLevel; ?> to <?php echo $this->newLevel; ?>.</p>
-								<div class="quote-image-<?php echo $goodBad;?>">
-									<span><?php echo $this->letterGrade; ?></span>
-								</div>
-								<div class="quote">
-									<p><?php echo htmlspecialchars($this->description); ?></p>
-									<span class="time"><?php echo $timeSinceStr; ?> ago</span>
-								</div>
-								<div class="cl">&nbsp;</div>
-							</div>
-							<div class="cl">&nbsp;</div>
-						</div>
-						<!-- End Post -->
-					</div>
-					<!-- End Case -->
-<?php
-	}
 };
 
 class DailyscoreStory extends Story {
-
 	// private
 	private $progress;
 	private static function progressFromStr($str) {
@@ -740,9 +509,10 @@ class DailyscoreStory extends Story {
 		return serialize($progress);
 	}
 	
-	// protected
-	
 	// public
+	public function getViewFormat() {
+		return Story::VIEWFORMAT_DAILYSCORE;
+	}
 	const STORY_TYPENAME = 'dailyscore';
 	public static function createNew($userID, $isPublic, $goalsTouched) {
 		global $db;
@@ -756,55 +526,6 @@ class DailyscoreStory extends Story {
 		parent::__construct($dbData);
 		
 		$this->progress = DailyscoreStory::progressFromStr($dbData->dailyscore_progress);
-	}
-	public function printStory() {
-		global $db;
-		
-		$user = User::getObjFromUserID($this->userID);
-		$userPagePath = $user->getPagePath();
-		$totalGoals = $db->doQueryOne("SELECT COUNT(*) FROM goals_status WHERE user_id=%s", $user->id);
-		$numGoalsTouched = count($this->progress);
-		$score = floor(($numGoalsTouched/$totalGoals)*100);
-		$timeSinceStr = $this->enteredAt->timeSince();
-		$goodBad="bad";
-		if($score>70) {
-			$goodBad="good";
-		}
-?>
-					<!-- Case -->
-					<div class="case">
-						<!-- Post -->
-						<div class="post">
-							<div class="user-image">
-								<a href="<?php echo $userPagePath; ?>"><img src="<?php echo htmlspecialchars($user->pictureURL); ?>" alt="<?php echo "$user->firstName $user->lastName"; ?>" />
-							</div>
-							<div class="cnt">
-								<p class="post-title"><a href="<?php echo $userPagePath; ?>"><?php echo "$user->firstName $user->lastName"; ?></a> just entered daily goal progress, touching <?php echo $numGoalsTouched; ?> out of <?php echo $totalGoals; ?> of their goals.</p>
-								<div class="result-image-<?php echo $goodBad;?>">
-									<span><?php echo $score; ?><span class="sub">%</span></span>
-								</div>
-								<div class="result">
-									<p>
-<?php
-		$goalList=array();
-		foreach($progress as $goalID) {
-			$goal = Goal::getObjFromGoalID($goalID);
-			$goalPagePath = $goal->getPagePath();
-			$goalList[] = "<a href='$goalPagePath'>".htmlspecialchars($goal->name)."</a>";
-		}
-		echo implode(", ",$goalList);
-?>
-									</p>
-									<span class="time"><?php echo $timeSinceStr; ?> ago</span>
-								</div>
-								<div class="cl">&nbsp;</div>
-							</div>
-							<div class="cl">&nbsp;</div>
-						</div>
-						<!-- End Post -->
-					</div>
-					<!-- End Case -->
-<?php
 	}
 };
 
@@ -867,12 +588,9 @@ class Dailytest {
 };
 
 class GoalStatus {
-	
 	// private
 	private $goalID, $userID, $level, $isActive, $isPublic, $positionIndex;
 
-	// protected
-	
 	// public
 	public static function doesUserHaveGoal($userID, $goalID) {
 		global $db;
@@ -924,25 +642,6 @@ class GoalStatus {
 	public static function getObjFromDBData($dbData) {
 		return new GoalStatus($dbData);
 	}
-	public static function printRowList($userID, $dayUT, $isEditable) {
-		global $db;
-		
-		// ignore dayUT for now
-?>
-					<!-- Case -->
-					<div class="case boxes">
-<?php
-		$rs = $db->doQuery("SELECT * FROM goals_status WHERE user_id=%s", $userID);
-		while($obj = mysql_fetch_object($rs)) {
-			$goalStatus = GoalStatus::getObjFromDBData($obj);
-			$goalStatus->printRow($isEditable);
-		}
-?>
-					</div>
-					<!-- End Case -->
-<?php
-	}
-
 	public function __construct($dbData) {
 		$this->goalID = $dbData->goal_id;
 		$this->userID = $dbData->user_id;
@@ -951,220 +650,19 @@ class GoalStatus {
 		$this->isPublic = boolval($dbData->is_public);
 		$this->positionIndex = $dbData->position_index;
 	}
-	public function printRow($isEditable) {
-		static $rowID = 1;
-		static $testID = 1;
-		if(!$this->isActive) {
-			return;
-		}
+	public function __get($name) {
+		static $publicGetVars = array("isActive", "goalID", "userID", "level");
 		
-		$goal = Goal::getObjFromGoalID($this->goalID);
-		$newLevelVal = "";
-		$letterGradeVal = "A";
-		$whyVal = "";
-		$plusButtonDefaultDisplay = "block";
-		$eventDivDefaultDisplay = "none";
-		if($isEditable) {
-			$eventStory = EventStory::getTodayStory($this->userID, $this->goalID);
-			if(!is_null($eventStory)) {
-				$newLevelVal = $eventStory->newLevel;
-				$letterGradeVal = $eventStory->letterGrade;
-				$whyVal = htmlspecialchars($eventStory->description);
-				$plusButtonDefaultDisplay = "none";
-				$eventDivDefaultDisplay = "block";
-			}
+		$returnVal = null;
+		if(in_array($name, $publicGetVars)) {
+			$returnVal = $this->$name;
 		}
-?>
-						<!-- Box -->
-						<div class="box">
-							<!-- GOAL TITLE & LEVEL -->
-							<div class="fitness" style="width:120px">
-								<a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo htmlspecialchars($goal->name);?></a>
-								<span class="number" id="currentLevel<?php echo $rowID;?>"><?php echo $this->level;?> <a href="#" class="add" id="plusButton<?php echo $rowID;?>" onclick="expandEvent<?php echo $rowID;?>();" style="display:<?php echo $plusButtonDefaultDisplay;?>;">Add</a></span>
-							</div>
-<?php
-		static $numDaysBack = 15;
-		$dailytests = Dailytest::getListFromGoalID($this->goalID);
-		if(count($dailytests)) {
-?>
-							<!-- ADHERENCE TESTS -->
-							<div class="tests">
-<?php
-			foreach($dailytests as $dailytest) {
-				$checkedVal = DailytestStatus::getTodayStatus($this->userID, $dailytest->id)?"checked":"";
-				$ajaxSaveDailytestPath = PAGE_AJAX_SAVEDAILYTEST;
-?>
-								<div class="row">
-<?php
-				if($isEditable) {
-?>
-									<script type="text/javascript">										
-										var timer=null;
-										function onChangeCheck<?php echo $testID; ?>() {
-											if(timer != null) {
-												clearTimeout(timer);
-											}
-											timer=setTimeout("doSaveCheck<?php echo $testID; ?>()",200);
-										}
-										
-										function doSaveCheck<?php echo $testID; ?>() {
-											// make request
-											var xmlhttp;
-											if (window.XMLHttpRequest) {
-												// code for IE7+, Firefox, Chrome, Opera, Safari
-												xmlhttp=new XMLHttpRequest();
-											}
-											else {
-												// code for IE6, IE5
-												xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-											}
-											xmlhttp.onreadystatechange=function() {
-												if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-													response = xmlhttp.responseText;
-													// DONE
-													//document.getElementById("ratingBox").innerHTML="<center>Thanks :)</center>";
-												}
-											}
-											var isChecked = document.getElementById("testCheck<?php echo $testID; ?>").checked;
-											xmlhttp.open("GET","<?php echo $ajaxSaveDailytestPath; ?>?userID=<?php echo $this->userID; ?>&dailytestID=<?php echo $dailytest->id; ?>&result="+(isChecked?"1":"0"),true);
-											xmlhttp.send();
-										}
-									</script>
-									<label for="testCheck<?php echo $testID; ?>"><input type="checkbox" value="Check" id="testCheck<?php echo $testID; ?>" <?php echo $checkedVal; ?> onchange="onChangeCheck<?php echo $testID; ?>();" /></label>
-<?php
-				}
-?>									
-									<div class="test-cnt">
-										<p><?php echo htmlspecialchars($dailytest->name);?></p>
-										<div class="scale">
-											<ul>
-<?php
-				$dailytestStatuses = DailytestStatus::getListFromUserID($this->userID, $dailytest->id, $numDaysBack);
-				$dailytestStatusDays = array();
-				foreach($dailytestStatuses as $dailytestStatus) {
-					$dailytestStatusDays[] = $dailytestStatus->enteredAt->toDay();
-				}
-				for($i=0; $i<$numDaysBack; ++$i) {
-					$current = Date::fromUT(time()-($i+1)*60*60*24);
-					$currentDay = $current->toDay();
-					$style = "";
-					if(in_array($currentDay,$dailytestStatusDays)) {
-						$style="background: #7bc545;";
-					}
-?>
-												<li><a href="#" style="<?php echo $style; ?>">&nbsp;</a></li>
-<?php
-				}
-?>
-											</ul>
-											<div class="cl">&nbsp;</div>
-										</div>
-									</div>
-									<div class="cl">&nbsp;</div>
-								</div>
-<?php
-				++$testID;
-			}
-?>
-							</div>
-<?php
+		else {
+			var_dump(debug_backtrace());
+			assert(false);
 		}
-?>
-							<!-- LEVEL HISTORY GRAPH -->
-							<div class="placeholder">
-								<div class="image">
-									<img src="<?php echo "template/createGraphLevelHistory.php?userID=$this->userID&goalID=$this->goalID";?>" id="graph<?php echo $rowID;?>" alt="Level History" />
-								</div>
-							</div>
-							<div class="cl">&nbsp;</div>
-<?php
-		if($isEditable) {
-			$ajaxSaveEventPath = PAGE_AJAX_SAVEEVENT;
-			// other vars defined above
-			$optionSelectedA = ($letterGradeVal=="A")?"selected":"";
-			$optionSelectedB = ($letterGradeVal=="B")?"selected":"";
-			$optionSelectedC = ($letterGradeVal=="C")?"selected":"";
-			$optionSelectedD = ($letterGradeVal=="D")?"selected":"";
-			$optionSelectedF = ($letterGradeVal=="F")?"selected":"";
-?>
-							<!-- EVENT ENTRY BOX -->
-							<script type="text/javascript">
-								function expandEvent<?php echo $rowID;?>() {
-									document.all['eventDiv<?php echo $rowID;?>'].style="display:block;";
-									document.all['plusButton<?php echo $rowID;?>'].style.display = 'none';
-								}
-								
-								var timer=null;
-								function onChangeEvent<?php echo $rowID;?>() {
-									// validate
-									if(parseFloat(document.all['eventNewScore<?php echo $rowID;?>'].value)==0) {
-										return;
-									}
-								
-									// trigger save timer
-									if(timer != null) {
-										clearTimeout(timer);
-									}
-									timer=setTimeout("doSaveEvent<?php echo $rowID;?>()",200);
-								}
-								
-								function doSaveEvent<?php echo $rowID;?>() {
-									// make request
-									var xmlhttp;
-									if (window.XMLHttpRequest) {
-										// code for IE7+, Firefox, Chrome, Opera, Safari
-										xmlhttp=new XMLHttpRequest();
-									}
-									else {
-										// code for IE6, IE5
-										xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-									}
-									xmlhttp.onreadystatechange=function() {
-										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-											response = xmlhttp.responseText;
-											// DONE
-											document.all['currentLevel<?php echo $rowID;?>'].innerHTML = document.all['eventNewScore<?php echo $rowID;?>'].value;
-											document.all['graph<?php echo $rowID;?>'].src = "template/createGraphLevelHistory.php?userID=<?php echo $this->userID;?>&goalID=<?php echo $goal->id;?>&r="+(Math.random()*1000000);
-										}
-									}
-									xmlhttp.open("GET","<?php echo $ajaxSaveEventPath;?>?userID=<?php echo $this->userID;?>&goalID=<?php echo $goal->id;?>&oldLevel=<?php echo $this->level;?>&newLevel="+parseFloat(document.getElementById("eventNewScore<?php echo $rowID;?>").value)+"&letterGrade="+document.getElementById("eventLetterGrade<?php echo $rowID;?>").value+"&why="+escape(document.getElementById("eventWhy<?php echo $rowID;?>").value),true);
-									xmlhttp.send();
-								}
-							</script>
-							<div class="dd-row" id="eventDiv<?php echo $rowID;?>" style="display:<?php echo $eventDivDefaultDisplay;?>;">
-								<div class="left">
-									<div class="newscore-row">
-										<label for="score-1">New Level:</label><input type="text" class="field" id="eventNewScore<?php echo $rowID;?>" onkeyup="onChangeEvent<?php echo $rowID;?>();" value="<?php echo $newLevelVal;?>" />
-										<div class="cl">&nbsp;</div>
-									</div>
-									<div class="grade-row">
-										<label>Letter grade:</label>
-										<select name="grade" id="eventLetterGrade<?php echo $rowID;?>" onchange="onChangeEvent<?php echo $rowID;?>();" size="1">
-											<option value="A" <?php echo $optionSelectedA;?>>A</option>
-											<option value="B" <?php echo $optionSelectedB;?>>B</option>
-											<option value="C" <?php echo $optionSelectedC;?>>C</option>
-											<option value="D" <?php echo $optionSelectedD;?>>D</option>
-											<option value="F" <?php echo $optionSelectedF;?>>F</option>
-										</select>
-										<div class="cl">&nbsp;</div>
-									</div>
-								</div>
-								<div class="right-side">
-									<label for="textarea-1">Why:</label>
-									<textarea name="textarea" id="eventWhy<?php echo $rowID;?>" onkeyup="onChangeEvent<?php echo $rowID;?>();" class="field" rows="8" cols="40"><?php echo $whyVal;?></textarea>
-								</div>
-								<div class="cl">&nbsp;</div>
-							</div>
-							<!-- End Dd Row -->
-<?php
-		}
-?>
-						</div>
-						<!-- End Box -->
-<?php
-		++$rowID;
+		return $returnVal;
 	}
-	
 };
 
 class DailytestStatus {

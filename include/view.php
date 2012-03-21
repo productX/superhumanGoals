@@ -5,18 +5,477 @@ require_once("core.php");
 require_once("globals.php");
 
 abstract class BaseView {
+	// protected
+	protected function storyPrintListForRS($rs) {
+		$obj=null;
+		while($obj=mysql_fetch_object($rs)) {
+			$story = Story::getObjFromDBData($obj);
+			assert(!is_null($story));
+			$this->storyPrintStory($story);
+		}
+	}
+	protected function storyPrintStory($story) {
+		$viewFormat = $story->getViewFormat();
+		switch($viewFormat) {
+			case Story::VIEWFORMAT_EVENT:
+				$this->storyPrintEventStory(/* dcast to EventStory */$story);
+				break;
+			case Story::VIEWFORMAT_DAILYSCORE:
+				$this->storyPrintDailyscoreStory(/* dcast to DailyscoreStory */$story);
+				break;
+			default:
+				assert(false);
+		}
+	}
+	protected function storyPrintEventStory($eventStory) {
+		$user = User::getObjFromUserID($eventStory->userID);
+		$goal = Goal::getObjFromGoalID($eventStory->goalID);
+		$userPagePath = $user->getPagePath();
+		$goalPagePath = $goal->getPagePath();
+		$changeWord = "raised";
+		if($eventStory->newLevel<$eventStory->oldLevel) {
+			$changeWord = "lowered";
+		}
+		$timeSinceStr = $eventStory->enteredAt->timeSince();
+		$goodBad="bad";
+		if(($eventStory->letterGrade=="A") || ($eventStory->letterGrade=="B")) {
+			$goodBad="good";
+		}
+?>
+					<!-- Case -->
+					<div class="case">
+						<!-- Post -->
+						<div class="post">
+							<div class="user-image">
+								<a href="<?php echo $userPagePath; ?>"><img src="<?php echo htmlspecialchars($user->pictureURL); ?>" alt="<?php echo "$user->firstName $user->lastName"; ?>" />
+							</div>
+							<div class="cnt">
+								<p class="post-title"><a href="<?php echo $userPagePath; ?>"><?php echo "$user->firstName $user->lastName"; ?></a> <?php echo $changeWord; ?> his level for <a href="<?php echo $goalPagePath; ?>"><?php echo htmlspecialchars($goal->name); ?></a> from <?php echo $eventStory->oldLevel; ?> to <?php echo $eventStory->newLevel; ?>.</p>
+								<div class="quote-image-<?php echo $goodBad;?>">
+									<span><?php echo $eventStory->letterGrade; ?></span>
+								</div>
+								<div class="quote">
+									<p><?php echo htmlspecialchars($eventStory->description); ?></p>
+									<span class="time"><?php echo $timeSinceStr; ?> ago</span>
+								</div>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<div class="cl">&nbsp;</div>
+						</div>
+						<!-- End Post -->
+					</div>
+					<!-- End Case -->
+<?php
+	}
+	protected function storyPrintDailyscoreStory($dailyscoreStory) {
+		global $db;
+		
+		$user = User::getObjFromUserID($dailyscoreStory->userID);
+		$userPagePath = $user->getPagePath();
+		$totalGoals = $db->doQueryOne("SELECT COUNT(*) FROM goals_status WHERE user_id=%s", $user->id);
+		$numGoalsTouched = count($dailyscoreStory->progress);
+		$score = floor(($numGoalsTouched/$totalGoals)*100);
+		$timeSinceStr = $dailyscoreStory->enteredAt->timeSince();
+		$goodBad="bad";
+		if($score>70) {
+			$goodBad="good";
+		}
+?>
+					<!-- Case -->
+					<div class="case">
+						<!-- Post -->
+						<div class="post">
+							<div class="user-image">
+								<a href="<?php echo $userPagePath; ?>"><img src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" alt="<?php echo "$user->firstName $user->lastName"; ?>" />
+							</div>
+							<div class="cnt">
+								<p class="post-title"><a href="<?php echo $userPagePath; ?>"><?php echo "$user->firstName $user->lastName"; ?></a> just entered daily goal progress, touching <?php echo $numGoalsTouched; ?> out of <?php echo $totalGoals; ?> of their goals.</p>
+								<div class="result-image-<?php echo $goodBad;?>">
+									<span><?php echo $score; ?><span class="sub">%</span></span>
+								</div>
+								<div class="result">
+									<p>
+<?php
+		$goalList=array();
+		foreach($progress as $goalID) {
+			$goal = Goal::getObjFromGoalID($goalID);
+			$goalPagePath = $goal->getPagePath();
+			$goalList[] = "<a href='$goalPagePath'>".GPC::strToPrintable($goal->name)."</a>";
+		}
+		echo implode(", ",$goalList);
+?>
+									</p>
+									<span class="time"><?php echo $timeSinceStr; ?> ago</span>
+								</div>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<div class="cl">&nbsp;</div>
+						</div>
+						<!-- End Post -->
+					</div>
+					<!-- End Case -->
+<?php
+	}
+	protected function goalstatusPrintList($userID, $dayUT, $isEditable) {
+		global $db;
+		
+		// ignore dayUT for now
+?>
+					<!-- Case -->
+					<div class="case boxes">
+<?php
+		$rs = $db->doQuery("SELECT * FROM goals_status WHERE user_id=%s", $userID);
+		while($obj = mysql_fetch_object($rs)) {
+			$goalstatus = GoalStatus::getObjFromDBData($obj);
+			$this->goalstatusPrintGoalstatus($goalstatus, $isEditable);
+		}
+?>
+					</div>
+					<!-- End Case -->
+<?php
+	}
+	protected function goalstatusPrintGoalstatus($goalstatus, $isEditable) {
+		static $rowID = 1;
+		static $testID = 1;
+		if(!$goalstatus->isActive) {
+			return;
+		}
+		
+		$goal = Goal::getObjFromGoalID($goalstatus->goalID);
+		$newLevelVal = "";
+		$letterGradeVal = "A";
+		$whyVal = "";
+		$plusButtonDefaultDisplay = "block";
+		$eventDivDefaultDisplay = "none";
+		if($isEditable) {
+			$eventStory = EventStory::getTodayStory($goalstatus->userID, $goalstatus->goalID);
+			if(!is_null($eventStory)) {
+				$newLevelVal = $eventStory->newLevel;
+				$letterGradeVal = $eventStory->letterGrade;
+				$whyVal = GPC::strToPrintable($eventStory->description);
+				$plusButtonDefaultDisplay = "none";
+				$eventDivDefaultDisplay = "block";
+			}
+		}
+?>
+						<!-- Box -->
+						<div class="box">
+							<!-- GOAL TITLE & LEVEL -->
+							<div class="fitness" style="width:120px">
+								<a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->name);?></a>
+								<span class="number" id="currentLevel<?php echo $rowID;?>"><?php echo $goalstatus->level;?> <a href="#" class="add" id="plusButton<?php echo $rowID;?>" onclick="expandEvent<?php echo $rowID;?>();" style="display:<?php echo $plusButtonDefaultDisplay;?>;">Add</a></span>
+							</div>
+<?php
+		static $numDaysBack = 15;
+		$dailytests = Dailytest::getListFromGoalID($goalstatus->goalID);
+		if(count($dailytests)) {
+?>
+							<!-- ADHERENCE TESTS -->
+							<div class="tests">
+<?php
+			foreach($dailytests as $dailytest) {
+				$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id)?"checked":"";
+				$ajaxSaveDailytestPath = PAGE_AJAX_SAVEDAILYTEST;
+?>
+								<div class="row">
+<?php
+				if($isEditable) {
+?>
+									<script type="text/javascript">										
+										var timer=null;
+										function onChangeCheck<?php echo $testID; ?>() {
+											if(timer != null) {
+												clearTimeout(timer);
+											}
+											timer=setTimeout("doSaveCheck<?php echo $testID; ?>()",200);
+										}
+										
+										function doSaveCheck<?php echo $testID; ?>() {
+											// make request
+											var xmlhttp;
+											if (window.XMLHttpRequest) {
+												// code for IE7+, Firefox, Chrome, Opera, Safari
+												xmlhttp=new XMLHttpRequest();
+											}
+											else {
+												// code for IE6, IE5
+												xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+											}
+											xmlhttp.onreadystatechange=function() {
+												if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+													response = xmlhttp.responseText;
+													// DONE
+													//document.getElementById("ratingBox").innerHTML="<center>Thanks :)</center>";
+												}
+											}
+											var isChecked = document.getElementById("testCheck<?php echo $testID; ?>").checked;
+											xmlhttp.open("GET","<?php echo $ajaxSaveDailytestPath; ?>?userID=<?php echo $goalstatus->userID; ?>&dailytestID=<?php echo $dailytest->id; ?>&result="+(isChecked?"1":"0"),true);
+											xmlhttp.send();
+										}
+									</script>
+									<label for="testCheck<?php echo $testID; ?>"><input type="checkbox" value="Check" id="testCheck<?php echo $testID; ?>" <?php echo $checkedVal; ?> onchange="onChangeCheck<?php echo $testID; ?>();" /></label>
+<?php
+				}
+?>									
+									<div class="test-cnt">
+										<p><?php echo GPC::strToPrintable($dailytest->name);?></p>
+										<div class="scale">
+											<ul>
+<?php
+				$dailytestStatuses = DailytestStatus::getListFromUserID($goalstatus->userID, $dailytest->id, $numDaysBack);
+				$dailytestStatusDays = array();
+				foreach($dailytestStatuses as $dailytestStatus) {
+					$dailytestStatusDays[] = $dailytestStatus->enteredAt->toDay();
+				}
+				for($i=0; $i<$numDaysBack; ++$i) {
+					$current = Date::fromUT(time()-($i+1)*60*60*24);
+					$currentDay = $current->toDay();
+					$style = "";
+					if(in_array($currentDay,$dailytestStatusDays)) {
+						$style="background: #7bc545;";
+					}
+?>
+												<li><a href="#" style="<?php echo $style; ?>">&nbsp;</a></li>
+<?php
+				}
+?>
+											</ul>
+											<div class="cl">&nbsp;</div>
+										</div>
+									</div>
+									<div class="cl">&nbsp;</div>
+								</div>
+<?php
+				++$testID;
+			}
+?>
+							</div>
+<?php
+		}
+?>
+							<!-- LEVEL HISTORY GRAPH -->
+							<div class="placeholder">
+								<div class="image">
+									<img src="<?php echo "template/createGraphLevelHistory.php?userID=$goalstatus->userID&goalID=$goalstatus->goalID";?>" id="graph<?php echo $rowID;?>" alt="Level History" />
+								</div>
+							</div>
+							<div class="cl">&nbsp;</div>
+<?php
+		if($isEditable) {
+			$ajaxSaveEventPath = PAGE_AJAX_SAVEEVENT;
+			// other vars defined above
+			$optionSelectedA = ($letterGradeVal=="A")?"selected":"";
+			$optionSelectedB = ($letterGradeVal=="B")?"selected":"";
+			$optionSelectedC = ($letterGradeVal=="C")?"selected":"";
+			$optionSelectedD = ($letterGradeVal=="D")?"selected":"";
+			$optionSelectedF = ($letterGradeVal=="F")?"selected":"";
+?>
+							<!-- EVENT ENTRY BOX -->
+							<script type="text/javascript">
+								function expandEvent<?php echo $rowID;?>() {
+									document.all['eventDiv<?php echo $rowID;?>'].style="display:block;";
+									document.all['plusButton<?php echo $rowID;?>'].style.display = 'none';
+								}
+								
+								var timer=null;
+								function onChangeEvent<?php echo $rowID;?>() {
+									// validate
+									if(parseFloat(document.all['eventNewScore<?php echo $rowID;?>'].value)==0) {
+										return;
+									}
+								
+									// trigger save timer
+									if(timer != null) {
+										clearTimeout(timer);
+									}
+									timer=setTimeout("doSaveEvent<?php echo $rowID;?>()",200);
+								}
+								
+								function doSaveEvent<?php echo $rowID;?>() {
+									// make request
+									var xmlhttp;
+									if (window.XMLHttpRequest) {
+										// code for IE7+, Firefox, Chrome, Opera, Safari
+										xmlhttp=new XMLHttpRequest();
+									}
+									else {
+										// code for IE6, IE5
+										xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+									}
+									xmlhttp.onreadystatechange=function() {
+										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											response = xmlhttp.responseText;
+											// DONE
+											document.all['currentLevel<?php echo $rowID;?>'].innerHTML = document.all['eventNewScore<?php echo $rowID;?>'].value;
+											document.all['graph<?php echo $rowID;?>'].src = "template/createGraphLevelHistory.php?userID=<?php echo $goalstatus->userID;?>&goalID=<?php echo $goal->id;?>&r="+(Math.random()*1000000);
+										}
+									}
+									xmlhttp.open("GET","<?php echo $ajaxSaveEventPath;?>?userID=<?php echo $goalstatus->userID;?>&goalID=<?php echo $goal->id;?>&oldLevel=<?php echo $goalstatus->level;?>&newLevel="+parseFloat(document.getElementById("eventNewScore<?php echo $rowID;?>").value)+"&letterGrade="+document.getElementById("eventLetterGrade<?php echo $rowID;?>").value+"&why="+escape(document.getElementById("eventWhy<?php echo $rowID;?>").value),true);
+									xmlhttp.send();
+								}
+							</script>
+							<div class="dd-row" id="eventDiv<?php echo $rowID;?>" style="display:<?php echo $eventDivDefaultDisplay;?>;">
+								<div class="left">
+									<div class="newscore-row">
+										<label for="score-1">New Level:</label><input type="text" class="field" id="eventNewScore<?php echo $rowID;?>" onkeyup="onChangeEvent<?php echo $rowID;?>();" value="<?php echo $newLevelVal;?>" />
+										<div class="cl">&nbsp;</div>
+									</div>
+									<div class="grade-row">
+										<label>Letter grade:</label>
+										<select name="grade" id="eventLetterGrade<?php echo $rowID;?>" onchange="onChangeEvent<?php echo $rowID;?>();" size="1">
+											<option value="A" <?php echo $optionSelectedA;?>>A</option>
+											<option value="B" <?php echo $optionSelectedB;?>>B</option>
+											<option value="C" <?php echo $optionSelectedC;?>>C</option>
+											<option value="D" <?php echo $optionSelectedD;?>>D</option>
+											<option value="F" <?php echo $optionSelectedF;?>>F</option>
+										</select>
+										<div class="cl">&nbsp;</div>
+									</div>
+								</div>
+								<div class="right-side">
+									<label for="textarea-1">Why:</label>
+									<textarea name="textarea" id="eventWhy<?php echo $rowID;?>" onkeyup="onChangeEvent<?php echo $rowID;?>();" class="field" rows="8" cols="40"><?php echo $whyVal;?></textarea>
+								</div>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<!-- End Dd Row -->
+<?php
+		}
+?>
+						</div>
+						<!-- End Box -->
+<?php
+		++$rowID;
+	}
+	protected function userPrintListBase($userIDList) {
+		static $firstCharCode = 65;
+		static $lastCharCode = 90;
+
+		$userListNonletters = array();
+		$lnListNonletters = array();
+		$userListLetters = array();
+		$lnListLetters = array();
+		foreach($userIDList as $lUserID) {
+			$lUser = User::getObjFromUserID($lUserID);
+			assert(!is_null($lUser));
+			$charCode = ord(strtoupper($lUser->lastName));
+			if(($charCode >= $firstCharCode) && ($charCode <= $lastCharCode)) {
+				$userListLetters[] = $lUser;
+				$lnListLetters[] = $lUser->lastName;
+			}
+			else {
+				$userListNonletters[] = $lUser;
+				$lnListNonletters[] = $lUser->lastName;
+			}
+		}
+		array_multisort($lnListNonletters, $userListNonletters);
+		array_multisort($lnListLetters, $userListLetters);
+
+?>
+					<!-- Case -->
+					<div class="case">
+						<!-- Users -->
+						<div class="users">
+<?php
+		if(count($userListNonletters)>0) {
+			echo "<p>?</p>";
+			foreach($userListNonletters as $lUser) {
+				$this->userPrintCard($lUser);
+			}
+			echo "<div class='cl'>&nbsp;</div>";
+		}
+		$lastLetter = "?";
+		foreach($userListLetters as $lUser) {
+			$currentLetter = strtoupper(substr($lUser->lastName, 0, 1));
+			if($currentLetter != $lastLetter) {
+				$lastLetter = $currentLetter;
+				echo "<div class='cl'>&nbsp;</div>";
+				echo "<p>$currentLetter</p>";
+			}
+			$this->userPrintCard($lUser);
+		}
+?>
+							<div class="cl">&nbsp;</div>
+						</div>
+						<!-- End Users -->
+					</div>
+					<!-- End Case -->
+<?php
+	}
+	protected function userPrintListAll() {
+		global $db;
+		
+		$rs = $db->doQuery("SELECT id FROM users");
+		$userIDList = array();
+		while($obj = mysql_fetch_object($rs)) {
+			$userIDList[] = $obj->id;
+		}
+		$this->userPrintListBase($userIDList);
+	}
+	protected function userPrintListByGoal($goalID) {
+		global $db;
+		
+		$rs = $db->doQuery("SELECT user_id FROM goals_status WHERE goal_id=%s", $goalID);
+		$userIDList = array();
+		while($obj = mysql_fetch_object($rs)) {
+			$userIDList[] = $obj->user_id;
+		}
+		$this->userPrintListBase($userIDList);
+	}
+	protected function userPrintCard($user) {
+		assert(!is_null($user));
+		$profLink = $user->getPagePath();
+		$numGoals = GoalStatus::getNumUserGoals($user->id);
+		$visitFrequency = $user->getVisitFrequency();
+		$visitFreqText = "";
+		switch($visitFrequency) {
+			case User::ENUM_VISITS_DAILY:
+				$visitFreqText = "Visits daily";
+				break;
+			case User::ENUM_VISITS_EVERYFEWDAYS:
+				$visitFreqText = "Visits most days";
+				break;
+			case User::ENUM_VISITS_WEEKLY:
+				$visitFreqText = "Visits weekly";
+				break;
+			case User::ENUM_VISITS_EVERYFEWWEEKS:
+				$visitFreqText = "Visits most weeks";
+				break;
+			default:
+			case User::ENUM_VISITS_MONTHLY:
+				$visitFreqText = "Visits monthly";
+				break;
+		}
+?>
+							<!-- Card -->
+							<div class="card">
+								<div class="user-image">
+						    		<a href="<?php echo $profLink;?>"><img src="<?php echo GPC::strToPrintable($user->pictureURL);?>" alt="<?php echo "$user->firstName $user->lastName";?>" /></a>
+						    	</div>
+						    	<div class="info">
+						    		<a href="<?php echo $profLink;?>"><?php echo "$user->firstName <b>$user->lastName</b>";?></a>
+						    		<span><?php echo $numGoals;?> goals</span>
+						    		<span><?php echo $visitFreqText;?></span>
+						    	</div>
+						    	<div class="cl">&nbsp;</div>
+							</div>
+							<!-- End Card -->
+<?php
+	}
+
 	// public
 	abstract public function printHeader($navSelect, $chromeTitleElements, $justOuterChrome);
 	abstract public function printFooter($justOuterChrome);
 	abstract public function printAboutPage();
 	abstract public function printHelpPage();
+	abstract public function printAllGoalsPage();
 	public function printActivityPage() {
 		global $db;
 		
 		$this->printHeader(NAVNAME_ACTIVITY, array(new ChromeTitleElementHeader("Activity")));
 
 		$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE ORDER BY entered_at DESC LIMIT 100");
-		Story::printListForRS($rs);
+		$this->storyPrintListForRS($rs);
 
 		$this->printFooter();
 	}
@@ -73,11 +532,11 @@ abstract class BaseView {
 		switch($mode) {
 			case PAGEMODE_ACTIVITY:
 				$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE AND user_id=%s ORDER BY entered_at DESC LIMIT 100", $viewUserID);
-				Story::printListForRS($rs);
+				$this->storyPrintListForRS($rs);
 				break;
 			case PAGEMODE_GOALS:
 				$currentTime=time();
-				GoalStatus::printRowList($viewUserID, $currentTime, $viewingSelf);
+				$this->goalstatusPrintList($viewUserID, $currentTime, $viewingSelf);
 				break;
 			default:
 				break;
@@ -160,10 +619,10 @@ abstract class BaseView {
 			case PAGEMODE_ACTIVITY:
 				// only returns event type stories for this goal
 				$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE AND type='".EventStory::STORY_TYPENAME."' AND event_goal_id=%s ORDER BY entered_at DESC LIMIT 100", $goalID);
-				Story::printListForRS($rs);
+				$this->storyPrintListForRS($rs);
 				break;
 			case PAGEMODE_PEOPLE:
-				User::printListByGoal($goalID);
+				$this->userPrintListByGoal($goalID);
 				break;
 			default:
 				break;
@@ -171,7 +630,6 @@ abstract class BaseView {
 
 		$this->printFooter();
 	}
-	abstract public function printAllGoalsPage();
 	public function printSignupPage() {
 		global $intranetAuth;
 		
@@ -198,7 +656,7 @@ abstract class BaseView {
 	}
 	public function printAllUsersPage() {
 		$this->printHeader(NAVNAME_USERS, array(new ChromeTitleElementHeader("All People")));
-		User::printListAll();
+		$this->userPrintListAll();
 		$this->printFooter();
 	}
 };
@@ -467,7 +925,7 @@ class WebView extends BaseView {
 				foreach($colContents[$i] as $goal) {
 					$pagePath = $goal->getPagePath();
 					$numAdopters = $goal->getNumAdopters();
-					echo "<li><a href='$pagePath'>".htmlspecialchars($goal->name)."</a> ($numAdopters)</li>";
+					echo "<li><a href='$pagePath'>".GPC::strToPrintable($goal->name)."</a> ($numAdopters)</li>";
 				}
 				echo "</ul></div>";
 			}
