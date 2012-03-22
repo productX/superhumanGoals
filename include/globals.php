@@ -57,14 +57,23 @@ function initView() {
 	global $view;
 	
 	// do some magic to figure out if we're mobile or PC
-	$isWeb = true;
-	
+	$viewmode = ViewSwitch::getViewmode(	VIEWSWITCH_MOBILEVIEWSERVER,
+											VIEWSWITCH_MOBILEVIEWQS,
+											VIEWSWITCH_WEBVIEWSERVER,
+											VIEWSWITCH_WEBVIEWQS
+										);
+
 	// create view
-	if($isWeb) { // web
-		$view = new WebView();
-	}
-	else { // mobile
-		$view = new MobileView();
+	switch($viewmode) {
+		case ViewSwitch::VIEWMODE_MOBILE:
+			$view = new MobileView();
+			break;
+		case ViewSwitch::VIEWMODE_WEB:
+			$view = new WebView();
+			break;
+		default:
+			assert(false);
+			break;
 	}
 }
 

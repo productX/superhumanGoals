@@ -9,4 +9,10 @@ const CONFIG_DBPASS = '';
 const CONFIG_AUTHCHECKUSERURL = "http://localhost/intranet/auth/server/intranetCheckUser.php";
 const CONFIG_AUTHPAGEURL = "http://localhost/intranet/auth/server/intranetAuthPage.php";
 const CONFIG_AUTHGETUSERVARSURL = "http://localhost/intranet/auth/server/intranetGetUserVars.php";
+
+// web/mobile switch
+const VIEWSWITCH_MOBILEVIEWSERVER = "m.superhumangoals.com";
+const VIEWSWITCH_WEBVIEWSERVER = "w.superhumangoals.com";
+const VIEWSWITCH_MOBILEVIEWQS = "go_mobile";
+const VIEWSWITCH_WEBVIEWQS = "go_web";
 ?>
