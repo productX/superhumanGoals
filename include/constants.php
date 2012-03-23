@@ -1,6 +1,6 @@
 <?php
 
-// pages
+// page paths
 const PAGE_INDEX = 'index.php';
 const PAGE_ACTIVITY = 'activity.php';
 const PAGE_ABOUT = 'about.php';
@@ -16,7 +16,7 @@ const PAGE_AJAX_SAVEEVENT = 'ajax/ajax_saveEvent.php';
 const PAGE_AJAX_SAVEDAILYTEST = 'ajax/ajax_saveDailytest.php';
 const PAGE_AJAX_GETSEARCHOPTIONS = 'ajax/ajax_getSearchOptions.php';
 
-// nav
+// enum for nav elements
 const NAVNAME_NONE = 'none';
 const NAVNAME_ACTIVITY = 'activity';
 const NAVNAME_YOU = 'you';
