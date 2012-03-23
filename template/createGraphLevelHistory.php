@@ -22,7 +22,13 @@ $graphData = EventStory::getLevelHistory($userID, $goalID, $numDaysBack);
 //var_dump($graphData);
 //die();
 
-$graph = new PHPGraphLib(200,40);
+$width = 200;
+$height = 40;
+if(isset($_GET['big'])) {
+	$width = 450;
+	$height = 100;
+}
+$graph = new PHPGraphLib($width,$height);
 /*$data = array("1" => .0032, "2" => .0028, "3" => .0021, "4" => .0033, 
 "5" => .0034, "6" => .0031, "7" => .0036, "8" => .0027, "9" => .0024, 
 "10" => .0021, "11" => .0026, "12" => .0024, "13" => .0036, 

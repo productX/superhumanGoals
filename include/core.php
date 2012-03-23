@@ -532,7 +532,7 @@ class DailyscoreStory extends Story {
 class Dailytest {
 	
 	// private
-	private $id, $goalID, $name, $description;
+	private $id, $goalID, $name, $description, $stashedStyleArray;
 	
 	// protected
 	
@@ -561,6 +561,14 @@ class Dailytest {
 		$this->goalID = $dbData->goal_id;
 		$this->name = $dbData->name;
 		$this->description = $dbData->description;
+		$this->stashedStyleArray = null;
+	}
+	// HACK: there has GOT to be a better way to do this...
+	public function getStashedStyleArray() {
+		return $this->stashedStyleArray;
+	}
+	public function setStashedStyleArray($newStyleArray) {
+		$this->stashedStyleArray = $newStyleArray;
 	}
 	public function __get($name) {
 		static $publicGetVars = array("id","goalID","name","description");
