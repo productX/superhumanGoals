@@ -1,25 +1,48 @@
 <?php
 include("template/userFacingForceLogin.php");
 
+
 // DO PROCESSING
 if(isset($_POST["newGoalName"])) {
-	$name = $_POST["newGoalName"];
-	$description = $_POST["newGoalDescription"];
+	$goalName = $_POST["newGoalName"];
+	$goalDescription = $_POST["newGoalDescription"];
 	$numDailytests = GPC::strToInt($_POST["numDailytests"]);
+	$numkpis = $_POST["numkpis"];
 
-	$newID = Goal::createNew($name, $description);
+	$newID = Goal::createNew($goalName, $goalDescription, $user->id);
+
 	if($numDailytests>0) {
 		for($i=0; $i<$numDailytests; ++$i) {
-			$name = $_POST["dailytestName".($i+1)];
-			$description = $_POST["dailytestDescription".($i+1)];
-			if($name!="") {
-				Dailytest::createNew($newID, $name, $description);
+			$strategyName = $_POST["dailytestName".($i+1)];
+			$strategyDescription = $_POST["dailytestDescription".($i+1)];
+			$strategyType = $_POST["dailytestType".($i+1)];
+			if($strategyName!="") {
+				Dailytest::createNew($newID, $strategyName, $strategyDescription, $strategyType, $user->id);
 			}
 		}
 	}
-	
-	StatusMessages::addMessage("New goal '$name' successfully added.",StatusMessage::ENUM_GOOD);
+
+	if($numkpis>0) {
+		for($i=0; $i<$numkpis; ++$i) {
+			$kpiName = $_POST["kpiName".($i+1)];
+			$kpiDescription = $_POST["kpiDescription".($i+1)];
+			$kpiTestDescription = $_POST["kpiTestDescription".($i+1)];
+			$kpiTestName = $_POST["kpiTestName".($i+1)];
+			$kpiTestFrequency = $_POST["kpiTestFrequency".($i+1)];
+			if($kpiName!="") {
+
+				KPI::createNew($newID, $kpiName, $kpiDescription, $kpiTestDescription, $kpiTestName, $kpiTestFrequency, $user->id);
+			}
+		}
+	}
+				
+	StatusMessages::addMessage("New goal '$goalName' successfully added.",StatusMessage::ENUM_GOOD);
 }
+
+
+
+
+
 
 // RENDER PAGE
 require_once("include/chrome.php");
@@ -33,8 +56,12 @@ $colContents = array();
 $obj=null;
 $currentCol=0;
 $i=0;
+
+
 while($obj = mysql_fetch_object($rs)) {
+
 	$goal = Goal::getObjFromGoalID($obj->id);
+
 	if($i==0) {
 		$colContents[$currentCol] = array();
 	}
@@ -45,6 +72,10 @@ while($obj = mysql_fetch_object($rs)) {
 		$i=0;
 	}
 }
+
+
+
+
 ?>
 					<!-- Case -->
 					<div class="case goals">
@@ -80,17 +111,29 @@ for($i=0; $i<NUM_COLS; ++$i) {
 
 								<script type="text/javascript">
 									var numDailytests = 0;
+									var numkpis = 0;
+																		
+									function addKPI(postedTo) {
+										document.goalForm.numkpis=++numkpis;
+										document.getElementById("kpis").innerHTML=document.getElementById("kpis").innerHTML+
+											"<label class='small-label'>KPI "+numkpis+":</label><input type='text' class='small-field' name='kpiName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='kpiDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Name:</label><input type='text' class='small-field' name='kpiTestName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Test Description:</label><input type='text' class='small-field' name='kpiTestDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Frequency (in days):</label><input type='text' class='small-field' name='kpiTestFrequency"+numkpis+"' /><div class='cl'>&nbsp;</div><br/>";
+										document.getElementById("numkpis").value=numkpis;
+									}
 									
 									function addDailytest(postedTo) {
 										document.goalForm.numDailytests=++numDailytests;
 										document.getElementById("dailytests").innerHTML=document.getElementById("dailytests").innerHTML+
-											"<label class='small-label'>Test "+numDailytests+" Name:</label><input type='text' class='small-field' name='dailytestName"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='dailytestDescription"+numDailytests+"' /><div class='cl'>&nbsp;</div>";
+											"<label class='small-label'>Strategy "+numDailytests+":</label><input type='text' class='small-field' name='dailytestName"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='dailytestDescription"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Type:</label><select name='dailytestType"+numDailytests+"'><option value='adherence'>Adherence</option><option value='todo'>ToDo</option><option value='tactic'>Tactic</option></select><div class='cl'>&nbsp;</div>";
 										document.getElementById("numDailytests").value=numDailytests;
 									}
 								</script>
+								<div id="kpis"></div>								
 								<div id="dailytests"></div>
 
-								<input type="button" value="+" onclick="addDailytest();" class="small-add-btn"/>
+								<input type="button" value="Add KPI" onclick="addKPI();" class="small-add-btn"/>
+								<input type="hidden" name="numkpis" id="numkpis" value="0" />
+
+								<input type="button" value="Add Strategy" onclick="addDailytest();" class="small-add-btn"/>
 								<input type="hidden" name="numDailytests" id="numDailytests" value="0" />
 								<div class="cl" style="height:5px;">&nbsp;</div>
 								<input type="submit" value="Add Goal &raquo;" class="add-btn" />

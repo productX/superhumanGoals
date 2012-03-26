@@ -11,15 +11,15 @@ $inputText = $_GET["inputText"];
 <results>
 <?php
 $results = array();
-$rs = $db->doQuery("SELECT id,name FROM goals WHERE name LIKE %s", new SQLArgLike($inputText));
+$rs = $db->doQuery("SELECT goal_id,name FROM goals WHERE name LIKE %s", new SQLArgLike($inputText));
 $obj = null;
 while($obj = mysql_fetch_object($rs)) {
-	$results[] = array("type"=>"Goals", "name"=>$obj->name, "link"=>Goal::getObjFromGoalID($obj->id)->getPagePath());
+	$results[] = array("type"=>"Goals", "name"=>$obj->name, "link"=>Goal::getObjFromGoalID($obj->goal_id)->getPagePath());
 }
-$rs = $db->doQuery("SELECT id,full_name FROM users WHERE full_name LIKE %s", new SQLArgLike($inputText));
+$rs = $db->doQuery("SELECT user_id,full_name FROM users WHERE full_name LIKE %s", new SQLArgLike($inputText));
 $obj = null;
 while($obj = mysql_fetch_object($rs)) {
-	$results[] = array("type"=>"People", "name"=>$obj->full_name, "link"=>User::getObjFromUserID($obj->id)->getPagePath());
+	$results[] = array("type"=>"People", "name"=>$obj->full_name, "link"=>User::getObjFromUserID($obj->user_id)->getPagePath());
 }
 foreach($results as $result) {
 	$type = $result["type"];

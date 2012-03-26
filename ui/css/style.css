@@ -113,7 +113,7 @@ h1#logo a:hover { background-position: 0 bottom; }
 
 .scrollarea { width: 100%; height: 165px; overflow: auto; position: relative; z-index: 20; }
 
-.case { padding: 23px 15px 35px 21px; border-bottom: solid 1px #dedede; }
+.case { padding: 3px 15px 35px 21px; }
 .case a { color: #214390; }
 .goals { padding-left: 51px; }
 .boxes { padding: 23px 11px 35px 41px; }
@@ -137,13 +137,13 @@ h1#logo a:hover { background-position: 0 bottom; }
 .post .result { width: 260px; float: left; display: inline; }
 .post .result p { padding: 0 0 10px 0; }
 
-.score .text { float: left; display: inline; width: 345px; padding: 0 47px 0 8px; }
+.score .text { float: left; display: inline; width: 777px; padding: 0 47px 0 8px; min-height:100px; }
 .score .text p { padding: 0 0 10px 0; }
 .score .text a.btn { float: right; display: inline; padding: 0 10px; line-height: 29px; font-size: 16px; color: #fff; text-align: center; background: #18c800; border: solid 1px #108700; }
 .score .text a.btn { -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; -webkit-box-shadow: inset -2px -2px 4px 1px #106504; -moz-box-shadow: inset -2px -2px 4px 1px #106504; box-shadow: inset -2px -2px 4px 1px #106504; }
 .score .text a.btn:hover { text-decoration: none; background: #23e509; }
 .score .text a.btn:active { text-decoration: none; -webkit-box-shadow: inset 2px 2px 4px 1px #106504; -moz-box-shadow: inset 2px 2px 4px 1px #106504; box-shadow: inset 2px 2px 4px 1px #106504; }
-.score .results { width: 380px; float: left; display: inline; padding: 20px 0 0 0; }
+.score .results { width: 380px; float: left; display: inline; padding: 0px 0 0 0; }
 .score .results ul li { float: left; display: inline; padding: 0 20px 0 0; width: 180px; text-align: center;  }
 .score .results ul li.last { padding: 0; }
 .score .results p.res-box span { font-size: 60px; line-height: 72px; color: #000000; background: #f3f3f3; border: solid 1px #868686; padding: 0 20px; }
@@ -180,8 +180,8 @@ h1#logo a:hover { background-position: 0 bottom; }
 .users .card .info { float: left; display: inline; line-height: 22px; }
 .users .card span { display: block; font-size: 14px; line-height: 20px; color: #4e4e4e; width: 110px; }
 
-.status-message-good { display: block; padding: 7px 16px 10px 11px; margin: 0 0 16px 0; background: #20e020; border: solid 1px #103010; box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
-.status-message-bad { display: block; padding: 7px 16px 10px 11px; margin: 0 0 16px 0; background: #e02020; border: solid 1px #301010; box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
+.status-message-good { display: block; padding: 7px 16px 10px 11px; margin: 0 0 16px 0; background:#FFFFCC;  border:solid 1px #DEDEDE; box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
+.status-message-bad { display: block; padding: 7px 16px 10px 11px; margin: 0 0 16px 0; background:#DF8B8B;  border:solid 1px #9C5C5C; box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; color:#222222;}
 
 .box { display: block; width:680px; padding: 7px 16px 10px 11px; margin: 0 0 16px 0; background: #f3f3f3; border: solid 1px #868686; box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
 .box .fitness { padding: 0 18px 0 0; border-right: solid 1px #dedede; text-align: center; float: left; }
@@ -214,6 +214,43 @@ h1#logo a:hover { background-position: 0 bottom; }
 .box .dd-row .newscore-row input.field { float: left; display: inline; width: 24px; height: 20px; font-size: 11px; padding: 0 3px; color: #4c4c4c; background: #fff; border: solid 1px #7d7d7d; }
 .box .dd-row .newscore-row input.field { border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; box-shadow: #b2b1b1 0 0 1px; -webkit-box-shadow: #b2b1b1 0 0 1px; -moz-box-shadow: #b2b1b1 0 0 1px; }
 .box .dd-row .grade-row label { width: 75px; }
+
+.kpi{ font-size:18px; border-top: 1px solid #A8DCAF; border-right: 1px solid #A8DCAF; border-left: 1px solid #A8DCAF; padding:2px; background: #CDFFD4; margin-top:15px; }
+.kpi_box{ font-size:18px; border: 2px solid #999999; padding:2px; background: #826D8C; margin-top:15px; width:320px; float:left; margin-left:5px; }
+.kpi_tests{ font-size:14px; background: #E2FFE6; padding-left: 15px; margin: 0 8px 0 8px;}										
+.strategies{ font-size:18px; border: 2px solid #999999; padding:2px; background: #55647B; margin-top:15px; width:320px; float:left; }
+.five_friends { margin-top:165px;}
+.adopt-goal-btn { margin: 40px 0 20px 0; float: right; display: inline; font-size: 40px; line-height: 39px; display: inline-block; height: 60px; width:360px; padding: 0 14px 3px 14px; color: #fff; text-align: center; background: #18c800; cursor: pointer; box-shadow: #000 0 0 10px; -webkit-box-shadow: #000 0 0 10px; -moz-box-shadow: #000 0 0 10px; }
+.remove-goal-btn { margin: 10px auto 10px auto; display: block; font-size: 20px; line-height: 19px; display: inline-block; height: 30px; width:250px; padding: 0 14px 3px 14px; color: #fff; text-align: center; background: #A33D3D; cursor: pointer; box-shadow: #000 0 0 4px; -webkit-box-shadow: #000 0 0 4px; -moz-box-shadow: #000 0 0 4px; }
+.remove_goal {margin: 30px auto 1px auto; width: 400px; height: 40px;}
+.up-down {margin: 10px 0px 10px 0px;}
+.goal_desc_box { border: 2px solid #9FCBA5; background: #E2FFE6; padding-left: 15px; margin: 10px auto 10px auto; width:550px;}
+
+
+.show_kpi_input { font-size: 9px; color:white; font-weight: bold;}
+.remove_kpi_input { font-size: 9px; color:white; font-weight: bold;}
+.strategy_boxes { background: none repeat scroll 0 0 #E2FFE6;}
+.show_strategy_input { font-size: 9px; color:white; font-weight: bold;}
+.remove_strategy_input { font-size: 9px; color:white; font-weight: bold;}
+.reporting_select {font-size:18px; border: 2px solid #9FCBA5; background: #E2FFE6; padding-left: 15px; margin: 10px auto 10px auto; display:none; width:550px;}
+.edit_goal_params {background:green; color: white; height:20px; padding:10px; display:none;}
+
+
+.all_kpis { background: #FAFAFA; float:left; overflow:auto; max-height:400px; width: 678px; margin-bottom:30px; border: 1px solid #E8E8E8; padding: 5px;}
+.kpi_headings { float:left;}
+.choose_kpi_heading {font-weight:bold; color:white; padding:10px; float: left; height: 26px; width: 325px; background: #826D8C; margin-left:5px;}
+.chosen_kpis {background:green; color: white; height:26px; padding:10px; font-weight:bold; float:left; width:300px; margin-left:10px;}
+.score .kpi_results { font-size:14px; min-width: 310px; max-width: 310px;  margin-left:10px; float:left; min-height:1px; margin-right:10px;}
+
+
+
+.all_strategies { background: #FAFAFA; float:left; overflow:auto; max-height:400px; width: 678px; margin-bottom:30px; border: 1px solid #E8E8E8; padding: 5px;}
+.strategy_headings { float:left;}
+.choose_strategy_heading {font-weight:bold; color:white; padding:10px; float: left; height: 26px; width: 325px; background: #55647B; margin-left:5px;}
+.chosen_strategies {background:green; color: white; height:26px; padding:10px; font-weight:bold; float:left; width:300px; margin-left:10px;}
+.score .strategy_results { font-size:14px; min-width: 310px; max-width: 310px; margin-left:10px; float:left; min-height:1px; margin-right:10px;}
+
+
 
 #footer { position: fixed; bottom: 0; left: 0; height: 69px; background: #000; border-top: solid 1px #e8e8e8; width: 100%; z-index: 30; }
 #footer .shell { padding: 18px 17px 0 30px; width: 977px; }

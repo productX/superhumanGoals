@@ -19,6 +19,18 @@ const PAGE_GOALS = 'goals.php';
 const PAGE_AJAX_SAVEEVENT = 'ajax/ajax_saveEvent.php';
 const PAGE_AJAX_SAVEDAILYTEST = 'ajax/ajax_saveDailytest.php';
 const PAGE_AJAX_GETSEARCHOPTIONS = 'ajax/ajax_getSearchOptions.php';
+const PAGE_AJAX_MODIFY_GOAL = 'ajax/ajax_modifyGoal.php';
+const PAGE_AJAX_MODIFY_KPI = 'ajax/ajax_modifyKPI.php';
+const PAGE_AJAX_CREATE_KPI = 'ajax/ajax_createKPI.php';
+const PAGE_AJAX_MODIFY_TEST_STATUS = 'ajax/ajax_modifyTestStatus.php';
+const PAGE_AJAX_MODIFY_STRATEGY = 'ajax/ajax_modifyStrategy.php';
+const PAGE_AJAX_CREATE_STRATEGY = 'ajax/ajax_createStrategy.php';
+const PAGE_AJAX_SET_TRACKING = 'ajax/ajax_setTracking.php';
+const PAGE_AJAX_ALTER_GOAL_DESCRIPTION = 'ajax/ajax_alterGoalDescription.php';
+
+
+
+
 
 // nav
 const NAVNAME_NONE = 'none';

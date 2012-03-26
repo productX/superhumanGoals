@@ -1,70 +1,5 @@
 <?php
 
-const CLASSNAME_DATETIME='Date';
-class Date {
-
-	// private
-	private $ut;
-	private function __construct($ut) {
-		$this->ut = $ut;
-	}
-	
-	// protected
-	
-	// public
-	public static function setTimezone() {
-		date_default_timezone_set('America/Los_Angeles');
-	}
-	public function toDay() {
-		return date("Y-m-d", $this->ut);
-	}
-	public function toSQLStr() {
-		return date("Y-m-d H:i:s", $this->ut);
-	}
-	public function toUT() {
-		return $this->ut;
-	}
-	public function diffDays($otherDay) {
-		return ($otherDay->ut-$this->ut)/(60*60*24);
-	}
-	public function shiftDays($numDays) {
-		return new Date($this->ut+$numDays*60*60*24);
-	}
-	public function timeSince() {
-		return timeSince($this->ut);
-	}
-	public static function fromDay($day) {
-		return new Date(strtotime($day));
-	}
-	public static function fromSQLStr($str) {
-		return new Date(strtotime($str));
-	}
-	public static function fromUT($ut) {
-		return new Date($ut);
-	}
-	public static function now() {
-		return new Date(time());
-	}
-
-};
-
-const CLASSNAME_SQLARGLIKE='SQLArgLike';
-class SQLArgLike {
-
-	//private
-	private $likeArg;
-	
-	//protected
-	
-	//public
-	public function __construct($arg) {
-		$this->likeArg=$arg;
-	}
-	public function toSQLStr() {
-		return "%$this->likeArg%";
-	}
-	
-};
 
 class User {
 
@@ -241,8 +176,9 @@ class User {
 <?php
 	}
 
+	// Legacy for the goal page but may perhaps be useful for other pages
 	public function adoptGoal($goalID) {
-		GoalStatus::userAdoptGoal($this->id, $goalID);
+		GoalStatus::userAdoptGoalSimple($this->id, $goalID);
 	}
 	public function updateLastDailyEntry() {
 		$this->lastDailyEntry = Date::now();
@@ -314,6 +250,8 @@ class User {
 		$this->lastName = $authDBData->lastname;
 		$this->email = $authDBData->email;
 	}
+	
+		# Stubs with whitelisting for some fields
 	public function __get($name) {
 		static $publicGetVars = array("id","pictureURL","firstName","lastName","email","authID");
 		
@@ -327,6 +265,8 @@ class User {
 		}
 		return $returnVal;
 	}
+	
+	# Stub for setting values
 	public function __set($name, $val) {
 		static $publicSetVars = array();
 		
@@ -434,24 +374,66 @@ class StatusMessages {
 
 class Goal {
 
-	// private
-	private $id, $name, $description;
+	// public
+	public $id, $name, $description, $userID, $created_by, $date_created;
 	
 	// protected
 	
 	// public
-	public static function createNew($name, $description) {
+	public static function createNew($name, $description, $userID) {
 		global $db;
 		
-		$db->doQuery("INSERT INTO goals (name, description) VALUES (%s,%s)", $name, $description);
+		$db->doQuery("INSERT INTO goals (name, description, created_by, date_created) VALUES (%s,%s,%s, NOW())", $name, $description, $userID);
 		$newID = mysql_insert_id();
 		return $newID;
 	}
 	public static function getObjFromGoalID($goalID) {
 		global $db;
-		
+							
 		$goal = new Goal($db->doQueryRFR("SELECT * FROM goals WHERE id=%s", $goalID));
+		
 		return $goal;
+	}
+
+
+	public static function getFullObjFromGoalID($goalID,$userID) {
+		global $db;
+	
+		$rs = $db->doQuery("SELECT * FROM goals WHERE id=%s", $goalID);
+
+		while($obj = mysql_fetch_object($rs)) {
+			
+			$goal_status_rs = $db->doQuery("SELECT display_style, description FROM goals_status WHERE user_id=%s AND goal_id = %s", $userID, $goalID);
+			$goal = new Goal($obj);
+
+			while($obj_two = mysql_fetch_object($goal_status_rs)) {
+
+				$goal_display_style = $obj_two->display_style;
+				$goal_desc = $obj_two->description;
+
+			}
+
+			if($goal_display_style == 1){
+				$display_style = '1';
+			}else{
+				$display_style = '0';
+			}
+
+			if(empty($goal_desc)){
+				$sub_description = 'none';
+			}else{
+				$sub_description = $goal_desc;
+			}
+			
+			$goal_obj = new stdClass;
+			$goal_obj->goal = $goal;
+			$goal_obj->display_style = $display_style;
+			$goal_obj->sub_description = $sub_description;
+
+		}
+				
+		
+		return $goal_obj;
 	}
 
 	public function getPagePath() {
@@ -460,11 +442,18 @@ class Goal {
 	public function getNumAdopters() {
 		return GoalStatus::getNumGoalAdopters($this->id);
 	}
+	
+	
 	public function __construct($dbData) {
 		$this->id = $dbData->id;
 		$this->name = $dbData->name;
 		$this->description = $dbData->description;
+		$this->created_by = $dbData->created_by;
+		// &&& HAVE SOMETHING TO ADD CREATED_BY ID
 	}
+	
+	
+		# Stubs with whitelisting for some fields
 	public function __get($name) {
 		static $publicGetVars = array("id","name","description");
 		
@@ -477,6 +466,8 @@ class Goal {
 		}
 		return $returnVal;
 	}
+	
+	# Stub for setting values
 	public function __set($name, $val) {
 		static $publicSetVars = array();
 		
@@ -528,6 +519,8 @@ abstract class Story {
 			$story->printStory();
 		}
 	}
+	
+		# Stubs with whitelisting for some fields
 	public function __get($name) {
 		static $publicGetVars = array("userID","isPublic","enteredAt","id");
 		
@@ -540,6 +533,8 @@ abstract class Story {
 		}
 		return $returnVal;
 	}
+	
+	# Stub for setting values
 	public function __set($name, $val) {
 		static $publicSetVars = array();
 		
@@ -658,6 +653,8 @@ class EventStory extends Story {
 		$this->letterGrade = $dbData->event_letter_score;
 		$this->description = $dbData->event_description;
 	}
+	
+		# Stubs with whitelisting for some fields
 	public function __get($name) {
 		static $publicGetVars = array("enteredAt","id","newLevel","letterGrade","description","userID");
 		
@@ -676,6 +673,8 @@ class EventStory extends Story {
 		}
 		return $returnVal;
 	}
+	
+	# Stub for setting values
 	public function __set($name, $val) {
 		static $publicSetVars = array();
 		
@@ -809,28 +808,66 @@ class DailyscoreStory extends Story {
 
 class Dailytest {
 	
-	// private
-	private $id, $goalID, $name, $description;
+	// public
+	public $id, $goalID, $name, $description, $strategy_type, $userID, $strategyID, $strategy_active, $created_by;
 	
 	// protected
 	
 	// public
-	public static function createNew($goalID, $name, $description) {
+	public static function createNew($goalID, $name, $description, $type, $userID) {
 		global $db;
 		
-		$db->doQuery("INSERT INTO dailytests (goal_id, name, description) VALUES (%s, %s, %s)", $goalID, $name, $description);
+		if(empty($description)){ $description = ''; }		
+		$db->doQuery("INSERT INTO strategies (goal_id, name, description, strategy_type, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW())", $goalID, $name, $description, $type, $userID);
+		
 		$newID = mysql_insert_id();
 		return $newID;
 	}
-	public static function getListFromGoalID($goalID) {
+
+
+	public static function adoptStrategy($userID, $strategyID, $goalID) {
 		global $db;
 		
-		$rs = $db->doQuery("SELECT * FROM dailytests WHERE goal_id=%s", $goalID);
+		$db->doQuery("INSERT INTO user_strategies (user_id, strategy_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active =1, date_created = NOW()", $userID, $strategyID, $goalID);
+				
+	}	
+
+	public static function removeStrategy($userID, $strategyID, $goalID) {
+		global $db;
+
+		$db->doQuery("UPDATE user_strategies SET is_active = 0, date_created = NOW() WHERE user_id = %s AND goal_id = %s AND strategy_id = %s", $userID, $goalID, $strategyID);
+				
+	}	
+
+	public static function reAdoptStrategy($userID, $strategyID, $goalID) {
+		global $db;
+		
+		$db->doQuery("UPDATE user_strategies SET is_active = 1, date_created = NOW() WHERE user_id = %s AND goal_id = %s AND strategy_id = %s", $userID, $goalID, $strategyID);
+		
+	}	
+
+	public static function getListFromGoalID($goalID,$userID) {
+		global $db;
+
+		$rs = $db->doQuery("SELECT * FROM strategies WHERE goal_id=%s", $goalID);
 		$list = array();
 		$obj = null;
+		
 		while($obj = mysql_fetch_object($rs)) {
+
+				$strategy_is_active = $db->doQueryOne("SELECT is_active FROM user_strategies WHERE user_id=%s AND strategy_id = %s AND goal_id = %s", $userID, $obj->id, $goalID);
+				if(!empty($strategy_is_active)){
+					$strategy_active = '1';
+				}else{
+					$strategy_active = '0';
+				}
+				
+				$obj->strategy_active = $strategy_active;						
+
+
 			$list[] = new Dailytest($obj);
 		}
+
 		return $list;
 	}
 	
@@ -839,7 +876,181 @@ class Dailytest {
 		$this->goalID = $dbData->goal_id;
 		$this->name = $dbData->name;
 		$this->description = $dbData->description;
+		$this->strategy_type = $dbData->strategy_type;
+		$this->strategy_active = $dbData->strategy_active;
 	}
+	
+	# Stubs with whitelisting for some fields
+	public function __get($name) {
+		static $publicGetVars = array("id","goalID","name","description","strategy_type");
+		
+		$returnVal = null;
+		if(in_array($name, $publicGetVars)) {
+			$returnVal = $this->$name;
+		}
+		else {
+			assert(false);
+		}
+		return $returnVal;
+	}
+	
+
+	# Stub for setting values
+
+	public function __set($name, $val) {
+		static $publicSetVars = array();
+		
+		if(in_array($name, $publicSetVars)) {
+			$this->$name = $val;
+		}
+		else {
+			assert(false);
+		}
+	}
+
+
+	
+};
+
+class KPI {
+	
+	// private
+	public $kpi_name, $kpi_desc, $kpi_active, $id, $kpi_tests;
+	
+	
+	// protected
+	
+	private $goalID, $name, $description, $testDescription, $testName, $testFrequency, $kpi_id, $newID, $kpiID, $userID, $newTest;
+	
+	// public
+	public static function createNew($goalID, $name, $description, $testDescription, $testName, $testFrequency, $userID) {
+		global $db;
+		
+		$info = array();
+		
+		if(empty($description)){ $description = ''; }
+		$db->doQuery("INSERT INTO kpis (kpi_name, kpi_desc, created_by, date_created) VALUES (%s, %s, %s, NOW())", $name, $description, $userID);
+		$kpiID = mysql_insert_id();
+		
+		$info[] = $kpiID;
+
+		if(empty($testDescription)){ $testDescription = ''; }
+		if(empty($testFrequency)){ $testFrequency = 30; }
+		$db->doQuery("INSERT INTO kpi_tests (kpi_id, test_description, test_name, test_frequency, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW())", $kpiID, $testDescription, $testName, $testFrequency, $userID);
+		$testID = mysql_insert_id();
+	
+		$info[] = $testID;
+			
+		$db->doQuery("INSERT INTO goals_to_kpis (goal_id, kpi_id, associated_by, date_created) VALUES (%s, %s, %s, NOW())", $goalID, $kpiID, $userID);
+		
+		return $info;
+	}	
+
+	public static function adoptTest($userID, $kpiID, $goalID, $testID) {
+		global $db;
+
+		$db->doQuery("INSERT INTO user_tests (user_id, goal_id, kpi_id, test_id, is_active, date_created) VALUES (%s, %s, %s, %s, 1, NOW())", $userID, $goalID, $kpiID, $testID);
+		
+	}	
+
+	public static function adoptKPI($userID, $kpiID, $goalID) {
+		global $db;
+				
+		$db->doQuery("INSERT INTO user_kpis (user_id, kpi_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active = %s, date_created = NOW()", $userID, $kpiID, $goalID, 1);
+				
+	}	
+
+	public static function removeKPI($userID, $kpiID, $goalID) {
+		global $db;
+
+		$db->doQuery("UPDATE user_kpis SET is_active = 0, date_created = NOW() WHERE user_id = %s AND kpi_id = %s AND goal_id = %s", $userID, $kpiID, $goalID);
+		
+		$db->doQuery("UPDATE user_tests SET is_active = 0 , date_created = NOW() WHERE user_id = %s AND kpi_id = %s AND goal_id = %s", $userID, $kpiID, $goalID);
+		
+	}	
+
+	public static function reAdoptKPI($userID, $kpiID, $goalID) {
+		global $db;
+		
+		$db->doQuery("UPDATE user_kpis SET is_active = 1, date_created = NOW() WHERE user_id = %s AND kpi_id = %s AND goal_id = %s", $userID, $kpiID, $goalID);
+		
+		$db->doQuery("UPDATE user_tests SET is_active = 1 , date_created = NOW() WHERE user_id = %s AND kpi_id = %s AND goal_id = %s", $userID, $kpiID, $goalID);
+		
+	}	
+
+	public static function modifyTest($userID, $kpiID, $goalID, $testID, $newActiveStatus) {
+		global $db;
+				
+		$db->doQuery("INSERT INTO user_tests (user_id, goal_id, kpi_id, test_id, is_active, date_created) VALUES (%s, %s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active = %s , date_created = NOW()", $userID, $goalID, $kpiID, $testID, $newActiveStatus);
+
+	}	
+	
+	public static function getListFromGoalID($goalID,$userID) {
+		global $db;
+		
+		# select all kpi_ids that are associated with the goal
+		$rs = $db->doQuery("SELECT kpi_id FROM goals_to_kpis WHERE goal_id=%s", $goalID);
+		$list = array();
+		$tests = array();
+		$obj = null;
+		$kpi_active = null;
+
+		while($obj = mysql_fetch_object($rs)) {
+			# for each kpi_id, get the kpi_name and description
+			$tests = array();
+			$kpi_id = $obj->kpi_id;
+			
+			$res = $db->doQuery("SELECT * FROM kpis WHERE id=%s", $obj->kpi_id);
+					while($obj_two = mysql_fetch_object($res)) {
+						$kpi_name = $obj_two->kpi_name;
+						$kpi_desc = $obj_two->kpi_desc;
+						
+						$kpi_is_active = $db->doQueryOne("SELECT is_active FROM user_kpis WHERE user_id=%s AND kpi_id = %s AND goal_id = %s", $userID, $obj->kpi_id, $goalID);
+						if(!empty($kpi_is_active)){
+							$kpi_active = '1';
+						}else{
+							$kpi_active = '0';
+						}
+					}
+					
+			# for each kpi_id, get all kpi_test data and put it in an array
+			$rds = $db->doQuery("SELECT * FROM kpi_tests WHERE kpi_id=%s", $obj->kpi_id);
+					while($obj_three = mysql_fetch_object($rds)) {
+
+						$test_is_active = $db->doQueryOne("SELECT is_active FROM user_tests WHERE user_id=%s AND kpi_id = %s AND goal_id = %s AND test_id = %s", $userID, $obj->kpi_id, $goalID, $obj_three->id);
+						if(!empty($test_is_active)){
+							$test_active = '1';
+						}else{
+							$test_active = '0';
+						}
+						
+						$obj_three->active = $test_active;						
+						$tests[] = $obj_three;
+					
+					}
+			$kpi_obj = new stdClass;
+			$kpi_obj->id = $kpi_id;
+			$kpi_obj->kpi_name = $kpi_name;
+			$kpi_obj->kpi_desc = $kpi_desc;
+			$kpi_obj->kpi_active = $kpi_active;
+			$kpi_obj->kpi_tests = $tests;
+		
+			$list[] = new KPI($kpi_obj);
+
+		}
+	
+		return $list;
+	}
+	
+	public function __construct($dbData) {
+		$this->id = $dbData->id;
+		$this->kpi_name = $dbData->kpi_name;
+		$this->kpi_desc = $dbData->kpi_desc;
+		$this->kpi_active = $dbData->kpi_active;
+		$this->kpi_tests = $dbData->kpi_tests;
+	}
+	
+	# Stubs with whitelisting for some fields
 	public function __get($name) {
 		static $publicGetVars = array("id","goalID","name","description");
 		
@@ -852,6 +1063,8 @@ class Dailytest {
 		}
 		return $returnVal;
 	}
+	
+	# Stub for setting values
 	public function __set($name, $val) {
 		static $publicSetVars = array();
 		
@@ -865,10 +1078,11 @@ class Dailytest {
 	
 };
 
+
 class GoalStatus {
 	
 	// private
-	private $goalID, $userID, $level, $isActive, $isPublic, $positionIndex;
+	private $goalID, $userID, $kpiID, $testID, $level, $isActive, $isPublic, $positionIndex;
 
 	// protected
 	
@@ -876,10 +1090,26 @@ class GoalStatus {
 	public static function doesUserHaveGoal($userID, $goalID) {
 		global $db;
 		
-		$rs = $db->doQuery("SELECT goal_id FROM goals_status WHERE user_id=%s AND goal_id=%s", $userID, $goalID);
+		$rs = $db->doQuery("SELECT goal_id FROM goals_status WHERE user_id=%s AND goal_id=%s AND is_active = 1", $userID, $goalID);
 		$userHasGoal = mysql_num_rows($rs)>0;
+		
 		return $userHasGoal;
 	}
+	
+	public static function setTracking($userID, $goalID, $displayStyle) {
+		global $db;
+		
+		$db->doQuery("UPDATE goals_status SET display_style = %s, latest_change = NOW() WHERE user_id=%s AND goal_id=%s", $displayStyle, $userID, $goalID);		
+	}
+
+	
+	public static function alterDescription($userID, $goalID, $description) {
+		global $db;
+		
+		
+		$db->doQuery("UPDATE goals_status SET description = %s, latest_change = NOW() WHERE user_id=%s AND goal_id=%s", $description, $userID, $goalID);		
+	}
+	
 	public static function getNumUserGoals($userID) {
 		global $db;
 	
@@ -895,24 +1125,36 @@ class GoalStatus {
 	public static function setUserGoalLevel($userID, $goalID, $newLevel) {
 		global $db;
 		
-		$db->doQuery("UPDATE goals_status SET level=%s WHERE user_id=%s AND goal_id=%s", $newLevel, $userID, $goalID);
+		$db->doQuery("UPDATE goals_status SET level=%s, latest_change = NOW() WHERE user_id=%s AND goal_id=%s", $newLevel, $userID, $goalID);
 	}
 	public static function getAverageGoalScore($goalID) {
 		global $db;
 		
 		return $db->doQueryOne("SELECT AVG(level) FROM goals_status WHERE goal_id=%s", $goalID);
 	}
-	public static function userAdoptGoal($userID, $goalID) {
+	
+	public static function userAdoptGoalSimple($userID, $goalID) {
 		global $db;
 		
 		$nextIndex = $db->doQueryOne("SELECT MAX(position_index)+1 FROM goals_status WHERE goal_id=%s AND user_id=%s", $goalID, $userID);
 		if(is_null($nextIndex)) {
 			$nextIndex=0;
 		}
+		 
 		// by default all goals are public until we put up goal adoption page
-		$db->doQuery("INSERT INTO goals_status (goal_id, user_id, level, is_active, is_public, position_index) 
-											VALUES (%s, %s, 5, TRUE, TRUE, %s)", $goalID, $userID, $nextIndex);
+		$reportingStyle = 0;
+		$goalDesc = '';
+
+		$db->doQuery("INSERT INTO goals_status (goal_id, user_id, level, description, is_active, is_public, position_index, display_style, date_created, latest_change) VALUES (%s, %s, 5, %s, TRUE, TRUE, %s, %s, NOW(), NOW()) ON DUPLICATE KEY UPDATE is_active = 1, latest_change = NOW()", $goalID, $userID, $goalDesc, $nextIndex, $reportingStyle);
 	}
+	
+	public static function userRemoveGoal($userID, $goalID) {
+		global $db;
+		
+		$db->doQuery("UPDATE goals_status SET is_active = 0, latest_change = NOW() WHERE user_id = %s AND goal_id = %s", $userID, $goalID);
+	}
+	
+	
 	public static function getNumGoalAdopters($goalID) {
 		global $db;
 		
@@ -983,7 +1225,7 @@ class GoalStatus {
 							</div>
 <?php
 		static $numDaysBack = 15;
-		$dailytests = Dailytest::getListFromGoalID($this->goalID);
+		$dailytests = Dailytest::getListFromGoalID($this->goalID, $this->userID);
 		if(count($dailytests)) {
 ?>
 							<!-- ADHERENCE TESTS -->
@@ -1177,7 +1419,7 @@ class DailytestStatus {
 	public static function createNew($dailytestID, $userID, $result) {
 		global $db;
 		
-		$db->doQuery("INSERT INTO dailytests_status (dailytest_id, user_id, result, entered_at) VALUES (%s, %s, %s, %s)", $dailytestID, $userID, $result, Date::Now());
+		$db->doQuery("INSERT INTO strategies_log (strategy_id, user_id, input, entered_at) VALUES (%s, %s, %s, %s)", $dailytestID, $userID, $result, Date::Now());
 		$newID = mysql_insert_id();
 		return $newID;
 	}
@@ -1188,7 +1430,7 @@ class DailytestStatus {
 	public static function getListFromUserID($userID, $dailytestID, $daysBack) {
 		global $db;
 		
-		$rs = $db->doQuery("SELECT * FROM dailytests_status WHERE user_id=%s AND dailytest_id=%s AND UNIX_TIMESTAMP(entered_at)>(".Date::Now()->toUT()."-%s*60*60*24) ORDER BY entered_at DESC", $userID, $dailytestID, $daysBack);
+		$rs = $db->doQuery("SELECT * FROM strategies_log WHERE user_id=%s AND strategy_id=%s AND UNIX_TIMESTAMP(entered_at)>(".Date::Now()->toUT()."-%s*60*60*24) ORDER BY entered_at DESC", $userID, $dailytestID, $daysBack);
 		$obj = null;
 		$list = array();
 		while($obj = mysql_fetch_object($rs)) {
@@ -1200,7 +1442,7 @@ class DailytestStatus {
 		global $db;
 		
 		$today = Date::now()->toDay();
-		$rs = $db->doQuery("SELECT result FROM dailytests_status WHERE user_id=%s AND dailytest_id=%s AND entered_at_day=%s", $userID, $dailytestID, $today);
+		$rs = $db->doQuery("SELECT input FROM strategies_log WHERE user_id=%s AND strategy_id=%s AND entered_at_day=%s", $userID, $dailytestID, $today);
 		return mysql_num_rows($rs)>0;
 	}
 	public static function setTodayStatus($userID, $dailytestID, $newStatus) {
@@ -1210,10 +1452,10 @@ class DailytestStatus {
 		$today = Date::now()->toDay();
 		if($currentStatus!=$newStatus) {
 			if($currentStatus) {
-				$db->doQuery("DELETE FROM dailytests_status WHERE user_id=%s AND dailytest_id=%s AND entered_at_day=%s", $userID, $dailytestID, $today);
+				$db->doQuery("DELETE FROM strategies_log WHERE user_id=%s AND strategy_id=%s AND entered_at_day=%s", $userID, $dailytestID, $today);
 			}
 			else {
-				$db->doQuery("INSERT INTO dailytests_status (dailytest_id, user_id, result, entered_at, entered_at_day) VALUES (%s, %s, 1, %s, %s)", $dailytestID, $userID, Date::Now(), $today);
+				$db->doQuery("INSERT INTO strategies_log (strategy_id, user_id, input, entered_at, entered_at_day) VALUES (%s, %s, 1, %s, %s)", $dailytestID, $userID, Date::Now(), $today);
 			}
 		}
 		
@@ -1226,6 +1468,8 @@ class DailytestStatus {
 		$this->result = $dbData->result;
 		$this->enteredAt = Date::fromSQLStr($dbData->entered_at);
 	}
+	
+	# Stub with whitelisting for some fields
 	public function __get($name) {
 		static $publicGetVars = array("result","enteredAt");
 		
@@ -1238,6 +1482,8 @@ class DailytestStatus {
 		}
 		return $returnVal;
 	}
+	
+	# Stub for setting values
 	public function __set($name, $val) {
 		static $publicSetVars = array();
 		
