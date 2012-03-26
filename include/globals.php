@@ -30,7 +30,7 @@ function initGlobals() {
 	Date::setTimezone(/* everybody is on PST */);
 	
 	// database
-	$db = Database::init("localhost", "root", "", "superhuman_goals", FUNCNAME_HANDLESQLARGOBJ);
+	$db = Database::init("localhost", "root", "faramir", "superhuman_goals", FUNCNAME_HANDLESQLARGOBJ);
 	
 	// sessions
 	Session::init();
