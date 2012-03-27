@@ -62,7 +62,6 @@ class User {
 		}
 		return $user;
 	}
-
 	public static function createNewForSignup($lastAuthClientUserID, $authClientUserData) {
 		global $db;
 		$authID = $lastAuthClientUserID;
