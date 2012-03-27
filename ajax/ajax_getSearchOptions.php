@@ -1,6 +1,6 @@
 <?php
 // ensure user is logged in
-include("../template/userFacingBase.php");
+include("../template/userFacingForceLogin.php");
 
 // verify & pull parameters
 if(	!isset($_GET["inputText"]) ) {

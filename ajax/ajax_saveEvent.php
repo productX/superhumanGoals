@@ -1,5 +1,5 @@
 <?php
-include("../template/userFacingBase.php");
+include("../template/userFacingForceLogin.php");
 
 // verify & pull parameters
 if(	!isset($_GET["userID"]) ||

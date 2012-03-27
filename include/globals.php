@@ -4,6 +4,8 @@ require_once("constants.php");
 require_once("view.php");
 require_once(dirname(__FILE__)."/../config/config.php");
 require_once(dirname(__FILE__)."/../../common/include/functions.php"); 
+require_once(dirname(__FILE__)."/../../common/framework/auth/include/appAuth.php"); 
+require_once(dirname(__FILE__)."/../auth/client/include/sgAuthClient.php"); 
 
 // global vars
 $user = null;
@@ -11,50 +13,34 @@ $appAuth = null;
 $db = null;
 $view = null;
 
-const FUNCNAME_HANDLESQLARGOBJ='handleSQLArgObj';
-function handleSQLArgObj($className, $arg) {
-	$val="";
-	// this function is left here as an example. the below cases are now built into the Database class in common
-	/*if($className == CLASSNAME_DATETIME) {
-		$val = $arg->toSQLStr();
-	}
-	elseif($className == CLASSNAME_SQLARGLIKE) {
-		$val = $arg->toSQLStr();
-	}*/
-	return $val;
-}
-
-function initGlobals() {
-	global $db;
-	
+function initError() {
 	// assert options
 	assert_options(ASSERT_ACTIVE, 1);
 	assert_options(ASSERT_BAIL, 1);
-	
-	// timezone
-	Date::setTimezone(/* everybody is on PST */);
-	
-	// database
-	$db = Database::init(CONFIG_DBSERVER, CONFIG_DBUSER, CONFIG_DBPASS, CONFIG_DBNAME, FUNCNAME_HANDLESQLARGOBJ);
-	
-	// sessions
-	Session::init();
-	StatusMessages::init();
 }
 
-function initUser() {
-	global $user, $appAuth;
+function initTime() {
+	// timezone
+	Date::setTimezone(/* everybody is on PST */);
+}
 
-	// app auth
-	$appAuth = AppAuth::init("appTryAutoLogin", "appCreateNewUser");
-	if($appAuth->isLoggedIn()) {
-		$userID = $appAuth->getUserID();
-		$user = User::getObjFromUserID($userID);
-	}
+function initDB() {
+	global $db;
+		
+	// database
+	$db = Database::init(CONFIG_DBSERVER, CONFIG_DBUSER, CONFIG_DBPASS, CONFIG_DBNAME, FUNCNAME_HANDLESQLARGOBJ);
+}
+
+function initSession() {
+	// sessions
+	Session::init();
 }
 
 function initView() {
 	global $view;
+	if(!is_null($view)) {
+		return;
+	}
 	
 	// do some magic to figure out if we're mobile or PC
 	$viewmode = ViewSwitch::getViewmode(	VIEWSWITCH_MOBILEVIEWSERVER,
@@ -75,94 +61,45 @@ function initView() {
 			assert(false);
 			break;
 	}
+
+	StatusMessages::init();
 }
 
-/* HACK: this should move into a common place at some point. requirements for doing this: more documentation, common session class
-perhaps should also find a way to have AppAuth manage all AuthClient sessions & serve as single point for all auth?
-*/ 
-class AppAuth {
+function initAuth() {
+	global $appAuth;
 
-	// private
-	const SESSVAR_USERID = 'userID';
-	private $userID=null;
-	private $autoLoginFunc=null, $createNewUserFunc=null;
-	private function __construct($autoLoginFunc, $createNewUserFunc) {
-		$this->autoLoginFunc = $autoLoginFunc;
-		$this->createNewUserFunc = $createNewUserFunc;
-		$this->userID = null;
-		// HACK: certainly could put this somewhere better
-		if(isset($_GET['logout'])) {
-			$this->doLogout();
-			return;
-		}
-		if(Session::issetVar(AppAuth::SESSVAR_USERID)) {
-			$this->userID = Session::getVar(AppAuth::SESSVAR_USERID);
-		}
-	}
-	
-	// protected
-	
-	// public
-	public static function init($autoLoginFunc, $createNewUserFunc) {
-		return new AppAuth($autoLoginFunc, $createNewUserFunc);
-	}
-	public function isLoggedIn() {
-		return !is_null($this->userID);
-	}
-	public function getUserID() {
-		return $this->userID;
-	}
-	public function enforceLogin($redirectURL) {
-		if(!$this->isLoggedIn()) {
-			redirect($redirectURL);
-		}
-	}
-	public function tryAutoLogin() {
-		$autoLoginFunc = $this->autoLoginFunc;
-		$success = $autoLoginFunc();
-		if(!$success) {
-			return false;
-		}
-		$userID = $success;
-		Session::setVar(AppAuth::SESSVAR_USERID, $userID);
-		return true;
-	}
-	public function doSignup($appData) {
-		if($this->isLoggedIn()) {
-			// already logged in
-			return false;
-		}
-		if($this->tryAutoLogin()) {
-			// user obj already exists; were able to "automatically" log them in
-			return false;
-		}
-		$createNewUserFunc = $this->createNewUserFunc;
-		$newID = $createNewUserFunc($appData);
-		Session::setVar(AppAuth::SESSVAR_USERID, $newID);
-		return true;
-	}
-	public function doLogout() {
-		Session::clearVar(AppAuth::SESSVAR_USERID);
-	}
-	
-};
+	$authClients = array();
+	$authClients[] = createSGAuth();
+	$appAuth = AppAuth::init("appAuthGetUserForAuthID", "appAuthCreateNewUser", null /* no sign-up page*/, $authClients);
+}
 
 // returns false if fail, userID if pass
-function appTryAutoLogin() {
-	global $intranetAuth, $db;
+function appAuthGetUserForAuthID($lastAuthClientUserID) {
+	global $db;
 	
-	$success = false;
-	$authUserID = $intranetAuth->getUserID();
-	$sgObj = $db->doQueryRFR("SELECT * FROM users WHERE auth_id=%s", $authUserID);
+	$userID = null;
+	$sgObj = $db->doQueryRFR("SELECT id FROM users WHERE auth_id=%s", $lastAuthClientUserID);
 	if(!is_null($sgObj)) {
 		$userID = $sgObj->id;
-		$success = $userID;
 	}
-	return $success;
+	return $userID;
 }
 
-function appCreateNewUser($appData) {
-	User::createNewForSignup($appData);
+function appAuthCreateNewUser($lastAuthClientUserID, $authClientUserData) {
+	User::createNewForSignup($lastAuthClientUserID, $authClientUserData);
+}
+
+const FUNCNAME_HANDLESQLARGOBJ='handleSQLArgObj';
+function handleSQLArgObj($className, $arg) {
+	$val="";
+	// this function is left here as an example. the below cases are now built into the Database class in common
+	/*if($className == CLASSNAME_DATETIME) {
+		$val = $arg->toSQLStr();
+	}
+	elseif($className == CLASSNAME_SQLARGLIKE) {
+		$val = $arg->toSQLStr();
+	}*/
+	return $val;
 }
 
 ?>
