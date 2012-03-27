@@ -1,5 +1,4 @@
 <?php
-
 // include basics
 include("baseIncludes.php");
 

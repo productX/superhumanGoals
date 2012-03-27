@@ -42,7 +42,6 @@ class User {
 		$sgObj = $db->doQueryRFR("SELECT * FROM users WHERE id=%s", $userID);
 				
 		if(!is_null($sgObj)) {
-		
 			// HACK: would need to pass in multiple auth ID's in the scenario where there are several auth servers to connect to
 			$authArr = $appAuth->getAuthUserDataAgg($sgObj->auth_id);
 			$authObj = (object)$authArr;
@@ -58,14 +57,12 @@ class User {
 		$sgObj = $db->doQueryRFR("SELECT * FROM users WHERE id=%s", $userID);
 		if(!is_null($sgObj)) {
 			$authObj = (object)$authClientData;
-
 			assert(!is_null($authObj) && is_object($authObj));
 			$user = new User($authObj, $sgObj);
 		}
-		
 		return $user;
-		
 	}
+
 	public static function createNewForSignup($lastAuthClientUserID, $authClientUserData) {
 		global $db;
 		$authID = $lastAuthClientUserID;
