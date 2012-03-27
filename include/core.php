@@ -1006,33 +1006,23 @@ class DailytestStatus {
 		return $newID;
 	}
 	public static function getObjFromDBData($dbData) {
-		// point of failure 3
 		$status = new DailytestStatus($dbData);
 		return $status;
 	}
-	
 	
 	public static function getListFromUserID($userID, $dailytestID, $daysBack) {
 		global $db;
 		
 		$rs = $db->doQuery("SELECT * FROM strategies_log WHERE user_id=%s AND strategy_id=%s AND UNIX_TIMESTAMP(entered_at)>(".Date::Now()->toUT()."-%s*60*60*24) ORDER BY entered_at DESC", $userID, $dailytestID, $daysBack);
 		
-		
-		//echo "SELECT * FROM strategies_log WHERE user_id=$userID AND strategy_id=$dailytestID AND UNIX_TIMESTAMP(entered_at)>(".Date::Now()->toUT()."-$daysBack*60*60*24) ORDER BY entered_at DESC";
-		
-		
 		$obj = null;
 		$list = array();
 		while($obj = mysql_fetch_object($rs)) {
 		
-			// point of failure 2
 			$list[] = DailytestStatus::getObjFromDBData($obj);
 		}
 		return $list;
 	}
-	
-	
-	
 	
 	public static function getTodayStatus($userID, $dailytestID) {
 		global $db;

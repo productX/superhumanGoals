@@ -2,6 +2,7 @@
 // enforce login with auth servers
 // HACK: this should be done by AppAuth
 include("enforceLogin.php");
+
 // include basics
 include("baseIncludes.php");
 
