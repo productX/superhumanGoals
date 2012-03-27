@@ -1,37 +1,32 @@
 <?php
 include("template/userFacingBase.php");
 
-// DO PROCESSING
+/*****************************************************************
+						DO PROCESSING
+*****************************************************************/
+
+// check to see if user submitted sign-up form
+// HACK: this should be moved into the auth server
 if(isset($_POST["submit"])) {
+	// pull the sign-up parameters
 	$pictureURL = $_POST["pictureURL"];
 	
+	// try the sign-up
 	if(!$appAuth->doSignup(array("pictureURL"=>$pictureURL))) {
+		// if it fails this is likely because they've already signed up. report it.
 		StatusMessages::addMessage("User already signed up.", StatusMessage::ENUM_BAD);
 	}
-	StatusMessages::addMessage("Signed up.",StatusMessage::ENUM_GOOD);
+	else {
+		// report success in status
+		StatusMessages::addMessage("Signed up.",StatusMessage::ENUM_GOOD);
+	}
 	redirect(PAGE_INDEX);
 }
 
-// RENDER PAGE
-require_once("include/chrome.php");
-printHeader(NAVNAME_NONE, array(), true);
-?>
 
-			<div class="signup-box">
-				<h2>Be Amazing.</h2>
-				<a href="#" class="signup-btn">Sign up &raquo;</a>
-				<div class="upload-box">
-					<p>Signed in as: <strong><?php echo $intranetAuth->getUserEmail(); ?></strong></p>
-					<p>Profile pic URL (50x50):</p>
-					<form action="<?php echo PAGE_SIGNUP; ?>" method="post">
-						<!--<input type="file" name="file" id="file" value="" />-->
-						<input type="text" name="pictureURL" />
-						<input name="submit" type="submit" value="Sign up &raquo;" class="submit-btn" />
-						<div class="cl">&nbsp;</div>
-					</form>
-				</div>
-			</div>
+/*****************************************************************
+						RENDER PAGE
+*****************************************************************/
 
-<?php
-printFooter(true);
+$view->printSignupPage();
 ?>

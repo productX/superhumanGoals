@@ -1,26 +1,31 @@
 <?php
 require_once("core.php");
 require_once("constants.php");
+require_once("view.php");
+require_once(dirname(__FILE__)."/../config/config.php");
+require_once(dirname(__FILE__)."/../../common/include/functions.php"); 
 
 // global vars
 $user = null;
 $appAuth = null;
 $db = null;
+$view = null;
 
 const FUNCNAME_HANDLESQLARGOBJ='handleSQLArgObj';
 function handleSQLArgObj($className, $arg) {
 	$val="";
-	if($className == CLASSNAME_DATETIME) {
+	// this function is left here as an example. the below cases are now built into the Database class in common
+	/*if($className == CLASSNAME_DATETIME) {
 		$val = $arg->toSQLStr();
 	}
 	elseif($className == CLASSNAME_SQLARGLIKE) {
 		$val = $arg->toSQLStr();
-	}
+	}*/
 	return $val;
 }
 
 function initGlobals() {
-	global $user, $appAuth, $db;
+	global $db;
 	
 	// assert options
 	assert_options(ASSERT_ACTIVE, 1);
@@ -30,17 +35,45 @@ function initGlobals() {
 	Date::setTimezone(/* everybody is on PST */);
 	
 	// database
-	$db = Database::init("localhost", "root", "faramir", "superhuman_goals", FUNCNAME_HANDLESQLARGOBJ);
+	$db = Database::init(CONFIG_DBSERVER, CONFIG_DBUSER, CONFIG_DBPASS, CONFIG_DBNAME, FUNCNAME_HANDLESQLARGOBJ);
 	
 	// sessions
 	Session::init();
 	StatusMessages::init();
+}
+
+function initUser() {
+	global $user, $appAuth;
 
 	// app auth
-	$appAuth = AppAuth::init("appTryAutoLogin", "User::createNewForSignup");
+	$appAuth = AppAuth::init("appTryAutoLogin", "appCreateNewUser");
 	if($appAuth->isLoggedIn()) {
 		$userID = $appAuth->getUserID();
 		$user = User::getObjFromUserID($userID);
+	}
+}
+
+function initView() {
+	global $view;
+	
+	// do some magic to figure out if we're mobile or PC
+	$viewmode = ViewSwitch::getViewmode(	VIEWSWITCH_MOBILEVIEWSERVER,
+											VIEWSWITCH_MOBILEVIEWQS,
+											VIEWSWITCH_WEBVIEWSERVER,
+											VIEWSWITCH_WEBVIEWQS
+										);
+
+	// create view
+	switch($viewmode) {
+		case ViewSwitch::VIEWMODE_MOBILE:
+			$view = new MobileView();
+			break;
+		case ViewSwitch::VIEWMODE_WEB:
+			$view = new WebView();
+			break;
+		default:
+			assert(false);
+			break;
 	}
 }
 
@@ -126,6 +159,10 @@ function appTryAutoLogin() {
 		$success = $userID;
 	}
 	return $success;
+}
+
+function appCreateNewUser($appData) {
+	User::createNewForSignup($appData);
 }
 
 ?>

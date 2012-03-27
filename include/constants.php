@@ -1,10 +1,6 @@
 <?php
 
-// paths
-//const BASE_DIR = 'http://intranet.productx.co/goals';
-const BASE_DIR = 'http://localhost/intranet/goals'; // Windows Debug
-
-// pages
+// page paths
 const PAGE_INDEX = 'index.php';
 const PAGE_ACTIVITY = 'activity.php';
 const PAGE_ABOUT = 'about.php';
@@ -32,7 +28,7 @@ const PAGE_AJAX_ALTER_GOAL_DESCRIPTION = 'ajax/ajax_alterGoalDescription.php';
 
 
 
-// nav
+// enum for nav elements
 const NAVNAME_NONE = 'none';
 const NAVNAME_ACTIVITY = 'activity';
 const NAVNAME_YOU = 'you';
