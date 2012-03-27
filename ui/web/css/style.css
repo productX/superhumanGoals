@@ -42,7 +42,7 @@ textarea { overflow: auto; }
 #header a.login-btn:active { text-decoration: none; -webkit-box-shadow: inset 2px 2px 4px 1px #696969; -moz-box-shadow: inset 2px 2px 4px 1px #696969; box-shadow: inset 2px 2px 4px 1px #696969; }
 #header .user-image { position: relative; margin: -7px 0 0 0; float: right; display: inline; border: solid 1px #000; height: 64px; padding-bottom: 3px; }
 #header .user-image .anchor { display: block; text-align: right; padding: 7px 0 0 0; }
-#header .user-image .dd { display: none; position: absolute; top: 76px; right: 0; width: 151px; padding: 5px 0; background: #fff; border: solid 1px #7d7d7d; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; }
+#header .user-image .dd { display: none; position: absolute; top: 74px; right: 0; width: 151px; padding: 5px 0; background: #fff; border: solid 1px #7d7d7d; -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; }
 #header .user-image .dd { box-shadow: #2e2d2d 1px 1px 3px; -webkit-box-shadow: #2e2d2d 1px 1px 3px; -moz-box-shadow: #2e2d2d 1px 1px 3px; }
 #header .user-image .dd ul li { line-height: 28px; font-size: 14px; color: #000; display: block; }
 #header .user-image .dd ul li a { color: #000; padding: 0 10px; font-weight: normal; display: block; }

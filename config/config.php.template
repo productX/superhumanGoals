@@ -5,14 +5,36 @@ const CONFIG_DBNAME = 'superhuman_goals';
 const CONFIG_DBUSER = 'root';
 const CONFIG_DBPASS = '';
 
-// auth client for intranet
-const CONFIG_AUTHCHECKUSERURL = "http://localhost/intranet/auth/server/intranetCheckUser.php";
-const CONFIG_AUTHPAGEURL = "http://localhost/intranet/auth/server/intranetAuthPage.php";
-const CONFIG_AUTHGETUSERVARSURL = "http://localhost/intranet/auth/server/intranetGetUserVars.php";
+// auth server
+require_once(dirname(__FILE__)."/../../common/framework/auth/server/include/authServer.php"); 
+require_once(dirname(__FILE__)."/../include/view.php"); 
+const CONFIG_AS_DBSERVER = CONFIG_DBSERVER;
+const CONFIG_AS_DBNAME = CONFIG_DBNAME;
+const CONFIG_AS_DBUSER = CONFIG_DBUSER;
+const CONFIG_AS_DBPASS = CONFIG_DBPASS;
+const CONFIG_AS_LOGACTIVITY = true;
+const CONFIG_AS_SESSIONDURATION = 864000; // 10 days
+const CONFIG_AS_ADMINEMAIL = 'roger@productx.co';
+const CONFIG_AS_CONFIRMEMAIL = true;
+const CONFIG_AS_PASSRULEMAXLEN = 6;
+const CONFIG_AS_PASSRULEMINLEN = 40;
+const CONFIG_AS_NAMESPACE = 'sg';
+const CONFIG_AS_PAGEABSURL = 'http://localhost/superhumanGoals/auth/server/intranetAuthPage.php';
+const CONFIG_AS_PAGEPROCESSORABSURL = 'http://localhost/superhumanGoals/auth/server/intranetAuthPageProcessor.php';
+const CONFIG_AS_FUNCPRINTHEADER = 'printHeaderAuth';
+const CONFIG_AS_FUNCPRINTFOOTER = 'printFooterAuth';
+$CONFIG_AS_EXTRADATAPARAMS = array(new ASEDPText("Picture URL (50x50)", "pictureURL"));
+
+// auth client for SG
+const CONFIG_AUTHCOMMANDURL = "http://localhost/superhumanGoals/auth/server/intranetAuthCommand.php";
+const CONFIG_AUTHPAGEURL = "http://localhost/superhumanGoals/auth/server/intranetAuthPage.php";
 
 // web/mobile switch
-const VIEWSWITCH_MOBILEVIEWSERVER = "m.superhumangoals.com";
-const VIEWSWITCH_WEBVIEWSERVER = "w.superhumangoals.com";
+const VIEWSWITCH_MOBILEVIEWSERVER = "";
+const VIEWSWITCH_WEBVIEWSERVER = "";
 const VIEWSWITCH_MOBILEVIEWQS = "go_mobile";
 const VIEWSWITCH_WEBVIEWQS = "go_web";
+
+// other
+const BASEPATH_UI = "http://localhost/superhumanGoals/ui";
 ?>

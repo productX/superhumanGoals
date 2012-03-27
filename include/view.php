@@ -350,24 +350,23 @@ abstract class BaseView {
 	}
 	abstract public function printUserPage($viewUser);
 	abstract public function printGoalPage($goalID);
-	public function printSignupPage() {
-		global $intranetAuth;
-		
+	public function printSignupPage() {		
 		$this->printHeader(NAVNAME_NONE, array(), true);
 		
-		$this->printSignupPagePrint($intranetAuth);
+		$this->printSignupPagePrint();
 
 		$this->printFooter(NAVNAME_NONE, true);
 	}
-	protected function printSignupPagePrint($intranetAuth) {
+	protected function printSignupPagePrint() {
+		global $appAuth;
 		?>
 					<div class="signup-box">
 						<h2>Be Amazing.</h2>
 						<a href="#" class="signup-btn">Sign up &raquo;</a>
 						<div class="upload-box">
-							<p>Signed in as: <strong><?php echo $intranetAuth->getUserEmail(); ?></strong></p>
+							<p>Signed in as: <strong><?php echo $appAuth->getUserEmail(); ?></strong></p>
 							<p>Profile pic URL (50x50):</p>
-							<form action="<?php echo PAGE_SIGNUP; ?>" method="post">
+							<form action="<?php echo PAGE_INDEX; ?>" method="post">
 								<!--<input type="file" name="file" id="file" value="" />-->
 								<input type="text" name="pictureURL" />
 								<input name="submit" type="submit" value="Sign up &raquo;" class="submit-btn" />
@@ -391,16 +390,16 @@ class WebView extends BaseView {
 	<head>
 		<title>superhuman</title>
 		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-		<link rel="shortcut icon" href="ui/web/css/images/favicon.ico" />
-		<link rel="stylesheet" href="ui/web/css/style.css" type="text/css" media="all" />
-		<link rel="stylesheet" href="ui/web/css/enhanced.css" type="text/css" media="screen" />
-		<link rel="stylesheet" href="ui/web/css/jquery.jscrollpane.css" type="text/css" media="all" />
+		<link rel="shortcut icon" href="<?php echo BASEPATH_UI;?>/web/css/images/favicon.ico" />
+		<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/web/css/style.css" type="text/css" media="all" />
+		<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/web/css/enhanced.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/web/css/jquery.jscrollpane.css" type="text/css" media="all" />
 		
-		<script src="ui/web/js/jquery-1.7.1.min.js" type="text/javascript"></script>
-		<script src="ui/web/js/jquery.jscrollpane.min.js" type="text/javascript"></script>
-		<script src="ui/web/js/jquery.mousewheel.js" type="text/javascript"></script>
-		<script src="ui/web/js/jquery.fileinput.js" type="text/javascript"></script>
-		<script src="ui/web/js/functions.js" type="text/javascript"></script>
+		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery-1.7.1.min.js" type="text/javascript"></script>
+		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery.jscrollpane.min.js" type="text/javascript"></script>
+		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery.mousewheel.js" type="text/javascript"></script>
+		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery.fileinput.js" type="text/javascript"></script>
+		<script src="<?php echo BASEPATH_UI;?>/web/js/functions.js" type="text/javascript"></script>
 		<script type="text/javascript"> $(document).ready(function() { autoHeightContainer(); }) </script>
 	</head>
 	<body>
@@ -412,24 +411,26 @@ class WebView extends BaseView {
 				<div class="shell">
 					<h1 id="logo"><a href="<?php echo PAGE_INDEX; ?>" class="notext">Superhuman</a></h1>
 	<?php
-		if($appAuth->isLoggedIn()) {
+		if(isset($appAuth) && $appAuth->isLoggedIn()) {
 	?>
 					<div class="user-image">
 						<a href="<?php echo $user->getPagePath(); ?>"><img src="<?php echo $user->pictureURL; ?>" alt="<?php echo "$user->firstName $user->lastName";?>" /></a>
-						<span class="anchor"><img src="ui/web/css/images/anchor.png" alt="Anchor" /></span>
+						<span class="anchor"><img src="<?php echo BASEPATH_UI;?>/web/css/images/anchor.png" alt="Anchor" /></span>
 						<div class="dd">
 							<ul>
 								<!--<li><a href="#">Change Password</a></li>-->
-								<li><a href="<?php echo PAGE_LOGOUT; ?>">Log Out</a></li>
+								<li><a href="<?php echo $appAuth->getLogoutPageURL(); ?>">Log Out</a></li>
 							</ul>
 						</div>
 					</div>
 	<?php
 		}
 		else {
+			if(!$justOuterChrome) {
 	?>
-					<p class="right"><a href="<?php echo PAGE_LOGIN; ?>" class="login-btn">Log In &raquo;</a><a href="<?php echo PAGE_SIGNUP; ?>" class="signup-btn">Sign Up &raquo;</a></p>
+					<p class="right"><a href="<?php echo PAGE_INDEX; ?>" class="login-btn">Log In &raquo;</a><a href="<?php echo PAGE_INDEX; ?>" class="signup-btn">Sign Up &raquo;</a></p>
 	<?php
+			}
 		}
 	?>
 					<div class="cl">&nbsp;</div>
@@ -564,9 +565,9 @@ class WebView extends BaseView {
 					<!-- Scollarea -->
 					<div class="scrollarea">
 	<?php
+	
+			StatusMessages::printMessages();
 		}
-
-		StatusMessages::printMessages();
 	}
 	public function printFooter($navSelect, $justOuterChrome=false) {
 		global $user, $appAuth;
@@ -588,9 +589,13 @@ class WebView extends BaseView {
 			<div id="footer">
 				<!-- Shell -->
 				<div class="shell">
+	<?php
+		if(!$justOuterChrome) {
+	?>
 					<p class="nav"><a href="<?php echo PAGE_ABOUT; ?>">About</a><span>|</span><a href="<?php echo PAGE_HELP; ?>">Help</a></p>
 	<?php
-		if($appAuth->isLoggedIn() && !$user->hasMadeDailyEntry()) {
+		}
+		if(isset($appAuth) && $appAuth->isLoggedIn() && !$user->hasMadeDailyEntry()) {
 	?>
 					<a href="<?php echo PAGE_USER; ?>" class="entry-btn">Make your daily entry &raquo;</a>
 	<?php
@@ -2128,14 +2133,14 @@ class MobileView extends BaseView {
 	<title>Superhuman</title>
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=640"/>  
-	<link rel="shortcut icon" href="ui/mobile/css/images/favicon.ico" />
-	<link rel="stylesheet" href="ui/mobile/css/jquery.mobile.structure-1.1.0-rc.1.css" type="text/css" media="all" />
-	<link rel="stylesheet" href="ui/mobile/css/style.css" type="text/css" media="all" />
-	<link rel="stylesheet" href="ui/mobile/css/jqtransform.css" type="text/css" media="all" />
-	<script src="ui/mobile/js/jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
-	<script src="ui/mobile/js/jquery.jqtransform.js" type="text/javascript" charset="utf-8"></script>
-	<script src="ui/mobile/js/functions.js" type="text/javascript" charset="utf-8"></script>
-	<script src="ui/mobile/js/jquery.mobile-1.1.0-rc.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<link rel="shortcut icon" href="<?php echo BASEPATH_UI;?>/mobile/css/images/favicon.ico" />
+	<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/mobile/css/jquery.mobile.structure-1.1.0-rc.1.css" type="text/css" media="all" />
+	<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/mobile/css/style.css" type="text/css" media="all" />
+	<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/mobile/css/jqtransform.css" type="text/css" media="all" />
+	<script src="<?php echo BASEPATH_UI;?>/mobile/js/jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<script src="<?php echo BASEPATH_UI;?>/mobile/js/jquery.jqtransform.js" type="text/javascript" charset="utf-8"></script>
+	<script src="<?php echo BASEPATH_UI;?>/mobile/js/functions.js" type="text/javascript" charset="utf-8"></script>
+	<script src="<?php echo BASEPATH_UI;?>/mobile/js/jquery.mobile-1.1.0-rc.1.min.js" type="text/javascript" charset="utf-8"></script>
 </head>
 <body>
 <div data-role="page">
@@ -2146,7 +2151,7 @@ class MobileView extends BaseView {
 			<h1 id="logo" ><a href="<?php echo PAGE_INDEX; ?>">Superhuman</a></h1>
 			
 	<?php
-		if($appAuth->isLoggedIn()) {
+		if(isset($appAuth) && $appAuth->isLoggedIn()) {
 	?>
 			<div class="profile">
 				<a href="#" class="link" >
@@ -2156,7 +2161,7 @@ class MobileView extends BaseView {
 				<div class="dropdown">
 					<ul>
 						<!--<li><a href="#">Change Password</a></li>-->
-						<li><a href="<?php echo PAGE_LOGOUT; ?>">Log Out</a></li>
+						<li><a href="<?php echo $appAuth->getLogoutPageURL(); ?>">Log Out</a></li>
 					</ul>
 				</div>
 			</div>
@@ -2170,13 +2175,17 @@ class MobileView extends BaseView {
 		<!-- Main -->
 		<div id="main">
 <?php
-		StatusMessages::printMessages();
+		if(!$justOuterChrome) {
+			StatusMessages::printMessages();
+		}
 	}
 	public function printFooter($navSelect, $justOuterChrome=false) {
 ?>
 		</div>
 		<!-- END Main -->
-		
+<?php
+		if(!$justOuterChrome) {
+?>
 		<!--  Navigation -->
 		<nav>
 			<ul>
@@ -2186,6 +2195,9 @@ class MobileView extends BaseView {
 			</ul>
 		</nav>
 		<!-- END Navigation -->
+<?php
+		}
+?>
 	</div>
 	<!-- END Shell -->
 </div>
@@ -2249,7 +2261,8 @@ class MobileView extends BaseView {
 			</div>
 <?php
 	}
-	protected function printSignupPagePrint($intranetAuth) {
+	protected function printSignupPagePrint() {
+		global $appAuth;
 		$isExpanded= isset($_GET['expanded']);
 		if(!$isExpanded) {
 ?>
@@ -2257,8 +2270,8 @@ class MobileView extends BaseView {
 				<h3>Be Amazing.</h3>
 				
 				<div class="buttons">
-					<a href="<?php echo PAGE_LOGIN; ?>" data-transition="flip" class="left" >Log in &raquo;</a>
-					<a href="<?php echo PAGE_SIGNUP; ?>?expanded" data-transition="flip" class="green right" >Sign up &raquo;</a>
+					<a href="<?php echo PAGE_INDEX; ?>" data-transition="flip" class="left" >Log in &raquo;</a>
+					<a href="<?php echo PAGE_INDEX; ?>?expanded" data-transition="flip" class="green right" >Sign up &raquo;</a>
 					<div class="cl">&nbsp;</div>
 				</div>
 			</div>
@@ -2269,8 +2282,8 @@ class MobileView extends BaseView {
 			<div class="signup-box">
 				<h3>Be Amazing.</h3>
 				
-				<form action="<?php echo PAGE_SIGNUP; ?>?expanded" method="post" >
-					<p>Signed in as: <strong><?php echo $intranetAuth->getUserEmail(); ?></strong></p>
+				<form action="<?php echo PAGE_INDEX; ?>?expanded" method="post" >
+					<p>Signed in as: <strong><?php echo $appAuth->getUserEmail(); ?></strong></p>
 					
 					<label>Profile pic URL (50x50): </label>
 					<input type="text" name="pictureURL" class="field" />
@@ -2677,5 +2690,22 @@ class ChromeTitleElementTabs {
 <?php
 	}
 };
+
+// view implementation for auth system
+// HACK: ultimately this should be an implementation of an auth server view class
+function printHeaderAuth($title) {
+	include(dirname(__FILE__)."/../template/userFacingBase.php");
+	
+	global $view;
+	$view->printHeader(NAVNAME_NONE, array(), true);
+	echo "<div style='padding:20px; background-color:white; border-color:#808080; border-style:solid; border-width:thin' >";
+}
+function printFooterAuth() {
+	include(dirname(__FILE__)."/../template/userFacingBase.php");
+
+	global $view;
+	echo "</div>";
+	$view->printFooter(NAVNAME_NONE, true);
+}
 
 ?>

@@ -24,26 +24,41 @@ class User {
 
 		// update SG DB
 		$visitHistoryStr = User::visitHistoryToStr($this->visitHistory);
-		$db->doQuery("UPDATE users SET	picture_url=%s,
-											visit_history=%s,
-											last_daily_entry=%s,
-											daily_entry_story_posted=%s
-											WHERE id=%s",
-											$this->pictureURL, $visitHistoryStr, $this->lastDailyEntry, $this->dailyEntryStoryPosted, $this->id);
+		$db->doQuery("UPDATE users SET	visit_history=%s,
+										last_daily_entry=%s,
+										daily_entry_story_posted=%s
+										WHERE id=%s",
+										$visitHistoryStr, $this->lastDailyEntry, $this->dailyEntryStoryPosted, $this->id);
 	}
 	
 	// protected
 	
 	// public
 	public static function getObjFromUserID($userID) {
-		global $db, $intranetAuth;
+		global $db, $appAuth;
 		
 		$user = null;
 		//$db->debugMode(true);
 		$sgObj = $db->doQueryRFR("SELECT * FROM users WHERE id=%s", $userID);
 				
 		if(!is_null($sgObj)) {
-			$authObj = $intranetAuth->getUserVars($sgObj->auth_id);			
+		
+			// HACK: would need to pass in multiple auth ID's in the scenario where there are several auth servers to connect to
+			$authArr = $appAuth->getAuthUserDataAgg($sgObj->auth_id);
+			$authObj = (object)$authArr;
+			$user = new User($authObj, $sgObj);
+		}
+		return $user;
+	}
+	public static function getObjFromUserIDAuthData($userID, $authClientData) {
+		global $db;
+		
+		$user = null;
+		//$db->debugMode(true);
+		$sgObj = $db->doQueryRFR("SELECT * FROM users WHERE id=%s", $userID);
+		if(!is_null($sgObj)) {
+			$authObj = (object)$authClientData;
+
 			assert(!is_null($authObj) && is_object($authObj));
 			$user = new User($authObj, $sgObj);
 		}
@@ -51,13 +66,12 @@ class User {
 		return $user;
 		
 	}
-	public static function createNewForSignup($appData) {
-		global $intranetAuth, $db;
-		$pictureURL = $appData["pictureURL"];
-
-		$authID = $intranetAuth->getUserID();
-		$fullName = $intranetAuth->getUserFullName();
+	public static function createNewForSignup($lastAuthClientUserID, $authClientUserData) {
+		global $db;
+		$authID = $lastAuthClientUserID;
+		$pictureURL = $authClientUserData["pictureURL"];
 		$visitHistoryStr = User::visitHistoryToStr(array(Date::now()));
+		$fullName = $authClientUserData['firstName']." ".$authClientUserData['lastName'];
 		$db->doQuery("INSERT INTO users (auth_id, picture_url, visit_history, full_name) VALUES (%s, %s, %s, %s)", $authID, $pictureURL, $visitHistoryStr, $fullName);
 		$newID = mysql_insert_id();
 		return $newID;
@@ -124,19 +138,19 @@ class User {
 	public function getPagePath() {
 		return PAGE_USER."?id=$this->id";
 	}
-	public function __construct($authDBData, $sgDBData) {	
+	public function __construct($authUserData, $sgDBData) {	
 		// data from user DB
 		$this->id = $sgDBData->id;
 		$this->authID = $sgDBData->auth_id;
-		$this->pictureURL = $sgDBData->picture_url;
 		$this->visitHistory = User::visitHistoryFromStr($sgDBData->visit_history);
 		$this->lastDailyEntry = Date::fromSQLStr($sgDBData->last_daily_entry);
 		$this->dailyEntryStoryPosted = boolval($sgDBData->daily_entry_story_posted);
 		
 		// data from auth DB
-		$this->firstName = $authDBData->firstname;
-		$this->lastName = $authDBData->lastname;
-		$this->email = $authDBData->email;
+		$this->firstName = $authUserData->firstName;
+		$this->lastName = $authUserData->lastName;
+		$this->email = $authUserData->email;
+		$this->pictureURL = $authUserData->pictureURL;
 	}
 	
 		# Stubs with whitelisting for some fields
@@ -713,9 +727,7 @@ class Dailytest {
 			assert(false);
 		}
 	}
-
-
-	
+		
 };
 
 class KPI {
