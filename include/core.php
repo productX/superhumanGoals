@@ -969,7 +969,7 @@ class GoalStatus {
 	public static function getNumGoalAdopters($goalID) {
 		global $db;
 		
-		$rs2 = $db->doQuery("SELECT user_id FROM goals_status WHERE goal_id=%s", $goalID);
+		$rs2 = $db->doQuery("SELECT user_id FROM goals_status WHERE goal_id=%s AND is_active = 1", $goalID);
 		$numAdopters = mysql_num_rows($rs2);
 		return $numAdopters;
 	}
