@@ -19,15 +19,15 @@ const CONFIG_AS_CONFIRMEMAIL = true;
 const CONFIG_AS_PASSRULEMAXLEN = 6;
 const CONFIG_AS_PASSRULEMINLEN = 40;
 const CONFIG_AS_NAMESPACE = 'sg';
-const CONFIG_AS_PAGEABSURL = 'http://localhost/superhumanGoals/auth/server/intranetAuthPage.php';
-const CONFIG_AS_PAGEPROCESSORABSURL = 'http://localhost/superhumanGoals/auth/server/intranetAuthPageProcessor.php';
+const CONFIG_AS_PAGEABSURL = 'http://localhost/superhumanGoals/auth/server/sgAuthPage.php';
+const CONFIG_AS_PAGEPROCESSORABSURL = 'http://localhost/superhumanGoals/auth/server/sgAuthPageProcessor.php';
 const CONFIG_AS_FUNCPRINTHEADER = 'printHeaderAuth';
 const CONFIG_AS_FUNCPRINTFOOTER = 'printFooterAuth';
 $CONFIG_AS_EXTRADATAPARAMS = array(new ASEDPText("Picture URL (50x50)", "pictureURL"));
 
 // auth client for SG
-const CONFIG_AUTHCOMMANDURL = "http://localhost/superhumanGoals/auth/server/intranetAuthCommand.php";
-const CONFIG_AUTHPAGEURL = "http://localhost/superhumanGoals/auth/server/intranetAuthPage.php";
+const CONFIG_AUTHCOMMANDURL = "http://localhost/superhumanGoals/auth/server/sgAuthCommand.php";
+const CONFIG_AUTHPAGEURL = "http://localhost/superhumanGoals/auth/server/sgAuthPage.php";
 
 // web/mobile switch
 const VIEWSWITCH_MOBILEVIEWSERVER = "";

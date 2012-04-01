@@ -568,9 +568,12 @@ class WebView extends BaseView {
 	
 			StatusMessages::printMessages();
 		}
+		PerformanceMeter::addTimestamp("Header render done");
 	}
 	public function printFooter($navSelect, $justOuterChrome=false) {
 		global $user, $appAuth;
+		PerformanceMeter::addTimestamp("Page render done");
+		PerformanceMeter::printRenderReport();
 	?>
 
 	<?php
@@ -611,6 +614,7 @@ class WebView extends BaseView {
 	</body>
 	</html>
 	<?php
+		PerformanceMeter::addTimestamp("Footer render done");
 	}
 	protected function storyPrintListPre() {
 	}
@@ -671,13 +675,6 @@ class WebView extends BaseView {
 					<!-- End Case -->
 <?php
 	}
-	
-	
-	
-	
-	
-	
-	
 	public function printAllGoalsPage() {
 		global $db, $user;
 	
@@ -773,38 +770,7 @@ class WebView extends BaseView {
 
 		<?php
 		$this->printFooter(NAVNAME_GOALS);
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	}	
 	public function printAboutPage() {
 		$this->printHeader(NAVNAME_NONE, array(new ChromeTitleElementHeader("About")));
 ?>
@@ -2178,8 +2144,11 @@ class MobileView extends BaseView {
 		if(!$justOuterChrome) {
 			StatusMessages::printMessages();
 		}
+		PerformanceMeter::addTimestamp("Header render done");
 	}
 	public function printFooter($navSelect, $justOuterChrome=false) {
+		PerformanceMeter::addTimestamp("Page render done");
+		PerformanceMeter::printRenderReport();
 ?>
 		</div>
 		<!-- END Main -->
@@ -2204,6 +2173,7 @@ class MobileView extends BaseView {
 </body>
 </html>
 <?php
+		PerformanceMeter::addTimestamp("Footer render done");
 	}
 	protected function storyPrintEventStoryPrint($user, $goal, $eventStory, $changeWord, $goodBad, $timeSinceStr) {
 ?>

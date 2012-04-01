@@ -73,6 +73,10 @@ function initAuth() {
 	$appAuth = AppAuth::init("appAuthGetUserForAuthID", "appAuthCreateNewUser", null /* no sign-up page*/, $authClients);
 }
 
+function initPerformanceMeter() {
+	PerformanceMeter::init();
+}
+
 // returns false if fail, userID if pass
 function appAuthGetUserForAuthID($lastAuthClientUserID) {
 	global $db;
