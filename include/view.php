@@ -679,11 +679,6 @@ class WebView extends BaseView {
 		global $db, $user;
 		$ajaxModifyGoal = PAGE_AJAX_MODIFY_GOAL;
 				
-
-
-		
-		
-		
 		// RENDER PAGE
 		$this->printHeader(NAVNAME_GOALS, array(new ChromeTitleElementHeader("All Goals")));
 
@@ -813,16 +808,17 @@ class WebView extends BaseView {
 																				
 											function addKPI(postedTo) {
 												document.goalForm.numkpis=++numkpis;
-												document.getElementById("kpis").innerHTML=document.getElementById("kpis").innerHTML+
-													"<label class='small-label'>KPI "+numkpis+":</label><input type='text' class='small-field' name='kpiName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='kpiDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Name:</label><input type='text' class='small-field' name='kpiTestName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Test Description:</label><input type='text' class='small-field' name='kpiTestDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Frequency (in days):</label><input type='text' class='small-field' name='kpiTestFrequency"+numkpis+"' /><div class='cl'>&nbsp;</div><br/>";
-												document.getElementById("numkpis").value=numkpis;
+												var newKPI = "<label class='small-label'>KPI "+numkpis+":</label><input type='text' class='small-field' name='kpiName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='kpiDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Name:</label><input type='text' class='small-field' name='kpiTestName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Test Description:</label><input type='text' class='small-field' name='kpiTestDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Frequency (in days):</label><input type='text' class='small-field' name='kpiTestFrequency"+numkpis+"' /><div class='cl'>&nbsp;</div><br/>";
+												$("#kpis").append(newKPI);
+												$("#numkpis").attr('value',numkpis);
 											}
 											
 											function addDailytest(postedTo) {
 												document.goalForm.numDailytests=++numDailytests;
-												document.getElementById("dailytests").innerHTML=document.getElementById("dailytests").innerHTML+
-													"<label class='small-label'>Strategy "+numDailytests+":</label><input type='text' class='small-field' name='dailytestName"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='dailytestDescription"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Type:</label><select name='dailytestType"+numDailytests+"'><option value='adherence'>Adherence</option><option value='todo'>ToDo</option><option value='tactic'>Tactic</option></select><div class='cl'>&nbsp;</div>";
-												document.getElementById("numDailytests").value=numDailytests;
+												var newStrategy = "<label class='small-label'>Strategy "+numDailytests+":</label><input type='text' class='small-field' name='dailytestName"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='dailytestDescription"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Type:</label><select name='dailytestType"+numDailytests+"'><option value='adherence'>Adherence</option><option value='todo'>ToDo</option><option value='tactic'>Tactic</option></select><div class='cl'>&nbsp;</div>";
+
+												$("#dailytests").append(newStrategy);
+												$("#numDailytests").attr('value',numDailytests);
 											}
 										</script>
 										<div id="kpis"></div>								
