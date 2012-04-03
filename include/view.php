@@ -680,7 +680,13 @@ class WebView extends BaseView {
 	
 	public function printAllGoalsPage() {
 		global $db, $user;
-	
+		$ajaxModifyGoal = PAGE_AJAX_MODIFY_GOAL;
+				
+
+
+		
+		
+		
 		// RENDER PAGE
 		$this->printHeader(NAVNAME_GOALS, array(new ChromeTitleElementHeader("All Goals")));
 
@@ -706,28 +712,94 @@ class WebView extends BaseView {
 				$i=0;
 			}
 		}
+		
+		
+		/////////////////////////////////////////
+		// AJAX for adopting/removing a Goal //
+		///////////////////////////////////////
 		?>
+		<script>
+			function modifySpecificGoal(type, goalID, numAdopters, goalDivNum, goalName){
+                var lessAdopters = numAdopters - 1;
+			    var newNumAdopters = "numAdopters" + goalDivNum;
+			    var newDeactivateDiv = "deactivate" + goalDivNum;
+			    var newDeleteDiv = "deleteGoal" + goalDivNum;
+			    var goalEntry = "goalEntry" + goalDivNum;
+			    
+			    if(type == 'delete'){
+			    var Action = 'Delete';
+			    }else if (type == 'remove'){
+			    var Action = 'Remove';
+			    }
+			    
+			    var answer = confirm(Action + " " + goalName + "?");
+
+    			if (answer){
+			        $.ajax({  
+			            type: "POST", 
+			            url: '<?php echo $ajaxModifyGoal; ?>', 
+			            data: "userID="+<?php echo $user->id; ?>+"&goalID="+goalID+"&type="+type,
+			            dataType: "html",
+			            complete: function(data){
+			            	if(type == 'remove'){
+			        	        $("#"+newNumAdopters).html(lessAdopters);
+			            	    $("#"+newDeactivateDiv).html(data.responseText);
+							}else if(type == 'delete')
+							{
+			            	    $("#"+goalEntry).html('');
+							}
+							
+			            }  
+			        }); 
+		        }
+		    }
+        </script>
+		
 		<!-- Case -->
 		<div class="case goals">
 			<!-- Cols -->
 			<div class="cols">
 				<p>Goals</p>
 		<?php
+		$k = 0;
 		for($i=0; $i<NUM_COLS; ++$i) {
 			if(isset($colContents[$i])) {
 				echo "<div class='col'><ul>";
 				foreach($colContents[$i] as $goal) {
+					
 					$pagePath = $goal->getPagePath();
-					$numAdopters = $goal->getNumAdopters();
-					echo "<li><a href='$pagePath'>".htmlspecialchars($goal->name)."</a> ($numAdopters)</li>";
+					$numAdopters = $goal->getNumAdopters();					
+					
+					?>
+					<li id="goalEntry<?php echo $k; ?>"><a href=<?php echo $pagePath;?>><?php echo htmlspecialchars($goal->name); ?></a> (<span id="numAdopters<?php echo $k;?>"><?php echo $numAdopters;?></span>)
+					
+					<?php 		
+					$userHasGoal = GoalStatus::doesUserHaveGoal($user->id, $goal->id);
+					if($userHasGoal){?>
+					<a style="color: #999; text-decoration:none;" class="deactivate" id="deactivate<?php echo $k;?>" onclick="modifySpecificGoal('remove', <?php echo $goal->id; ?>, <?php echo $numAdopters; ?>, <?php echo $k; ?>, '<?php echo $goal->name; ?>')">remove</a>
+					
+					<?php
+					}
+					if($user->permissions == 1){?>
+					<a style="color: red; text-decoration:none;" class="delete" id="deleteGoal<?php echo $k; ?>" onclick="modifySpecificGoal('delete', <?php echo $goal->id; ?>, <?php echo $numAdopters; ?>, <?php echo $k; ?>, '<?php echo $goal->name; ?>')"> delete</a>
+					<?php 
+					}
+					
+					?>
+					</li>
+
+					<?php
+					$k = $k+1;
 				}
 				echo "</ul></div>";
+				
 			}
 		}
 		?>
 								<div class="cl">&nbsp;</div>
 								</div>
 								<!-- End Cols -->
+								<?php if($user->permissions == 1){?>
 								<div class="form">
 									<p>Don't see your goal? Add one here:</p>
 									<form action="<?php echo PAGE_GOALS;?>" method="post" name="goalForm">
@@ -767,6 +839,7 @@ class WebView extends BaseView {
 										<div class="cl" style="height:5px;">&nbsp;</div>
 										<input type="submit" value="Add Goal &raquo;" class="add-btn" />
 									</form>
+									<?php } ?>
 								</div>
 							</div>
 							<!-- End Case -->

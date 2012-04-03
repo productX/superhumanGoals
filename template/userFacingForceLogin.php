@@ -8,5 +8,6 @@ initAuth();
 $userID = $appAuth->enforceLogin();
 // create user
 $user = User::getObjFromUserID($userID);
+
 $user->trackVisit();
 ?>
