@@ -56,7 +56,7 @@ abstract class BaseView {
 		global $db;
 		
 		$user = User::getObjFromUserID($dailyscoreStory->userID);
-		$totalGoals = $db->doQueryOne("SELECT COUNT(*) FROM goals_status WHERE user_id=%s", $user->id);
+		$totalGoals = $db->doQueryOne("SELECT COUNT(*) FROM goals_status WHERE user_id=%s AND is_active = 1", $user->id);
 		$numGoalsTouched = count($dailyscoreStory->progress);
 		$score = floor(($numGoalsTouched/$totalGoals)*100);
 		$timeSinceStr = $dailyscoreStory->enteredAt->timeSince();
@@ -80,7 +80,7 @@ abstract class BaseView {
 
 		$this->goalstatusPrintPre();
 		// ignore dayUT for now
-		$rs = $db->doQuery("SELECT * FROM goals_status WHERE user_id=%s", $userID);
+		$rs = $db->doQuery("SELECT * FROM goals_status WHERE user_id=%s ", $userID);
 		while($obj = mysql_fetch_object($rs)) {
 			$goalstatus = GoalStatus::getObjFromDBData($obj);
 			$this->goalstatusPrintGoalstatus($goalstatus, $isEditable);
@@ -291,7 +291,7 @@ abstract class BaseView {
 	protected function userPrintListByGoal($goalID) {
 		global $db;
 		
-		$rs = $db->doQuery("SELECT user_id FROM goals_status WHERE goal_id=%s", $goalID);
+		$rs = $db->doQuery("SELECT user_id FROM goals_status WHERE goal_id=%s AND is_active = 1", $goalID);
 		$userIDList = array();
 		while($obj = mysql_fetch_object($rs)) {
 			$userIDList[] = $obj->user_id;
@@ -682,9 +682,9 @@ class WebView extends BaseView {
 		// RENDER PAGE
 		$this->printHeader(NAVNAME_GOALS, array(new ChromeTitleElementHeader("All Goals")));
 
-		$rs = $db->doQuery("SELECT id FROM goals");
+		$rs = $db->doQuery("SELECT id FROM goals WHERE is_active = 1");
 		$numGoals = mysql_num_rows($rs);
-		$numPerColumn = max($numGoals/NUM_COLS,4);
+		$numPerColumn = max($numGoals/NUM_COLS,7);
 		$colContents = array();
 		$obj=null;
 		$currentCol=0;
@@ -793,7 +793,7 @@ class WebView extends BaseView {
 								<!-- End Cols -->
 								<?php if($user->permissions == 1){?>
 								<div class="form">
-									<p>Don't see your goal? Add one here:</p>
+									<p> Add new goals:</p>
 									<form action="<?php echo PAGE_GOALS;?>" method="post" name="goalForm">
 										<label for="name">Goal Name:</label>
 										<input type="text" class="field" value="" id="newGoalName" name="newGoalName" />
@@ -1816,7 +1816,7 @@ Is it really that hard to figure out? :P
 				<div class="text">
 		<?php if(!$userHasGoal){?>
 				<div class="pre_adopt">
-					<p id="suggested_description"><strong>Suggested Description:</strong> <?php echo $goal_description; ?></p>
+					<p id="suggested_description"><strong> Description:</strong> <?php echo $goal_description; ?></p>
 					<button class="adopt-goal-btn" id="show_adopt_options" onclick="removeShowAdopt();">Adopt this goal</button>
 				</div>
 		<?php } ?>

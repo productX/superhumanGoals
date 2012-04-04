@@ -238,7 +238,7 @@ function tryURLForAPICall() {
 									break;
 								case 'goals':
 									// return all goals associated with this user
-									$returnData = $db->doQueryArray("SELECT goal_id FROM goals_status WHERE user_id=%s", $userID);
+									$returnData = $db->doQueryArray("SELECT goal_id FROM goals_status WHERE user_id=%s AND is_active = 1", $userID);
 									break;
 								default:
 									break;

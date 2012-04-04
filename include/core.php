@@ -931,7 +931,7 @@ class GoalStatus {
 	public static function getNumUserGoals($userID) {
 		global $db;
 	
-		$numGoals = $db->doQueryOne("SELECT COUNT(goal_id) FROM goals_status WHERE user_id=%s", $userID);
+		$numGoals = $db->doQueryOne("SELECT COUNT(goal_id) FROM goals_status WHERE user_id=%s AND is_active = 1", $userID);
 		return $numGoals;
 	}
 	public static function getUserGoalLevel($userID, $goalID) {
@@ -975,7 +975,7 @@ class GoalStatus {
 	public static function userDeleteGoal($userID, $goalID) {
 		global $db;
 		
-		$db->doQuery("DELETE FROM goals WHERE id = %s", $goalID);
+		$db->doQuery("UPDATE goals SET is_active = 0 WHERE id = %s", $goalID);
 	}
 	
 	
