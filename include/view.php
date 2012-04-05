@@ -567,13 +567,15 @@ class WebView extends BaseView {
 	<?php
 	
 			StatusMessages::printMessages();
+			PerformanceMeter::addTimestamp("Header render done");
 		}
-		PerformanceMeter::addTimestamp("Header render done");
 	}
 	public function printFooter($navSelect, $justOuterChrome=false) {
 		global $user, $appAuth;
-		PerformanceMeter::addTimestamp("Page render done");
-		PerformanceMeter::printRenderReport();
+		if(!$justOuterChrome) {
+			PerformanceMeter::addTimestamp("Page render done");
+			PerformanceMeter::printRenderReport();
+		}
 	?>
 
 	<?php
@@ -2143,12 +2145,14 @@ class MobileView extends BaseView {
 <?php
 		if(!$justOuterChrome) {
 			StatusMessages::printMessages();
+			PerformanceMeter::addTimestamp("Header render done");
 		}
-		PerformanceMeter::addTimestamp("Header render done");
 	}
 	public function printFooter($navSelect, $justOuterChrome=false) {
-		PerformanceMeter::addTimestamp("Page render done");
-		PerformanceMeter::printRenderReport();
+		if(!$justOuterChrome) {
+			PerformanceMeter::addTimestamp("Page render done");
+			PerformanceMeter::printRenderReport();
+		}
 ?>
 		</div>
 		<!-- END Main -->
