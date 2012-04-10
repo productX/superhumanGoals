@@ -10,7 +10,7 @@ class User {
 	const ENUM_VISITS_MONTHLY = 5;
 	const NUM_VISITS_TO_TRACK = 20;
 	private $id, $authID, $pictureURL, $lastDailyEntry, $visitHistory, $dailyEntryStoryPosted;
-	private $firstName, $lastName, $email;
+	private $firstName, $lastName, $email, $permissions;
 	// HACK: this should be done better
 	private static function visitHistoryToStr($visitHistory) {
 		return serialize($visitHistory);
@@ -44,11 +44,15 @@ class User {
 		if(!is_null($sgObj)) {
 			// HACK: would need to pass in multiple auth ID's in the scenario where there are several auth servers to connect to
 			$authArr = $appAuth->getAuthUserDataAgg($sgObj->auth_id);
-			$authObj = (object)$authArr;
+			$authObj = (object)$authArr;			
+			
 			$user = new User($authObj, $sgObj);
+			
 		}
 		return $user;
 	}
+	
+	
 	public static function getObjFromUserIDAuthData($userID, $authClientData) {
 		global $db;
 		
@@ -88,6 +92,7 @@ class User {
 	}
 	public function trackVisit() {
 		$needUpdate = true;
+		
 		if(!is_null($this->visitHistory) && (count($this->visitHistory)>0)) {
 			$lastVisit = $this->visitHistory[0];
 			$today = Date::now();
@@ -136,11 +141,13 @@ class User {
 	}
 	public function __construct($authUserData, $sgDBData) {	
 		// data from user DB
+
 		$this->id = $sgDBData->id;
 		$this->authID = $sgDBData->auth_id;
 		$this->visitHistory = User::visitHistoryFromStr($sgDBData->visit_history);
 		$this->lastDailyEntry = Date::fromSQLStr($sgDBData->last_daily_entry);
 		$this->dailyEntryStoryPosted = boolval($sgDBData->daily_entry_story_posted);
+		$this->permissions = $sgDBData->permissions;
 		
 		// data from auth DB
 		$this->firstName = $authUserData->firstName;
@@ -151,7 +158,7 @@ class User {
 	
 		# Stubs with whitelisting for some fields
 	public function __get($name) {
-		static $publicGetVars = array("id","pictureURL","firstName","lastName","email","authID");
+		static $publicGetVars = array("id","pictureURL","firstName","lastName","email","authID","permissions");
 		
 		$returnVal = null;
 		if(in_array($name, $publicGetVars)) {
@@ -924,7 +931,7 @@ class GoalStatus {
 	public static function getNumUserGoals($userID) {
 		global $db;
 	
-		$numGoals = $db->doQueryOne("SELECT COUNT(goal_id) FROM goals_status WHERE user_id=%s", $userID);
+		$numGoals = $db->doQueryOne("SELECT COUNT(goal_id) FROM goals_status WHERE user_id=%s AND is_active = 1", $userID);
 		return $numGoals;
 	}
 	public static function getUserGoalLevel($userID, $goalID) {
@@ -963,6 +970,12 @@ class GoalStatus {
 		global $db;
 		
 		$db->doQuery("UPDATE goals_status SET is_active = 0, latest_change = NOW() WHERE user_id = %s AND goal_id = %s", $userID, $goalID);
+	}
+	
+	public static function userDeleteGoal($userID, $goalID) {
+		global $db;
+		
+		$db->doQuery("UPDATE goals SET is_active = 0 WHERE id = %s", $goalID);
 	}
 	
 	

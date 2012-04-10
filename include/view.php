@@ -56,7 +56,7 @@ abstract class BaseView {
 		global $db;
 		
 		$user = User::getObjFromUserID($dailyscoreStory->userID);
-		$totalGoals = $db->doQueryOne("SELECT COUNT(*) FROM goals_status WHERE user_id=%s", $user->id);
+		$totalGoals = $db->doQueryOne("SELECT COUNT(*) FROM goals_status WHERE user_id=%s AND is_active = 1", $user->id);
 		$numGoalsTouched = count($dailyscoreStory->progress);
 		$score = floor(($numGoalsTouched/$totalGoals)*100);
 		$timeSinceStr = $dailyscoreStory->enteredAt->timeSince();
@@ -80,7 +80,7 @@ abstract class BaseView {
 
 		$this->goalstatusPrintPre();
 		// ignore dayUT for now
-		$rs = $db->doQuery("SELECT * FROM goals_status WHERE user_id=%s", $userID);
+		$rs = $db->doQuery("SELECT * FROM goals_status WHERE user_id=%s ", $userID);
 		while($obj = mysql_fetch_object($rs)) {
 			$goalstatus = GoalStatus::getObjFromDBData($obj);
 			$this->goalstatusPrintGoalstatus($goalstatus, $isEditable);
@@ -291,7 +291,7 @@ abstract class BaseView {
 	protected function userPrintListByGoal($goalID) {
 		global $db;
 		
-		$rs = $db->doQuery("SELECT user_id FROM goals_status WHERE goal_id=%s", $goalID);
+		$rs = $db->doQuery("SELECT user_id FROM goals_status WHERE goal_id=%s AND is_active = 1", $goalID);
 		$userIDList = array();
 		while($obj = mysql_fetch_object($rs)) {
 			$userIDList[] = $obj->user_id;
@@ -679,13 +679,14 @@ class WebView extends BaseView {
 	}
 	public function printAllGoalsPage() {
 		global $db, $user;
-	
+		$ajaxModifyGoal = PAGE_AJAX_MODIFY_GOAL;
+				
 		// RENDER PAGE
 		$this->printHeader(NAVNAME_GOALS, array(new ChromeTitleElementHeader("All Goals")));
 
-		$rs = $db->doQuery("SELECT id FROM goals");
+		$rs = $db->doQuery("SELECT id FROM goals WHERE is_active = 1");
 		$numGoals = mysql_num_rows($rs);
-		$numPerColumn = max($numGoals/NUM_COLS,4);
+		$numPerColumn = max($numGoals/NUM_COLS,7);
 		$colContents = array();
 		$obj=null;
 		$currentCol=0;
@@ -705,30 +706,96 @@ class WebView extends BaseView {
 				$i=0;
 			}
 		}
+		
+		
+		/////////////////////////////////////////
+		// AJAX for adopting/removing a Goal //
+		///////////////////////////////////////
 		?>
+		<script>
+			function modifySpecificGoal(type, goalID, numAdopters, goalDivNum, goalName){
+                var lessAdopters = numAdopters - 1;
+			    var newNumAdopters = "numAdopters" + goalDivNum;
+			    var newDeactivateDiv = "deactivate" + goalDivNum;
+			    var newDeleteDiv = "deleteGoal" + goalDivNum;
+			    var goalEntry = "goalEntry" + goalDivNum;
+			    
+			    if(type == 'delete'){
+			    var Action = 'Delete';
+			    }else if (type == 'remove'){
+			    var Action = 'Remove';
+			    }
+			    
+			    var answer = confirm(Action + " " + goalName + "?");
+
+    			if (answer){
+			        $.ajax({  
+			            type: "POST", 
+			            url: '<?php echo $ajaxModifyGoal; ?>', 
+			            data: "userID="+<?php echo $user->id; ?>+"&goalID="+goalID+"&type="+type,
+			            dataType: "html",
+			            complete: function(data){
+			            	if(type == 'remove'){
+			        	        $("#"+newNumAdopters).html(lessAdopters);
+			            	    $("#"+newDeactivateDiv).html(data.responseText);
+							}else if(type == 'delete')
+							{
+			            	    $("#"+goalEntry).html('');
+							}
+							
+			            }  
+			        }); 
+		        }
+		    }
+        </script>
+		
 		<!-- Case -->
 		<div class="case goals">
 			<!-- Cols -->
 			<div class="cols">
 				<p>Goals</p>
 		<?php
+		$k = 0;
 		for($i=0; $i<NUM_COLS; ++$i) {
 			if(isset($colContents[$i])) {
 				echo "<div class='col'><ul>";
 				foreach($colContents[$i] as $goal) {
+					
 					$pagePath = $goal->getPagePath();
-					$numAdopters = $goal->getNumAdopters();
-					echo "<li><a href='$pagePath'>".htmlspecialchars($goal->name)."</a> ($numAdopters)</li>";
+					$numAdopters = $goal->getNumAdopters();					
+					
+					?>
+					<li id="goalEntry<?php echo $k; ?>"><a href=<?php echo $pagePath;?>><?php echo htmlspecialchars($goal->name); ?></a> (<span id="numAdopters<?php echo $k;?>"><?php echo $numAdopters;?></span>)
+					
+					<?php 		
+					$userHasGoal = GoalStatus::doesUserHaveGoal($user->id, $goal->id);
+					if($userHasGoal){?>
+					<a style="color: #999; text-decoration:none;" class="deactivate" id="deactivate<?php echo $k;?>" onclick="modifySpecificGoal('remove', <?php echo $goal->id; ?>, <?php echo $numAdopters; ?>, <?php echo $k; ?>, '<?php echo $goal->name; ?>')">remove</a>
+					
+					<?php
+					}
+					if($user->permissions == 1){?>
+					<a style="color: red; text-decoration:none;" class="delete" id="deleteGoal<?php echo $k; ?>" onclick="modifySpecificGoal('delete', <?php echo $goal->id; ?>, <?php echo $numAdopters; ?>, <?php echo $k; ?>, '<?php echo $goal->name; ?>')"> delete</a>
+					<?php 
+					}
+					
+					?>
+					</li>
+
+					<?php
+					$k = $k+1;
 				}
 				echo "</ul></div>";
+				
 			}
 		}
 		?>
 								<div class="cl">&nbsp;</div>
 								</div>
 								<!-- End Cols -->
+								<?php if($user->permissions == 1){?>
 								<div class="form">
-									<p>Don't see your goal? Add one here:</p>
+									<p> Add new goals:</p>
 									<form action="<?php echo PAGE_GOALS;?>" method="post" name="goalForm">
 										<label for="name">Goal Name:</label>
 										<input type="text" class="field" value="" id="newGoalName" name="newGoalName" />
@@ -743,16 +810,17 @@ class WebView extends BaseView {
 																				
 											function addKPI(postedTo) {
 												document.goalForm.numkpis=++numkpis;
-												document.getElementById("kpis").innerHTML=document.getElementById("kpis").innerHTML+
-													"<label class='small-label'>KPI "+numkpis+":</label><input type='text' class='small-field' name='kpiName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='kpiDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Name:</label><input type='text' class='small-field' name='kpiTestName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Test Description:</label><input type='text' class='small-field' name='kpiTestDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Frequency (in days):</label><input type='text' class='small-field' name='kpiTestFrequency"+numkpis+"' /><div class='cl'>&nbsp;</div><br/>";
-												document.getElementById("numkpis").value=numkpis;
+												var newKPI = "<label class='small-label'>KPI "+numkpis+":</label><input type='text' class='small-field' name='kpiName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='kpiDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Name:</label><input type='text' class='small-field' name='kpiTestName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Test Description:</label><input type='text' class='small-field' name='kpiTestDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Frequency (in days):</label><input type='text' class='small-field' name='kpiTestFrequency"+numkpis+"' /><div class='cl'>&nbsp;</div><br/>";
+												$("#kpis").append(newKPI);
+												$("#numkpis").attr('value',numkpis);
 											}
 											
 											function addDailytest(postedTo) {
 												document.goalForm.numDailytests=++numDailytests;
-												document.getElementById("dailytests").innerHTML=document.getElementById("dailytests").innerHTML+
-													"<label class='small-label'>Strategy "+numDailytests+":</label><input type='text' class='small-field' name='dailytestName"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='dailytestDescription"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Type:</label><select name='dailytestType"+numDailytests+"'><option value='adherence'>Adherence</option><option value='todo'>ToDo</option><option value='tactic'>Tactic</option></select><div class='cl'>&nbsp;</div>";
-												document.getElementById("numDailytests").value=numDailytests;
+												var newStrategy = "<label class='small-label'>Strategy "+numDailytests+":</label><input type='text' class='small-field' name='dailytestName"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='dailytestDescription"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Type:</label><select name='dailytestType"+numDailytests+"'><option value='adherence'>Adherence</option><option value='todo'>ToDo</option><option value='tactic'>Tactic</option></select><div class='cl'>&nbsp;</div>";
+
+												$("#dailytests").append(newStrategy);
+												$("#numDailytests").attr('value',numDailytests);
 											}
 										</script>
 										<div id="kpis"></div>								
@@ -766,6 +834,7 @@ class WebView extends BaseView {
 										<div class="cl" style="height:5px;">&nbsp;</div>
 										<input type="submit" value="Add Goal &raquo;" class="add-btn" />
 									</form>
+									<?php } ?>
 								</div>
 							</div>
 							<!-- End Case -->
@@ -1749,7 +1818,7 @@ Is it really that hard to figure out? :P
 				<div class="text">
 		<?php if(!$userHasGoal){?>
 				<div class="pre_adopt">
-					<p id="suggested_description"><strong>Suggested Description:</strong> <?php echo $goal_description; ?></p>
+					<p id="suggested_description"><strong> Description:</strong> <?php echo $goal_description; ?></p>
 					<button class="adopt-goal-btn" id="show_adopt_options" onclick="removeShowAdopt();">Adopt this goal</button>
 				</div>
 		<?php } ?>

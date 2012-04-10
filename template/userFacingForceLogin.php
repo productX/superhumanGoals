@@ -13,6 +13,7 @@ $userID = $appAuth->enforceLogin();
 PerformanceMeter::addTimestamp("Enforce login done");
 // create user
 $user = User::getObjFromUserID($userID);
+
 $user->trackVisit();
 PerformanceMeter::addTimestamp("User create & track visit done");
 ?>

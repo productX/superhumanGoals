@@ -152,7 +152,7 @@ h1#logo a:hover { background-position: 0 bottom; }
 
 .cols { padding: 0 0 30px 0; position: relative; margin-left: -44px; }
 .cols p { padding: 0 0 10px 44px; }
-.cols .col { float: left; display: inline; width: 155px; padding: 0 0 0 44px; margin-bottom: 30px; border-right: solid 1px #dedede; }
+.cols .col { float: left; display: inline; width: 215px; padding: 0 0 0 44px; margin-bottom: 30px; border-right: solid 1px #dedede; }
 .cols .last-col { border: 0; }
 
 .form p { padding: 0 0 10px 0; }
@@ -225,6 +225,8 @@ h1#logo a:hover { background-position: 0 bottom; }
 .remove_goal {margin: 30px auto 1px auto; width: 400px; height: 40px;}
 .up-down {margin: 10px 0px 10px 0px;}
 .goal_desc_box { border: 2px solid #9FCBA5; background: #E2FFE6; padding-left: 15px; margin: 10px auto 10px auto; width:550px;}
+.deactivate { font-size: 9px; }
+.delete { font-size: 9px; }
 
 
 .show_kpi_input { font-size: 9px; color:white; font-weight: bold;}
