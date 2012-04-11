@@ -74,26 +74,35 @@ abstract class BaseView {
 		$this->storyPrintDailyscoreStoryPrint($user, $numGoalsTouched, $totalGoals, $goodBad, $score, $goalLinkList, $timeSinceStr);
 	}
 	abstract protected function storyPrintDailyscoreStoryPrint($user, $numGoalsTouched, $totalGoals, $goodBad, $score, $goalLinkList, $timeSinceStr);
-	protected function goalstatusPrintList($userID, $dayUT, $isEditable) {
+	
+	// &&&&&&
+	protected function goalstatusPrintList($userID, $dayUT, $isEditable, $type) {
 		global $db;
 
 		$this->goalstatusPrintPre();
 		// ignore dayUT for now
-		$rs = $db->doQuery("SELECT * FROM goals_status WHERE user_id=%s ", $userID);
+		$rs = $db->doQuery("SELECT * FROM goals_status WHERE user_id=%s AND is_active = 1", $userID);
 		while($obj = mysql_fetch_object($rs)) {
 			$goalstatus = GoalStatus::getObjFromDBData($obj);
-			$this->goalstatusPrintGoalstatus($goalstatus, $isEditable);
+			
+			//&&&&&& Gets objects for each adopted goal
+			$this->goalstatusPrintGoalstatus($goalstatus, $isEditable, $type);
 		}
 		$this->goalstatusPrintPost();
 	}
+	
+	
 	abstract protected function goalstatusPrintPre();
 	abstract protected function goalstatusPrintPost();
-	protected function goalstatusPrintGoalstatus($goalstatus, $isEditable) {
+	
+	
+	//&&&&&&
+	protected function goalstatusPrintGoalstatus($goalstatus, $isEditable, $type) {
 		static $rowID = 1;
 		if(!$goalstatus->isActive) {
 			return;
 		}
-		
+		//&&&&&& Get all the information for a particular goal
 		$goal = Goal::getObjFromGoalID($goalstatus->goalID);
 		$newLevelVal = $goalstatus->level;
 		$letterGradeVal = "A";
@@ -110,11 +119,14 @@ abstract class BaseView {
 				$eventDivDefaultDisplay = "block";
 			}
 		}
-		static $numDaysBack = 13;
+		static $numDaysBack = 6;
+		
+		//&&&&&& Get all the strategies from the DB
 		$dailytests = Dailytest::getListFromGoalID($goalstatus->goalID,$goalstatus->userID);
 		
 		// HACK: stash styleArray's in the dailytest objects
 		foreach($dailytests as $dailytest) {
+			//&&&&&& Get all the strategy_log data for each strategy
 			$dailytestStatuses = DailytestStatus::getListFromUserID($goalstatus->userID, $dailytest->id, $numDaysBack);
 			$dailytestStatusDays = array();
 			foreach($dailytestStatuses as $dailytestStatus) {
@@ -126,17 +138,17 @@ abstract class BaseView {
 				$currentDay = $current->toDay();
 				$style = "";
 				if(in_array($currentDay,$dailytestStatusDays)) {
-					$style="background: #7bc545;";
+					$style="background: red;";
 				}
 				$styleArray[] = $style;
 			}
 			$dailytest->setStashedStyleArray($styleArray);
 		}
 		
-		$this->goalstatusPrintGoalstatusPrint($goal, $rowID, $goalstatus, $plusButtonDefaultDisplay, $eventDivDefaultDisplay, $dailytests, $letterGradeVal, $newLevelVal, $whyVal, $isEditable);
+		$this->goalstatusPrintGoalstatusPrint($goal, $rowID, $goalstatus, $plusButtonDefaultDisplay, $eventDivDefaultDisplay, $dailytests, $letterGradeVal, $newLevelVal, $whyVal, $isEditable, $type);
 		++$rowID;
 	}
-	abstract protected function goalstatusPrintGoalstatusPrint($goal, $rowID, $goalstatus, $plusButtonDefaultDisplay, $eventDivDefaultDisplay, $dailytests, $letterGradeVal, $newLevelVal, $whyVal, $isEditable);
+	abstract protected function goalstatusPrintGoalstatusPrint($goal, $rowID, $goalstatus, $plusButtonDefaultDisplay, $eventDivDefaultDisplay, $dailytests, $letterGradeVal, $newLevelVal, $whyVal, $isEditable, $type);
 	protected function goalstatusPrintAjaxEventSave($rowID, $levelEntryID, $changeFuncName, $ajaxSaveEventPath, $goalstatus, $goal, $whyID, $letterGradeID, $levelDisplayID) {
 ?>
 							<script type="text/javascript">								
@@ -341,7 +353,9 @@ abstract class BaseView {
 		return;*/
 	
 		$this->printActivityPagePre();
+
 		$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE ORDER BY entered_at DESC LIMIT 100");
+		echo 'adam rocks';
 		$this->storyPrintListForRS($rs);
 		$this->printActivityPagePost();
 
@@ -387,17 +401,20 @@ class WebView extends BaseView {
 	// public
 	public function printHeader($navSelect, $chromeTitleElements, $justOuterChrome=false) {
 		global $user, $appAuth;
+
 	?>
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 	<html lang="en-US" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
 	<head>
 		<title>superhuman</title>
 		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+
 		<link rel="shortcut icon" href="<?php echo BASEPATH_UI;?>/web/css/images/favicon.ico" />
 		<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/web/css/style.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/web/css/enhanced.css" type="text/css" media="screen" />
 		<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/web/css/jquery.jscrollpane.css" type="text/css" media="all" />
-		
+
+
 		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery-1.7.1.min.js" type="text/javascript"></script>
 		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery.jscrollpane.min.js" type="text/javascript"></script>
 		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery.mousewheel.js" type="text/javascript"></script>
@@ -405,6 +422,7 @@ class WebView extends BaseView {
 		<script src="<?php echo BASEPATH_UI;?>/web/js/functions.js" type="text/javascript"></script>
 		<script type="text/javascript"> $(document).ready(function() { autoHeightContainer(); }) </script>
 	</head>
+
 	<body>
 		<!-- Wrapper -->
 		<div id="wrapper">
@@ -414,6 +432,7 @@ class WebView extends BaseView {
 				<div class="shell">
 					<h1 id="logo"><a href="<?php echo PAGE_INDEX; ?>" class="notext">Superhuman</a></h1>
 	<?php
+
 		if(isset($appAuth) && $appAuth->isLoggedIn()) {
 	?>
 					<div class="user-image">
@@ -911,24 +930,37 @@ Is it really that hard to figure out? :P
 							<!-- End Card -->
 <?php
 	}
+	
+	
+	
+	
+	
+	
+	
+	// &&&&&&
 	public function printUserPage($viewUser) {
 		global $user, $db;
 		$viewUserID = $viewUser->id;
 		$viewingSelf = ($viewUserID == $user->id);
-	
-		define('PAGEMODE_ACTIVITY','activity');
+		
+		define('PAGEMODE_HABITS','habits');
 		define('PAGEMODE_GOALS','goals');
-		$mode = PAGEMODE_GOALS;
+		define('PAGEMODE_ACTIVITY','activity');
+
+		$mode = PAGEMODE_HABITS;
 		if(isset($_GET["t"])) {
 			$mode = $_GET["t"];
 		}
 		$tabIndex = 0;
 		switch($mode) {
-			case PAGEMODE_ACTIVITY:
+			case PAGEMODE_HABITS:
 				$tabIndex = 0;
 				break;
 			case PAGEMODE_GOALS:
 				$tabIndex = 1;
+				break;
+			case PAGEMODE_ACTIVITY:
+				$tabIndex = 2;
 				break;
 			default:
 				assert(false);
@@ -939,8 +971,10 @@ Is it really that hard to figure out? :P
 		$this->printHeader($navName, 
 					array(	new ChromeTitleElementUserPic($viewUser),
 							new ChromeTitleElementHeader("Person: $viewUser->firstName $viewUser->lastName"),
-							new ChromeTitleElementTabs(	array(	"Activity"=>PAGE_USER."?id=$viewUserID&t=".PAGEMODE_ACTIVITY,
-																"Goals"=>PAGE_USER."?id=$viewUserID&t=".PAGEMODE_GOALS
+							new ChromeTitleElementTabs(	array(	"Habits"=>PAGE_USER."?id=$viewUserID&t=".PAGEMODE_HABITS,
+																"Goals"=>PAGE_USER."?id=$viewUserID&t=".PAGEMODE_GOALS,
+																"Activity"=>PAGE_USER."?id=$viewUserID&t=".PAGEMODE_ACTIVITY
+																
 														), $tabIndex)
 					));
 
@@ -967,16 +1001,33 @@ Is it really that hard to figure out? :P
 				$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE AND user_id=%s ORDER BY entered_at DESC LIMIT 100", $viewUserID);
 				$this->storyPrintListForRS($rs);
 				break;
+			case PAGEMODE_HABITS:
+				$currentTime=time();
+				$type = 'habits';
+				$this->goalstatusPrintList($viewUserID, $currentTime, $viewingSelf, $type);
+				break;
 			case PAGEMODE_GOALS:
 				$currentTime=time();
-				$this->goalstatusPrintList($viewUserID, $currentTime, $viewingSelf);
-				break;
+				$type = 'goals';
+				$this->goalstatusPrintList($viewUserID, $currentTime, $viewingSelf, $type);
+				break;				
 			default:
 				break;
 		}
 
 		$this->printFooter($navName);
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	protected function goalstatusPrintPre() {
 ?>
 					<!-- Case -->
@@ -989,114 +1040,396 @@ Is it really that hard to figure out? :P
 					<!-- End Case -->
 <?php
 	}
-	protected function goalstatusPrintGoalstatusPrint($goal, $rowID, $goalstatus, $plusButtonDefaultDisplay, $eventDivDefaultDisplay, $dailytests, $letterGradeVal, $newLevelVal, $whyVal, $isEditable) {
-		static $testID = 1;
-?>
-						<!-- Box -->
-						<div class="box">
-							<!-- GOAL TITLE & LEVEL -->
-							<div class="fitness" style="width:120px">
-								<a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->name);?></a>
-								<span class="number" id="currentLevel<?php echo $rowID;?>"><?php echo $goalstatus->level;?> <a href="#" class="add" id="plusButton<?php echo $rowID;?>" onclick="expandEvent<?php echo $rowID;?>();" style="display:<?php echo $plusButtonDefaultDisplay;?>;">Add</a></span>
-							</div>
-							<!-- ADHERENCE TESTS -->
-							<div class="tests">
-<?php
-		foreach($dailytests as $dailytest) {
-			$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id)?"checked":"";
-			$ajaxSaveDailytestPath = PAGE_AJAX_SAVEDAILYTEST;
-?>
-								<div class="row">
-<?php
-			if($isEditable) {
-				$this->goalstatusPrintAjaxCheckSave($goalstatus, $dailytest, $testID, $ajaxSaveDailytestPath, "onChangeCheck", "testCheck");
-?>
-									<label for="testCheck<?php echo $testID; ?>"><input type="checkbox" value="Check" id="testCheck<?php echo $testID; ?>" <?php echo $checkedVal; ?> onchange="onChangeCheck<?php echo $testID; ?>();" /></label>
-<?php
-			}
-?>
-									<div class="test-cnt">
-										<p><?php echo GPC::strToPrintable($dailytest->name);?></p>
-										<div class="scale">
-											<ul>
-<?php
-			foreach($dailytest->getStashedStyleArray() as $style) {
-?>
-												<li><a href="#" style="<?php echo $style; ?>">&nbsp;</a></li>
-<?php
-			}
-?>
-											</ul>
-											<div class="cl">&nbsp;</div>
-										</div>
-									</div>
-									<div class="cl">&nbsp;</div>
-								</div>
-<?php
-			++$testID;
-		}
-?>
-							</div>
+	
 
-							<!-- LEVEL HISTORY GRAPH -->
-							<div class="placeholder">
-								<div class="image">
-									<img src="<?php echo "template/createGraphLevelHistory.php?userID=$goalstatus->userID&goalID=$goalstatus->goalID";?>" id="graph<?php echo $rowID;?>" alt="Level History" />
-								</div>
-							</div>
+
+
+	// &&&&&&
+	protected function goalstatusPrintGoalstatusPrint($goal, $rowID, $goalstatus, $plusButtonDefaultDisplay, $eventDivDefaultDisplay, $dailytests, $letterGradeVal, $newLevelVal, $whyVal, $isEditable, $type) {
+		global $user;
+		static $testID = 1;
+		$dayID = 1;
+		
+		$ajaxSaveDailytestPath = PAGE_AJAX_SAVEDAILYTEST;
+		$ajaxSaveEventPath = PAGE_AJAX_SAVEEVENT;
+		$ajaxModifyStrategy = PAGE_AJAX_MODIFY_STRATEGY;
+		
+		
+		
+		
+		$noHabitStrategies = 0;
+
+//		echo "<pre>";
+//		print_r($goalstatus);
+//		echo "</pre>";
+//		echo "<pre>";
+//		print_r($dailytests);
+//		echo "</pre>";		
+		
+		if(	(count($dailytests) == 1) && ( $dailytests[0]->strategy_type != 'adherence')){		
+			$noHabitStrategies = 1;
+		}
+		
+?>
+
+<script>
+		//////////////////////////////////////////////////////////////////////////
+		// AJAX for modifying (adding/removing/readopting, not creating) a KPI //
+		////////////////////////////////////////////////////////////////////////
+
+		function modifyDailyStrategy(user_id, strategy_id, div_id, date){
+			// Get the status of the particular div that is being called
+			var divID = "#testCheck" + div_id; 
+			if($(divID).prop('checked') == true){			
+				var result = 1;
+			}else{
+				var result = 0;
+			}
+
+		    $.ajax({  
+		        type: "GET", 
+		        url: '<?php echo $ajaxSaveDailytestPath; ?>', 
+		        data: "userID="+user_id+"&dailytestID="+strategy_id+"&result="+ result+"&date="+ date,
+		        dataType: "html",
+		        complete: function(data){
+		            $("#ratingBox").html(data.responseText);  
+		        }  
+		    });  
+		    
+		}
+			
+		function modify_lightbox(display){
+			if(display == 1){
+			     $("#lightbox-panel").show();
+			}else{
+			     $("#lightbox-panel").hide();
+			}
+		}
+
+		function issueGoalEvent(user_id, goal_id, old_level){
+			// Get the status of the particular div that is being called
+			
+			var new_level = $("#eventNewScore" + goal_id).attr("value");
+			var letter_grade = $("#eventLetterGrade" + goal_id).attr("value");
+			var why = $("#eventWhy" + goal_id).attr("value");
+
+		    $.ajax({  
+		        type: "GET", 
+		        url: '<?php echo $ajaxSaveEventPath; ?>', 
+		        data: "userID="+user_id+"&goalID="+goal_id+"&newLevel="+ new_level+"&oldLevel="+ old_level+"&letterGrade="+ letter_grade+"&why="+ why,
+		        dataType: "html",
+		        complete: function(data){
+		            //$("#ratingBox").html(data.responseText);  
+		        }  
+		    });  
+
+			$("#eventNewScore" + goal_id).attr("value","");
+			$("#eventWhy" + goal_id).attr("value","");
+			$("#goalLevel" + goal_id).html(new_level);
+		    $("#lightbox-panel").fadeOut();
+		    
+		}
+
+</script>
+<?php
+				if( ( $type == 'habits') && ( !empty($dailytests)) && ($noHabitStrategies != 1) ) {
+?>						
+				<!-- Box -->
+				<div class="box">
+					<!-- GOAL TITLE & CATEGORY(?) -->
+					<div class="habit_box" >
+						<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>"> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->name);?></a><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1)" href="#">+</a></div>
+						
+					<!-- Lightbox for issuing Goal Events -->
+					<div id="lightbox-panel">
+						<div class="newscore-row">
+							<label for="score-1">New Level:</label><input type="text" class="field" id="eventNewScore<?php echo $goal->id;?>"  />
 							<div class="cl">&nbsp;</div>
+						</div>
+						<div class="grade-row">
+							<label>Letter grade:</label>
+							<select name="grade" id="eventLetterGrade<?php echo $goal->id;?>" size="1">
+								<option value="A" >A</option>
+								<option value="B" >B</option>
+								<option value="C" >C</option>
+								<option value="D" >D</option>
+								<option value="F" >F</option>
+							</select>
+						</div>
+						<div class="cl">&nbsp;</div>
+						<label for="textarea-1">Why:</label><br/>
+						<textarea name="textarea" id="eventWhy<?php echo $goal->id;?>" class="field" rows="8" cols="40"></textarea>
+						<button type="submit" value="submit" onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->id; ?>, <?php echo $goalstatus->level; ?>)">submit</button>
+					    <p align="center">
+					        <a id="close-panel" href="#" onclick="modify_lightbox(0)">Close this window</a>
+					    </p>
+					</div><!-- /lightbox-panel -->						
+					<div id="lightbox"> </div><!-- /lightbox -->
+						
+					<!-- HABITS -->
+					<div class="tests">
 <?php
-		if($isEditable) {
-			$ajaxSaveEventPath = PAGE_AJAX_SAVEEVENT;
-			// other vars defined above
-			$optionSelectedA = ($letterGradeVal=="A")?"selected":"";
-			$optionSelectedB = ($letterGradeVal=="B")?"selected":"";
-			$optionSelectedC = ($letterGradeVal=="C")?"selected":"";
-			$optionSelectedD = ($letterGradeVal=="D")?"selected":"";
-			$optionSelectedF = ($letterGradeVal=="F")?"selected":"";
-?>
-							<!-- EVENT ENTRY BOX -->
-							<script type="text/javascript">
-								function expandEvent<?php echo $rowID;?>() {
-									document.all['eventDiv<?php echo $rowID;?>'].style="display:block;";
-									document.all['plusButton<?php echo $rowID;?>'].style.display = 'none';
+						for($t=0;$t<7;$t++){
+							$today = date("D", strtotime("-".$t." day")); 	
+							$today = (string)$today;
+							if($t == 0){ $margin = '270px; font-size:12px; font-weight:bold';}elseif( $t == 1 ){ $margin = '32px; font-size:16px'; }else{ $margin = '29px; font-size:16px'; }
+							?>
+							
+							<div style="float:left; margin-left:<?php echo $margin; ?>;"><?php if($t == 0){ echo 'Today';}else{echo $today;}?></div>	
+<?php									
+						}
+						?><?php
+
+					foreach($dailytests as $dailytest) {
+					
+						if($dailytest->strategy_type == 'adherence'){
+							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, date("Y-m-d"))?"checked":"";
+							
+	?>
+							<div class="row">
+								<div class="habit_label"><?php echo GPC::strToPrintable($dailytest->name);?></div>
+	<?php
+								if($isEditable) {
+					?>
+														<label for="testCheck<?php echo $dayID; echo $dailytest->id;?>"><input type="checkbox" value="Check" id="testCheck<?php echo $dayID; echo $dailytest->id;?>" <?php echo $checkedVal; ?> onclick="modifyDailyStrategy(<?php echo $user->id; ?>, <?php echo $dailytest->id;?>, <?php echo $dayID; echo $dailytest->id;?>, '<?php echo date("Y-m-d");?>');" /></label>
+					<?php
+									++$dayID;
 								}
-							</script>
-<?php
-			$this->goalstatusPrintAjaxEventSave($rowID, "eventNewScore", "onChangeEvent", $ajaxSaveEventPath, $goalstatus, $goal, "eventWhy", "eventLetterGrade", "currentLevel");
-?>
-							<div class="dd-row" id="eventDiv<?php echo $rowID;?>" style="display:<?php echo $eventDivDefaultDisplay;?>;">
-								<div class="left">
-									<div class="newscore-row">
-										<label for="score-1">New Level:</label><input type="text" class="field" id="eventNewScore<?php echo $rowID;?>" onkeyup="onChangeEvent<?php echo $rowID;?>();" value="<?php echo $newLevelVal;?>" />
+	?>
+								<div class="test-cnt">
+									<div>
+	<?php
+										$r = 1;
+										foreach($dailytest->getStashedStyleArray() as $style) {
+											$date = date("Y-m-d", strtotime("-".$r." day")); 	
+											$date = (string)$date;		
+											$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, $date)?"checked":"";
+							?>
+											<label for="testCheck<?php echo $dayID; echo $dailytest->id;?>"><input type="checkbox" value="Check" id="testCheck<?php echo $dayID; echo $dailytest->id;?>" <?php echo $checkedVal; ?> onclick="modifyDailyStrategy(<?php echo $user->id; ?>, <?php echo $dailytest->id;?>, <?php echo $dayID; echo $dailytest->id;?>, '<?php echo $date;?>');" /></label>
+						<?php				++$dayID;
+											++$r;
+										}?>
 										<div class="cl">&nbsp;</div>
 									</div>
-									<div class="grade-row">
-										<label>Letter grade:</label>
-										<select name="grade" id="eventLetterGrade<?php echo $rowID;?>" onchange="onChangeEvent<?php echo $rowID;?>();" size="1">
-											<option value="A" <?php echo $optionSelectedA;?>>A</option>
-											<option value="B" <?php echo $optionSelectedB;?>>B</option>
-											<option value="C" <?php echo $optionSelectedC;?>>C</option>
-											<option value="D" <?php echo $optionSelectedD;?>>D</option>
-											<option value="F" <?php echo $optionSelectedF;?>>F</option>
-										</select>
-										<div class="cl">&nbsp;</div>
-									</div>
-								</div>
-								<div class="right-side">
-									<label for="textarea-1">Why:</label>
-									<textarea name="textarea" id="eventWhy<?php echo $rowID;?>" onkeyup="onChangeEvent<?php echo $rowID;?>();" class="field" rows="8" cols="40"><?php echo $whyVal;?></textarea>
 								</div>
 								<div class="cl">&nbsp;</div>
 							</div>
-							<!-- End Dd Row -->
+<?php					}
+					}?>
+					</div>
+				</div>
+					<div class="cl">&nbsp;</div>
+				</div>
+				<!-- End Box -->
 <?php
-		}
+		}elseif($type == 'goals'){
+		
+		
+			$kpis = KPI::getListFromGoalID($goal->id, $user->id);
+/*			echo "<pre>";
+			print_r($kpis);
+			echo "</pre>";
+*/
+		
+		?>
+						<!-- Box -->
+						<div class="box">
+
+
+							<!-- GOAL TITLE & LEVEL -->
+							<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" onclick="modify_lightbox(1)"> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->name);?></a><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1)" href="#">+</a></div>
+							
+							<!-- Lightbox for issuing Goal Events -->
+							<div id="lightbox-panel">
+								<div class="newscore-row">
+									<label for="score-1">New Level:</label><input type="text" class="field" id="eventNewScore<?php echo $goal->id;?>"  />
+									<div class="cl">&nbsp;</div>
+								</div>
+								<div class="grade-row">
+									<label>Letter grade:</label>
+									<select name="grade" id="eventLetterGrade<?php echo $goal->id;?>" size="1">
+										<option value="A" >A</option>
+										<option value="B" >B</option>
+										<option value="C" >C</option>
+										<option value="D" >D</option>
+										<option value="F" >F</option>
+									</select>
+								</div>
+								<div class="cl">&nbsp;</div>
+								<label for="textarea-1">Why:</label><br/>
+								<textarea name="textarea" id="eventWhy<?php echo $goal->id;?>" class="field" rows="8" cols="40"></textarea>
+								<button type="submit" value="submit" onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->id; ?>, <?php echo $goalstatus->level; ?>)">submit</button>
+							    <p align="center">
+							        <a id="close-panel" href="#" onclick="modify_lightbox(0)">Close this window</a>
+							    </p>
+							</div><!-- /lightbox-panel -->						
+							<div id="lightbox"> </div><!-- /lightbox -->
+
+
+		<?php if(!empty($dailytests)){?>
+					<div class="todos">
+						<span class="todo_title"> ToDos </span><br/>
+<?php				$isToDo = 0;
+					foreach($dailytests as $dailytest) {
+					
+						if($dailytest->strategy_type == 'todo'){
+							$isToDo = 1;
+							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, date("Y-m-d"))?"checked":"";
+							
+	?>
+<?php
+							if($isEditable) {
+				?>
+									<label for="testCheck<?php echo $dayID; echo $dailytest->id;?>" style="float:left;">
+										<input type="checkbox" value="Check" id="testCheck<?php echo $dayID; echo $dailytest->id;?>" <?php echo $checkedVal; ?> onclick="modifyDailyStrategy(<?php echo $user->id; ?>, <?php echo $dailytest->id;?>, <?php echo $dayID; echo $dailytest->id;?>, '<?php echo date("Y-m-d");?>');" />
+									</label>
+				<?php
+								++$dayID;
+							}
 ?>
+
+							<div class="todo_label"><?php echo GPC::strToPrintable($dailytest->name);?></div>
+
+							<div class="cl">&nbsp;</div>
+<?php					}
+					}
+					if($isToDo == 0){
+						echo "<span class='no_todos'> Adopt some ToDos here.</span>";
+					}
+				
+				
+					?>
+					</div>		
+			<?php }?>
+			
+			
+		<?php if(!empty($dailytests)){?>
+					<div class="todos">
+						<span class="todo_title"> Tactics </span><br/>
+						<ul style="list-style-type:square;">
+<?php				$isToDo = 0;
+					foreach($dailytests as $dailytest) {
+					
+						if($dailytest->strategy_type == 'tactic'){
+							$isToDo = 1;
+							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, date("Y-m-d"))?"checked":"";
+	?>
+	
+							<script>
+								////////////////////////////////////
+								// AJAX for modifying a Strategy //
+								//////////////////////////////////
+								
+								function modifyStrategy(strategy_id, type, strategy_type){
+								
+									var new_strategy_name = $("#newStrategyName" + strategy_id).attr("value");
+									
+								    $.ajax({  
+								        type: "POST", 
+								        url: '<?php echo $ajaxModifyStrategy; ?>', 
+								        data: "userID="+<?php echo $user->id; ?>+"&goalID="+<?php echo $goal->id; ?>+"&strategyID="+ strategy_id+"&newStrategyName="+ new_strategy_name+"&type="+ type+"&strategyType="+ strategy_type,
+								        dataType: "html",
+								        complete: function(data){
+								            $("#ratingBox").html(data.responseText);  
+								        }  
+								    });
+								    
+								 
+								 
+									$("#element"+strategy_id).hide();	
+									$("#editButton"+strategy_id).show();
+									$("#curElementText"+strategy_id).html(new_strategy_name );	
+									$("#curElementText"+strategy_id).show();	
+								      
+								}
+													
+								function editElement(element_id, status){
+									if(status == 1){
+										$("#editButton"+element_id).hide();	
+										$("#curElementText"+element_id).hide();
+										$("#element"+element_id).fadeIn();	
+									}else{
+										$("#element"+element_id).hide();	
+										$("#editButton"+element_id).show();	
+										$("#curElementText"+element_id).show();	
+									}
+								}
+
+							</script>
+	
+							<div class="tactic_label">
+								<li>
+									<div style="display:none;" id="element<?php echo $dailytest->id;?>"> 
+										<input id="newStrategyName<?php echo $dailytest->id;?>" type="text" value="<?php echo GPC::strToPrintable($dailytest->name);?>" style="width:375px; font-size:13px; color:#666;"/>
+										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
+									</div> 
+									<span id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
+									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span>
+								</li>
+							</div>
+							<div class="cl">&nbsp;</div>
+<?php					}
+					}
+					?></ul> <?php
+					if($isToDo == 0){
+						echo "<span class='no_todos'> Adopt some Tactics here.</span>";
+					}
+				
+				
+					?>
+					</div>		
+			<?php }?>
+
+		<?php if(!empty($kpis)){?>
+					<div class="todos">
+						<span class="todo_title"> Measurements and Milestones </span><br/>
+<?php				
+					foreach($kpis as $kpi) {							
+
+							if($isEditable) {
+				?>
+									<label for="testCheck<?php echo $dayID; echo $dailytest->id;?>" style="float:left;">
+										<input type="checkbox" value="Check" id="testCheck<?php echo $dayID; echo $dailytest->id;?>" <?php echo $checkedVal; ?> onclick="modifyDailyStrategy(<?php echo $user->id; ?>, <?php echo $dailytest->id;?>, <?php echo $dayID; echo $dailytest->id;?>, '<?php echo date("Y-m-d");?>');" />
+									</label>
+				<?php
+								++$dayID;
+							}
+?>
+							<div class="todo_label"><?php echo GPC::strToPrintable($kpi->kpi_name);?>
+							<?php if(!empty($kpi->kpi_tests[0]->test_name)){
+									echo "(". $kpi->kpi_tests[0]->test_name . ")";
+							}?>
+							</div>
+							<div class="cl">&nbsp;</div>
+<?php					
+					}
+					?>
+					</div>		
+			<?php }?>
+
+
+							
+							
+							
+							
+							
+							
 						</div>
+
 						<!-- End Box -->
 <?php
+		
+		
+		}
+
 	}
+		
+		
+		
+		
+		
+		
+		
 	public function printGoalPage($goalID) {
 		global $db, $user;
 
@@ -1122,7 +1455,7 @@ Is it really that hard to figure out? :P
 		// Show your description if in DB
 		if ($goal->sub_description == 'none'){ 
 		}else{ 
-		?><script>$(document).ready(function(){addDescription('<?php echo $goal->sub_description; ?>');});</script><?php
+		?><script>$(document).ready(function(){addDescription("<?php echo $goal->sub_description; ?>");});</script><?php
 		}
 		
 		// Show your display style if in DB
@@ -2446,6 +2779,8 @@ class MobileView extends BaseView {
 						</div>
 <?php
 	}
+	
+	// &&&&&&
 	public function printUserPage($viewUser) {
 		global $user, $db;
 		$viewUserID = $viewUser->id;
@@ -2463,7 +2798,8 @@ class MobileView extends BaseView {
 			<div class="daily-entry-page">
 <?php		
 		$currentTime=time();
-		$this->goalstatusPrintList($viewUserID, $currentTime, $viewingSelf);
+		$type = 'none';
+		$this->goalstatusPrintList($viewUserID, $currentTime, $viewingSelf, $type);
 ?>
 			</div>
 <?php		
@@ -2480,7 +2816,7 @@ class MobileView extends BaseView {
 					</ul>
 <?php
 	}
-	protected function goalstatusPrintGoalstatusPrint($goal, $rowID, $goalstatus, $plusButtonDefaultDisplay, $eventDivDefaultDisplay, $dailytests, $letterGradeVal, $newLevelVal, $whyVal, $isEditable) {
+	protected function goalstatusPrintGoalstatusPrint($goal, $rowID, $goalstatus, $plusButtonDefaultDisplay, $eventDivDefaultDisplay, $dailytests, $letterGradeVal, $newLevelVal, $whyVal, $isEditable, $type) {
 		global $db;
 		
 		static $testID = 1;

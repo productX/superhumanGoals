@@ -655,6 +655,36 @@ class Dailytest {
 				
 	}	
 
+	public static function editStrategy($userID, $strategyID, $goalID, $newStrategyName, $strategyType) {
+		global $db;
+		
+		// Change the is_active value of the current strategy in user_strategies to 0  
+		$db->doQuery("UPDATE user_strategies SET is_active = 0 WHERE strategy_id = %s", $strategyID);
+
+		// Check if there is already a strategy by the new name in the DB
+		$isNewStrategy = $db->doQuery("SELECT * FROM strategies WHERE name = %s", $newStrategyName);
+		if(is_null($isNewStrategy)) {
+		
+			// If no, create a new strategy in the strategies table and then 
+			if(empty($description)){ $description = ''; }		
+			$db->doQuery("INSERT INTO strategies (goal_id, name, description, strategy_type, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW())", $goalID, $newStrategyName, $description, $strategyType, $userID);
+			$newStrategyID = mysql_insert_id();
+			// INSERT into the user_strategies row with the new strategy information
+			$db->doQuery("INSERT INTO user_strategies (user_id, strategy_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active =1, date_created = NOW()", $userID, $newStrategyID, $goalID);
+
+		}else{
+			while($obj = mysql_fetch_object($isNewStrategy)) {
+				$newStrategyID = $obj->id;
+			}
+		
+		// If yes INSERT or ON DUPLICATE UPDATE the user_strategies row with the new strategy information
+			$db->doQuery("INSERT INTO user_strategies (user_id, strategy_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active =1, date_created = NOW()", $userID, $newStrategyID, $goalID);
+		
+		}
+		
+				
+	}	
+
 	public static function removeStrategy($userID, $strategyID, $goalID) {
 		global $db;
 
@@ -672,7 +702,8 @@ class Dailytest {
 	public static function getListFromGoalID($goalID,$userID) {
 		global $db;
 
-		$rs = $db->doQuery("SELECT * FROM strategies WHERE goal_id=%s", $goalID);
+		// This is actually getting the list of strategies that are active for a user
+		$rs = $db->doQuery("SELECT strategies.id, strategies.goal_id, strategies.name, strategies.description, strategies.strategy_type, strategies.created_by, strategies.date_created FROM strategies, user_strategies WHERE strategies.goal_id=%s AND strategies.goal_id = user_strategies.goal_id AND user_strategies.user_id = %s AND strategies.id = user_strategies.strategy_id AND user_strategies.is_active = 1", $goalID, $userID );
 		$list = array();
 		$obj = null;
 		
@@ -1057,18 +1088,19 @@ class DailytestStatus {
 		return $list;
 	}
 	
-	public static function getTodayStatus($userID, $dailytestID) {
+	public static function getTodayStatus($userID, $dailytestID, $date) {
 		global $db;
 		
-		$today = Date::now()->toDay();
-		$rs = $db->doQuery("SELECT input FROM strategies_log WHERE user_id=%s AND strategy_id=%s AND entered_at_day=%s", $userID, $dailytestID, $today);
+		//$today = Date::now()->toDay();
+		$rs = $db->doQuery("SELECT input FROM strategies_log WHERE user_id=%s AND strategy_id=%s AND entered_at_day=%s", $userID, $dailytestID, $date);
 		return mysql_num_rows($rs)>0;
 	}
-	public static function setTodayStatus($userID, $dailytestID, $newStatus) {
+	public static function setTodayStatus($userID, $dailytestID, $newStatus, $date) {
 		global $db;
 		
-		$currentStatus = DailytestStatus::getTodayStatus($userID, $dailytestID);
-		$today = Date::now()->toDay();
+		$currentStatus = DailytestStatus::getTodayStatus($userID, $dailytestID, $date);
+		$today = $date;
+		//Date::now()->toDay();
 		if($currentStatus!=$newStatus) {
 			if($currentStatus) {
 				$db->doQuery("DELETE FROM strategies_log WHERE user_id=%s AND strategy_id=%s AND entered_at_day=%s", $userID, $dailytestID, $today);
