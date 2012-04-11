@@ -660,7 +660,8 @@ class Dailytest {
 	public static function getListFromGoalID($goalID,$userID) {
 		global $db;
 
-		$rs = $db->doQuery("SELECT * FROM strategies WHERE goal_id=%s", $goalID);
+		// This is actually getting the list of strategies that are active for a user
+		$rs = $db->doQuery("SELECT strategies.id, strategies.goal_id, strategies.name, strategies.description, strategies.strategy_type, strategies.created_by, strategies.date_created FROM strategies, user_strategies WHERE strategies.goal_id=%s AND strategies.goal_id = user_strategies.goal_id AND user_strategies.user_id = %s AND strategies.id = user_strategies.strategy_id AND user_strategies.is_active = 1", $goalID, $userID );
 		$list = array();
 		$obj = null;
 		
@@ -1045,18 +1046,19 @@ class DailytestStatus {
 		return $list;
 	}
 	
-	public static function getTodayStatus($userID, $dailytestID) {
+	public static function getTodayStatus($userID, $dailytestID, $date) {
 		global $db;
 		
-		$today = Date::now()->toDay();
-		$rs = $db->doQuery("SELECT input FROM strategies_log WHERE user_id=%s AND strategy_id=%s AND entered_at_day=%s", $userID, $dailytestID, $today);
+		//$today = Date::now()->toDay();
+		$rs = $db->doQuery("SELECT input FROM strategies_log WHERE user_id=%s AND strategy_id=%s AND entered_at_day=%s", $userID, $dailytestID, $date);
 		return mysql_num_rows($rs)>0;
 	}
-	public static function setTodayStatus($userID, $dailytestID, $newStatus) {
+	public static function setTodayStatus($userID, $dailytestID, $newStatus, $date) {
 		global $db;
 		
-		$currentStatus = DailytestStatus::getTodayStatus($userID, $dailytestID);
-		$today = Date::now()->toDay();
+		$currentStatus = DailytestStatus::getTodayStatus($userID, $dailytestID, $date);
+		$today = $date;
+		//Date::now()->toDay();
 		if($currentStatus!=$newStatus) {
 			if($currentStatus) {
 				$db->doQuery("DELETE FROM strategies_log WHERE user_id=%s AND strategy_id=%s AND entered_at_day=%s", $userID, $dailytestID, $today);

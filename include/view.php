@@ -75,26 +75,35 @@ abstract class BaseView {
 		$this->storyPrintDailyscoreStoryPrint($user, $numGoalsTouched, $totalGoals, $goodBad, $score, $goalLinkList, $timeSinceStr);
 	}
 	abstract protected function storyPrintDailyscoreStoryPrint($user, $numGoalsTouched, $totalGoals, $goodBad, $score, $goalLinkList, $timeSinceStr);
+	
+	// &&&&&&
 	protected function goalstatusPrintList($userID, $dayUT, $isEditable) {
 		global $db;
 
 		$this->goalstatusPrintPre();
 		// ignore dayUT for now
-		$rs = $db->doQuery("SELECT * FROM goals_status WHERE user_id=%s ", $userID);
+		$rs = $db->doQuery("SELECT * FROM goals_status WHERE user_id=%s AND is_active = 1", $userID);
 		while($obj = mysql_fetch_object($rs)) {
 			$goalstatus = GoalStatus::getObjFromDBData($obj);
+			
+			//&&&&&& Gets objects for each adopted goal
 			$this->goalstatusPrintGoalstatus($goalstatus, $isEditable);
 		}
 		$this->goalstatusPrintPost();
 	}
+	
+	
 	abstract protected function goalstatusPrintPre();
 	abstract protected function goalstatusPrintPost();
+	
+	
+	//&&&&&&
 	protected function goalstatusPrintGoalstatus($goalstatus, $isEditable) {
 		static $rowID = 1;
 		if(!$goalstatus->isActive) {
 			return;
 		}
-		
+		//&&&&&& Get all the information for a particular goal
 		$goal = Goal::getObjFromGoalID($goalstatus->goalID);
 		$newLevelVal = $goalstatus->level;
 		$letterGradeVal = "A";
@@ -111,11 +120,14 @@ abstract class BaseView {
 				$eventDivDefaultDisplay = "block";
 			}
 		}
-		static $numDaysBack = 13;
+		static $numDaysBack = 6;
+		
+		//&&&&&& Get all the strategies from the DB
 		$dailytests = Dailytest::getListFromGoalID($goalstatus->goalID,$goalstatus->userID);
 		
 		// HACK: stash styleArray's in the dailytest objects
 		foreach($dailytests as $dailytest) {
+			//&&&&&& Get all the strategy_log data for each strategy
 			$dailytestStatuses = DailytestStatus::getListFromUserID($goalstatus->userID, $dailytest->id, $numDaysBack);
 			$dailytestStatusDays = array();
 			foreach($dailytestStatuses as $dailytestStatus) {
@@ -127,7 +139,7 @@ abstract class BaseView {
 				$currentDay = $current->toDay();
 				$style = "";
 				if(in_array($currentDay,$dailytestStatusDays)) {
-					$style="background: #7bc545;";
+					$style="background: red;";
 				}
 				$styleArray[] = $style;
 			}
@@ -336,9 +348,11 @@ abstract class BaseView {
 		global $db;
 		
 		$this->printHeader(NAVNAME_ACTIVITY, array(new ChromeTitleElementHeader("Activity")));
-	
+
 		$this->printActivityPagePre();
+
 		$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE ORDER BY entered_at DESC LIMIT 100");
+		echo 'adam rocks';
 		$this->storyPrintListForRS($rs);
 		$this->printActivityPagePost();
 
@@ -384,17 +398,20 @@ class WebView extends BaseView {
 	// public
 	public function printHeader($navSelect, $chromeTitleElements, $justOuterChrome=false) {
 		global $user, $appAuth;
+
 	?>
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 	<html lang="en-US" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
 	<head>
 		<title>superhuman</title>
 		<meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+
 		<link rel="shortcut icon" href="<?php echo BASEPATH_UI;?>/web/css/images/favicon.ico" />
 		<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/web/css/style.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/web/css/enhanced.css" type="text/css" media="screen" />
 		<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/web/css/jquery.jscrollpane.css" type="text/css" media="all" />
-		
+
+
 		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery-1.7.1.min.js" type="text/javascript"></script>
 		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery.jscrollpane.min.js" type="text/javascript"></script>
 		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery.mousewheel.js" type="text/javascript"></script>
@@ -402,6 +419,7 @@ class WebView extends BaseView {
 		<script src="<?php echo BASEPATH_UI;?>/web/js/functions.js" type="text/javascript"></script>
 		<script type="text/javascript"> $(document).ready(function() { autoHeightContainer(); }) </script>
 	</head>
+
 	<body>
 		<!-- Wrapper -->
 		<div id="wrapper">
@@ -411,6 +429,7 @@ class WebView extends BaseView {
 				<div class="shell">
 					<h1 id="logo"><a href="<?php echo PAGE_INDEX; ?>" class="notext">Superhuman</a></h1>
 	<?php
+
 		if(isset($appAuth) && $appAuth->isLoggedIn()) {
 	?>
 					<div class="user-image">
@@ -906,24 +925,37 @@ Is it really that hard to figure out? :P
 							<!-- End Card -->
 <?php
 	}
+	
+	
+	
+	
+	
+	
+	
+	
 	public function printUserPage($viewUser) {
 		global $user, $db;
 		$viewUserID = $viewUser->id;
 		$viewingSelf = ($viewUserID == $user->id);
-	
-		define('PAGEMODE_ACTIVITY','activity');
+		
+		define('PAGEMODE_HABITS','habits');
 		define('PAGEMODE_GOALS','goals');
-		$mode = PAGEMODE_GOALS;
+		define('PAGEMODE_ACTIVITY','activity');
+
+		$mode = PAGEMODE_HABITS;
 		if(isset($_GET["t"])) {
 			$mode = $_GET["t"];
 		}
 		$tabIndex = 0;
 		switch($mode) {
-			case PAGEMODE_ACTIVITY:
+			case PAGEMODE_HABITS:
 				$tabIndex = 0;
 				break;
 			case PAGEMODE_GOALS:
 				$tabIndex = 1;
+				break;
+			case PAGEMODE_ACTIVITY:
+				$tabIndex = 2;
 				break;
 			default:
 				assert(false);
@@ -934,8 +966,10 @@ Is it really that hard to figure out? :P
 		$this->printHeader($navName, 
 					array(	new ChromeTitleElementUserPic($viewUser),
 							new ChromeTitleElementHeader("Person: $viewUser->firstName $viewUser->lastName"),
-							new ChromeTitleElementTabs(	array(	"Activity"=>PAGE_USER."?id=$viewUserID&t=".PAGEMODE_ACTIVITY,
-																"Goals"=>PAGE_USER."?id=$viewUserID&t=".PAGEMODE_GOALS
+							new ChromeTitleElementTabs(	array(	"Habits"=>PAGE_USER."?id=$viewUserID&t=".PAGEMODE_HABITS,
+																"Goals"=>PAGE_USER."?id=$viewUserID&t=".PAGEMODE_GOALS,
+																"Activity"=>PAGE_USER."?id=$viewUserID&t=".PAGEMODE_ACTIVITY
+																
 														), $tabIndex)
 					));
 
@@ -962,16 +996,31 @@ Is it really that hard to figure out? :P
 				$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE AND user_id=%s ORDER BY entered_at DESC LIMIT 100", $viewUserID);
 				$this->storyPrintListForRS($rs);
 				break;
-			case PAGEMODE_GOALS:
+			case PAGEMODE_HABITS:
 				$currentTime=time();
 				$this->goalstatusPrintList($viewUserID, $currentTime, $viewingSelf);
 				break;
+			case PAGEMODE_GOALS:
+				$currentTime=time();
+				$this->goalstatusPrintList($viewUserID, $currentTime, $viewingSelf);
+				break;				
 			default:
 				break;
 		}
 
 		$this->printFooter($navName);
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	protected function goalstatusPrintPre() {
 ?>
 					<!-- Case -->
@@ -984,9 +1033,201 @@ Is it really that hard to figure out? :P
 					<!-- End Case -->
 <?php
 	}
+	
+
+
+
+	// &&&&&&
 	protected function goalstatusPrintGoalstatusPrint($goal, $rowID, $goalstatus, $plusButtonDefaultDisplay, $eventDivDefaultDisplay, $dailytests, $letterGradeVal, $newLevelVal, $whyVal, $isEditable) {
+		global $user;
 		static $testID = 1;
+		$dayID = 1;
+		$type = 'habits';
+		$ajaxSaveDailytestPath = PAGE_AJAX_SAVEDAILYTEST;
+		$ajaxSaveEventPath = PAGE_AJAX_SAVEEVENT;
+		$noHabitStrategies = 0;
+
+//		echo "<pre>";
+//		print_r($goalstatus);
+//		echo "</pre>";
+//		echo "<pre>";
+//		print_r($dailytests);
+//		echo "</pre>";		
+		
+		if(	(count($dailytests) == 1) && ( $dailytests[0]->strategy_type != 'adherence')){		
+			$noHabitStrategies = 1;
+		}
+		
 ?>
+
+<script>
+		//////////////////////////////////////////////////////////////////////////
+		// AJAX for modifying (adding/removing/readopting, not creating) a KPI //
+		////////////////////////////////////////////////////////////////////////
+
+		function modifyDailyStrategy(user_id, strategy_id, div_id, date){
+			// Get the status of the particular div that is being called
+			var divID = "#testCheck" + div_id; 
+			if($(divID).prop('checked') == true){			
+				var result = 1;
+			}else{
+				var result = 0;
+			}
+
+		    $.ajax({  
+		        type: "GET", 
+		        url: '<?php echo $ajaxSaveDailytestPath; ?>', 
+		        data: "userID="+user_id+"&dailytestID="+strategy_id+"&result="+ result+"&date="+ date,
+		        dataType: "html",
+		        complete: function(data){
+		            $("#ratingBox").html(data.responseText);  
+		        }  
+		    });  
+		    
+		}
+			
+		function modify_lightbox(display){
+			if(display == 1){
+			     $("#lightbox").hide();
+			     $("#lightbox-panel").fadeIn();
+			}else{
+			     $("#lightbox").show();
+			     $("#lightbox-panel").fadeOut();
+			}
+		}
+
+		function issueGoalEvent(user_id, goal_id, old_level){
+			// Get the status of the particular div that is being called
+			
+			var new_level = $("#eventNewScore" + goal_id).attr("value");
+			var letter_grade = $("#eventLetterGrade" + goal_id).attr("value");
+			var why = $("#eventWhy" + goal_id).attr("value");
+
+		    $.ajax({  
+		        type: "GET", 
+		        url: '<?php echo $ajaxSaveEventPath; ?>', 
+		        data: "userID="+user_id+"&goalID="+goal_id+"&newLevel="+ new_level+"&oldLevel="+ old_level+"&letterGrade="+ letter_grade+"&why="+ why,
+		        dataType: "html",
+		        complete: function(data){
+		            $("#ratingBox").html(data.responseText);  
+		        }  
+		    });  
+
+			$("#eventNewScore" + goal_id).attr("value","");
+			$("#eventWhy" + goal_id).attr("value","");
+			$("#goalLevel" + goal_id).html(new_level);
+		    $("#lightbox").show();
+		    $("#lightbox-panel").fadeOut();
+		    
+		}
+
+</script>
+<?php
+				if( ( $type == 'habits') && ( !empty($dailytests)) && ($noHabitStrategies != 1) ) {
+?>						
+				<!-- Box -->
+				<div class="box">
+					<!-- GOAL TITLE & CATEGORY(?) -->
+					<div class="habit_box" >
+						<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>"> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->name);?></a><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1)" href="#">+</a></div>
+						
+				<!-- Lightbox for issuing Goal Events -->
+				<div id="lightbox-panel">
+					<div class="newscore-row">
+						<label for="score-1">New Level:</label><input type="text" class="field" id="eventNewScore<?php echo $goal->id;?>"  />
+						<div class="cl">&nbsp;</div>
+					</div>
+					<div class="grade-row">
+						<label>Letter grade:</label>
+						<select name="grade" id="eventLetterGrade<?php echo $goal->id;?>" size="1">
+							<option value="A" >A</option>
+							<option value="B" >B</option>
+							<option value="C" >C</option>
+							<option value="D" >D</option>
+							<option value="F" >F</option>
+						</select>
+					</div>
+					<div class="cl">&nbsp;</div>
+					<label for="textarea-1">Why:</label><br/>
+					<textarea name="textarea" id="eventWhy<?php echo $goal->id;?>" class="field" rows="8" cols="40"></textarea>
+					<button type="submit" value="submit" onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->id; ?>, <?php echo $goalstatus->level; ?>)">submit</button>
+				    <p align="center">
+				        <a id="close-panel" href="#" onclick="modify_lightbox(0)">Close this window</a>
+				    </p>
+				</div><!-- /lightbox-panel -->						
+				<div id="lightbox"> </div><!-- /lightbox -->
+						
+					<!-- HABITS -->
+					<div class="tests">
+<?php
+						for($t=0;$t<7;$t++){
+							$today = date("D", strtotime("-".$t." day")); 	
+							$today = (string)$today;
+							if($t == 0){ $margin = '270px; font-size:12px; font-weight:bold';}elseif( $t == 1 ){ $margin = '32px; font-size:16px'; }else{ $margin = '29px; font-size:16px'; }
+							?>
+							
+							<div style="float:left; margin-left:<?php echo $margin; ?>;"><?php if($t == 0){ echo 'Today';}else{echo $today;}?></div>	
+<?php									
+						}
+						?><?php
+
+					foreach($dailytests as $dailytest) {
+					
+						if($dailytest->strategy_type == 'adherence'){
+							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, date("Y-m-d"))?"checked":"";
+							
+	?>
+							<div class="row">
+								<div class="habit_label"><?php echo GPC::strToPrintable($dailytest->name);?></div>
+	<?php
+								if($isEditable) {
+					?>
+														<label for="testCheck<?php echo $dayID; echo $dailytest->id;?>"><input type="checkbox" value="Check" id="testCheck<?php echo $dayID; echo $dailytest->id;?>" <?php echo $checkedVal; ?> onclick="modifyDailyStrategy(<?php echo $user->id; ?>, <?php echo $dailytest->id;?>, <?php echo $dayID; echo $dailytest->id;?>, '<?php echo date("Y-m-d");?>');" /></label>
+					<?php
+									++$dayID;
+								}
+	?>
+								<div class="test-cnt">
+									<div>
+	<?php
+										$r = 1;
+										foreach($dailytest->getStashedStyleArray() as $style) {
+											$date = date("Y-m-d", strtotime("-".$r." day")); 	
+											$date = (string)$date;		
+											$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, $date)?"checked":"";
+							?>
+	<label for="testCheck<?php echo $dayID; echo $dailytest->id;?>"><input type="checkbox" value="Check" id="testCheck<?php echo $dayID; echo $dailytest->id;?>" <?php echo $checkedVal; ?> onclick="modifyDailyStrategy(<?php echo $user->id; ?>, <?php echo $dailytest->id;?>, <?php echo $dayID; echo $dailytest->id;?>, '<?php echo $date;?>');" /></label>
+						<?php				++$dayID;
+											++$r;
+										}?>
+										<div class="cl">&nbsp;</div>
+									</div>
+								</div>
+								<div class="cl">&nbsp;</div>
+							</div>
+<?php					}
+					}?>
+					</div>
+				</div>
+					<div class="cl">&nbsp;</div>
+				</div>
+				<!-- End Box -->
+
+
+
+
+
+
+
+
+
+
+
+
+<?php
+
+		}elseif($type == 'goals'){
+		?>
 						<!-- Box -->
 						<div class="box">
 							<!-- GOAL TITLE & LEVEL -->
@@ -1091,7 +1332,29 @@ Is it really that hard to figure out? :P
 						</div>
 						<!-- End Box -->
 <?php
+		
+		
+		}
+
 	}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 	public function printGoalPage($goalID) {
 		global $db, $user;
 
@@ -1117,7 +1380,7 @@ Is it really that hard to figure out? :P
 		// Show your description if in DB
 		if ($goal->sub_description == 'none'){ 
 		}else{ 
-		?><script>$(document).ready(function(){addDescription('<?php echo $goal->sub_description; ?>');});</script><?php
+		?><script>$(document).ready(function(){addDescription("<?php echo $goal->sub_description; ?>");});</script><?php
 		}
 		
 		// Show your display style if in DB
@@ -2417,6 +2680,8 @@ class MobileView extends BaseView {
 						</div>
 <?php
 	}
+	
+	// &&&&&&
 	public function printUserPage($viewUser) {
 		global $user, $db;
 		$viewUserID = $viewUser->id;
@@ -2431,6 +2696,7 @@ class MobileView extends BaseView {
 			<div class="daily-entry-page">
 <?php		
 		$currentTime=time();
+
 		$this->goalstatusPrintList($viewUserID, $currentTime, $viewingSelf);
 ?>
 			</div>

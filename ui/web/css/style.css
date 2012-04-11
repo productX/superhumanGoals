@@ -191,8 +191,11 @@ h1#logo a:hover { background-position: 0 bottom; }
 .box .tests { float: left; display: inline; padding: 0 13px 0 16px; border-right: solid 1px #dedede; }
 .box .tests .row { padding: 4px 0; }
 .box .tests .row input { display: none; }
-.box .tests .row label { background: #fff; width: 22px; height: 22px; border: solid 1px #868686; float: left; display: inline; margin-right: 7px; cursor: pointer; }
-.box .tests .row label.checked { background: url(images/check.png) no-repeat 0 0; }
+.box .tests .row label { background: #fff; width: 45px; height: 45px; border: solid 1px #868686; float: left; display: inline; margin-right: 7px; cursor: pointer; }
+.box .tests .row label.checked { 
+
+
+background: url(images/check.png) no-repeat 0 0; }
 .box .tests .test-cnt { float: left; display: inline; padding: 0 0 0 7px; font-size: 11px; line-height: 11px; }
 .box .tests .test-cnt p { padding: 0 0 5px 0; }
 .box .tests .test-cnt .scale { border: solid 1px #868686; border-left: 0; }
@@ -214,6 +217,14 @@ h1#logo a:hover { background-position: 0 bottom; }
 .box .dd-row .newscore-row input.field { float: left; display: inline; width: 24px; height: 20px; font-size: 11px; padding: 0 3px; color: #4c4c4c; background: #fff; border: solid 1px #7d7d7d; }
 .box .dd-row .newscore-row input.field { border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; box-shadow: #b2b1b1 0 0 1px; -webkit-box-shadow: #b2b1b1 0 0 1px; -moz-box-shadow: #b2b1b1 0 0 1px; }
 .box .dd-row .grade-row label { width: 75px; }
+#lightbox-panel .newscore-row { padding: 0 0 8px 0; }
+#lightbox-panel .newscore-row label { width: 65px; }
+#lightbox-panel .newscore-row input.field { float: left; display: inline; width: 24px; height: 20px; font-size: 11px; padding: 0 3px; color: #4c4c4c; background: #fff; border: solid 1px #7d7d7d; }
+#lightbox-panel .newscore-row input.field { border-radius: 3px; -webkit-border-radius: 3px; -moz-border-radius: 3px; box-shadow: #b2b1b1 0 0 1px; -webkit-box-shadow: #b2b1b1 0 0 1px; -moz-box-shadow: #b2b1b1 0 0 1px; }
+#lightbox-panel .grade-row label { width: 75px; }
+
+
+
 
 .kpi{ font-size:18px; border-top: 1px solid #A8DCAF; border-right: 1px solid #A8DCAF; border-left: 1px solid #A8DCAF; padding:2px; background: #CDFFD4; margin-top:15px; }
 .kpi_box{ font-size:18px; border: 2px solid #999999; padding:2px; background: #826D8C; margin-top:15px; width:320px; float:left; margin-left:5px; }
@@ -243,7 +254,7 @@ h1#logo a:hover { background-position: 0 bottom; }
 .choose_kpi_heading {font-weight:bold; color:white; padding:10px; float: left; height: 26px; width: 325px; background: #826D8C; margin-left:5px;}
 .chosen_kpis {background:green; color: white; height:26px; padding:10px; font-weight:bold; float:left; width:300px; margin-left:10px;}
 .score .kpi_results { font-size:14px; min-width: 310px; max-width: 310px;  margin-left:10px; float:left; min-height:1px; margin-right:10px;}
-
+.habit_label {color:#444; line-height:15px; width:250px; float:left; font-size:12px; margin-right: 5px; border: 1px solid #B2A100; background: none repeat scroll 0 0 #FEF9BF; padding:7px 2px 7px 5px; max-heigh:31px; min-height:31px;}
 
 
 .all_strategies { background: #FAFAFA; float:left; overflow:auto; max-height:400px; width: 678px; margin-bottom:30px; border: 1px solid #E8E8E8; padding: 5px;}
@@ -251,6 +262,70 @@ h1#logo a:hover { background-position: 0 bottom; }
 .choose_strategy_heading {font-weight:bold; color:white; padding:10px; float: left; height: 26px; width: 325px; background: #55647B; margin-left:5px;}
 .chosen_strategies {background:green; color: white; height:26px; padding:10px; font-weight:bold; float:left; width:300px; margin-left:10px;}
 .score .strategy_results { font-size:14px; min-width: 310px; max-width: 310px; margin-left:10px; float:left; min-height:1px; margin-right:10px;}
+.habit_title { margin-left:5px;}
+.habit_title a { color: #666;}
+.habit_title .goal_level {
+    -webkit-border-radius: 99px;
+    -moz-border-radius: 99px;
+    border-radius: 99px;
+    behavior: url(PIE.htc);
+    width: 36px;
+    height: 36px;
+    padding: 0px 5px 0px 6px;
+    background: #fff;
+    border: 1px solid #999;
+    color: #888;
+    text-align: center;
+    font: 18px Arial, sans-serif
+}
+.habit_title .add_goal_comment {
+    behavior: url(PIE.htc);
+    width: 9px;
+    height: 10px;
+    padding: 1px 1px 1px 1px;
+    background: #e3e3e3;
+    border: 1px #999 dotted;
+    color: #777;
+    font-weight:bold;
+    text-align: center;
+	font: 14px Arial,sans-serif;
+	position:relative;
+	top:5px;
+	line-height:9px;
+	margin-left:2px;
+	display:inline-block;
+}
+
+* /Lightbox background */
+#lightbox {
+ display:none;
+ background:#000000;
+ opacity:0.9;
+ filter:alpha(opacity=90);
+ position:absolute;
+ top:0px;
+ left:0px;
+ min-width:100%;
+ min-height:100%;
+ z-index:1000;
+}
+/* Lightbox panel with some content */
+#lightbox-panel {
+ display:none;
+ position:fixed;
+ top:190px;
+ left:50%;
+ margin-left:-200px;
+ width:400px;
+ background:#FFFFFF;
+ padding:10px 15px 10px 15px;
+ border:2px solid #CCCCCC;
+ z-index:1001;
+}
+
+
+
+
 
 
 
