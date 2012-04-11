@@ -643,6 +643,36 @@ class Dailytest {
 				
 	}	
 
+	public static function editStrategy($userID, $strategyID, $goalID, $newStrategyName, $strategyType) {
+		global $db;
+		
+		// Change the is_active value of the current strategy in user_strategies to 0  
+		$db->doQuery("UPDATE user_strategies SET is_active = 0 WHERE strategy_id = %s", $strategyID);
+
+		// Check if there is already a strategy by the new name in the DB
+		$isNewStrategy = $db->doQuery("SELECT * FROM strategies WHERE name = %s", $newStrategyName);
+		if(is_null($isNewStrategy)) {
+		
+			// If no, create a new strategy in the strategies table and then 
+			if(empty($description)){ $description = ''; }		
+			$db->doQuery("INSERT INTO strategies (goal_id, name, description, strategy_type, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW())", $goalID, $newStrategyName, $description, $strategyType, $userID);
+			$newStrategyID = mysql_insert_id();
+			// INSERT into the user_strategies row with the new strategy information
+			$db->doQuery("INSERT INTO user_strategies (user_id, strategy_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active =1, date_created = NOW()", $userID, $newStrategyID, $goalID);
+
+		}else{
+			while($obj = mysql_fetch_object($isNewStrategy)) {
+				$newStrategyID = $obj->id;
+			}
+		
+		// If yes INSERT or ON DUPLICATE UPDATE the user_strategies row with the new strategy information
+			$db->doQuery("INSERT INTO user_strategies (user_id, strategy_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active =1, date_created = NOW()", $userID, $newStrategyID, $goalID);
+		
+		}
+		
+				
+	}	
+
 	public static function removeStrategy($userID, $strategyID, $goalID) {
 		global $db;
 

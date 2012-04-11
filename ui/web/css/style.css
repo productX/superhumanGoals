@@ -255,6 +255,12 @@ background: url(images/check.png) no-repeat 0 0; }
 .chosen_kpis {background:green; color: white; height:26px; padding:10px; font-weight:bold; float:left; width:300px; margin-left:10px;}
 .score .kpi_results { font-size:14px; min-width: 310px; max-width: 310px;  margin-left:10px; float:left; min-height:1px; margin-right:10px;}
 .habit_label {color:#444; line-height:15px; width:250px; float:left; font-size:12px; margin-right: 5px; border: 1px solid #B2A100; background: none repeat scroll 0 0 #FEF9BF; padding:7px 2px 7px 5px; max-heigh:31px; min-height:31px;}
+.tactic_label {color:#444; line-height:15px; float:left; font-size:12px; margin-right: 5px; padding:0px 2px 4px 5px; max-heigh:31px; min-height:31px; margin-left:10px;}
+.todo_label {color:#444; line-height:15px; float:left; font-size:12px; margin-right: 5px; padding:0px 2px 4px 5px; max-heigh:31px; min-height:31px;}
+.todos { margin-top:15px; padding:10px; background: #fbfbfb; border: 2px dotted #e2e2e2;}
+.todo_title { font-size:15px; color: #777; margin-bottom:5px; display: inline-block;}
+.no_todos {  font-size:13px; color: #999; display: inline-block; }
+.editLink { font-size:11px; color: #999;}
 
 
 .all_strategies { background: #FAFAFA; float:left; overflow:auto; max-height:400px; width: 678px; margin-bottom:30px; border: 1px solid #E8E8E8; padding: 5px;}
@@ -264,68 +270,10 @@ background: url(images/check.png) no-repeat 0 0; }
 .score .strategy_results { font-size:14px; min-width: 310px; max-width: 310px; margin-left:10px; float:left; min-height:1px; margin-right:10px;}
 .habit_title { margin-left:5px;}
 .habit_title a { color: #666;}
-.habit_title .goal_level {
-    -webkit-border-radius: 99px;
-    -moz-border-radius: 99px;
-    border-radius: 99px;
-    behavior: url(PIE.htc);
-    width: 36px;
-    height: 36px;
-    padding: 0px 5px 0px 6px;
-    background: #fff;
-    border: 1px solid #999;
-    color: #888;
-    text-align: center;
-    font: 18px Arial, sans-serif
-}
-.habit_title .add_goal_comment {
-    behavior: url(PIE.htc);
-    width: 9px;
-    height: 10px;
-    padding: 1px 1px 1px 1px;
-    background: #e3e3e3;
-    border: 1px #999 dotted;
-    color: #777;
-    font-weight:bold;
-    text-align: center;
-	font: 14px Arial,sans-serif;
-	position:relative;
-	top:5px;
-	line-height:9px;
-	margin-left:2px;
-	display:inline-block;
-}
-
-* /Lightbox background */
-#lightbox {
- display:none;
- background:#000000;
- opacity:0.9;
- filter:alpha(opacity=90);
- position:absolute;
- top:0px;
- left:0px;
- min-width:100%;
- min-height:100%;
- z-index:1000;
-}
-/* Lightbox panel with some content */
-#lightbox-panel {
- display:none;
- position:fixed;
- top:190px;
- left:50%;
- margin-left:-200px;
- width:400px;
- background:#FFFFFF;
- padding:10px 15px 10px 15px;
- border:2px solid #CCCCCC;
- z-index:1001;
-}
-
-
-
-
+.habit_title .goal_level { -webkit-border-radius: 99px; -moz-border-radius: 99px; border-radius: 99px; behavior: url(PIE.htc); width: 36px; height: 36px; padding: 0px 5px 0px 6px; background: #fff; border: 1px solid #999; color: #888; text-align: center; font: 18px Arial, sans-serif; }
+.habit_title .add_goal_comment { behavior: url(PIE.htc); width: 9px; height: 10px; padding: 1px 1px 1px 1px; background: #e3e3e3; border: 1px #999 dotted; color: #777; font-weight:bold; text-align: center; font: 14px Arial,sans-serif; position:relative; top:5px; line-height:9px; margin-left:2px; display:inline-block; }
+#lightbox { display:none; background:#000000; opacity:0.9; filter:alpha(opacity=90); position:absolute; top:0px; left:0px; min-width:100%; min-height:100%; z-index:1000; }
+#lightbox-panel { display:none; position:fixed; top:190px; left:50%; margin-left:-200px; width:400px; background:#FFFFFF; padding:10px 15px 10px 15px; border:2px solid #CCCCCC; z-index:1001;}
 
 
 
