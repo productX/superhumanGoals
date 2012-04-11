@@ -13,7 +13,6 @@ abstract class BaseView {
 			$story = Story::getObjFromDBData($obj);
 			assert(!is_null($story));
 			$this->storyPrintStory($story);
-			
 		}
 		$this->storyPrintListPost();
 	}
@@ -336,6 +335,10 @@ abstract class BaseView {
 		global $db;
 		
 		$this->printHeader(NAVNAME_ACTIVITY, array(new ChromeTitleElementHeader("Activity")));
+		// TEST: bare page
+		/*echo "<p><b><font color='white'>ACTIVITY PAGE</font></b></p>";
+		$this->printFooter(NAVNAME_USERS);
+		return;*/
 	
 		$this->printActivityPagePre();
 		$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE ORDER BY entered_at DESC LIMIT 100");
@@ -2178,9 +2181,18 @@ class MobileView extends BaseView {
 	<script src="<?php echo BASEPATH_UI;?>/mobile/js/jquery.jqtransform.js" type="text/javascript" charset="utf-8"></script>
 	<script src="<?php echo BASEPATH_UI;?>/mobile/js/functions.js" type="text/javascript" charset="utf-8"></script>
 	<script src="<?php echo BASEPATH_UI;?>/mobile/js/jquery.mobile-1.1.0-rc.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<script type="text/javascript">
+		jQuery('div').live('pagehide', function(event, ui) {
+			var page = jQuery(event.target);
+
+			if(page.attr('data-cache') == 'never') {
+				page.remove();
+			};
+		});
+	</script>
 </head>
 <body>
-<div data-role="page">
+<div data-role="page" data-cache="never">
 	<!-- Shell -->
 	<div class="shell">
 		<!-- Header -->
@@ -2231,9 +2243,9 @@ class MobileView extends BaseView {
 		<!--  Navigation -->
 		<nav>
 			<ul>
-				<li><a href="<?php echo PAGE_USER; ?>" class="<?php echo ($navSelect==NAVNAME_YOU)?"active":"";?>"><span class="icon icon-1" >&nbsp;</span>Daily Entry</a></li>
-				<li><a href="<?php echo PAGE_ACTIVITY; ?>" class="<?php echo ($navSelect==NAVNAME_ACTIVITY)?"active":"";?>" ><span class="icon icon-2" >&nbsp;</span>Activity</a></li>
-				<li><a href="<?php echo PAGE_USERS; ?>" class="<?php echo ($navSelect==NAVNAME_USERS)?"active":"";?>"><span class="icon icon-3" >&nbsp;</span>Friends</a></li>
+				<li><a href="<?php echo PAGE_USER; ?>" data-transition="none" class="<?php echo ($navSelect==NAVNAME_YOU)?"active":"";?>"><span class="icon icon-1" >&nbsp;</span>Daily Entry</a></li>
+				<li><a href="<?php echo PAGE_ACTIVITY; ?>" data-transition="none" class="<?php echo ($navSelect==NAVNAME_ACTIVITY)?"active":"";?>" ><span class="icon icon-2" >&nbsp;</span>Activity</a></li>
+				<li><a href="<?php echo PAGE_USERS; ?>" data-transition="none" class="<?php echo ($navSelect==NAVNAME_USERS)?"active":"";?>"><span class="icon icon-3" >&nbsp;</span>Friends</a></li>
 			</ul>
 		</nav>
 		<!-- END Navigation -->
@@ -2249,12 +2261,20 @@ class MobileView extends BaseView {
 		PerformanceMeter::addTimestamp("Footer render done");
 	}
 	protected function storyPrintEventStoryPrint($user, $goal, $eventStory, $changeWord, $goodBad, $timeSinceStr) {
+		static $divID = 1;
 ?>
 					<li>
-<!--						<div class="img">-->
-							<a href="<?php echo $user->getPagePath(); ?>"><img class="img" src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" alt="" /></a>
-<!--						</div>-->
 						<div class="text">
+							<a href="<?php echo $user->getPagePath(); ?>" id="<?php echo "imgholder_$divID";?>">
+								<img class='img' src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" />
+								<!-- HACK: image is inserted later. if specified literally here, safari will load the page 2x. no other fix could be found. -->
+							</a>
+							<!--<script type="text/javascript">
+								setTimeout("loadUserImage('<?php echo "imgholder_$divID"; ?>', '<?php echo GPC::strToPrintable($user->pictureURL); ?>')", 4000);
+								function loadUserImage(divID, imgPath) {
+									document.getElementById(divID).innerHTML="<img class='img' src='"+imgPath+"' />";
+								}
+							</script>-->
 							<h4><a href="<?php echo $user->getPagePath(); ?>"><?php echo "$user->firstName $user->lastName"; ?></a> <?php echo $changeWord; ?> his level for <a href="<?php echo $goal->getPagePath(); ?>"><?php echo GPC::strToPrintable($goal->name); ?></a> from <?php echo $eventStory->oldLevel; ?> to <?php echo $eventStory->newLevel; ?>.</h4>
 							
 							<p class="letter" ><?php echo $eventStory->letterGrade; ?></p>
@@ -2268,6 +2288,7 @@ class MobileView extends BaseView {
 						<p class="time" ><?php echo $timeSinceStr; ?> ago</p>
 					</li>
 <?php
+		++$divID;
 	}
 	protected function storyPrintListPre() {
 		echo "<ul>";
@@ -2345,6 +2366,10 @@ class MobileView extends BaseView {
 	}
 	public function printAllUsersPage() {
 		$this->printHeader(NAVNAME_USERS, array(new ChromeTitleElementHeader("All People")));
+		// TEST: bare page
+		/*echo "<p><b><font color='white'>USERS PAGE</font></b></p>";
+		$this->printFooter(NAVNAME_USERS);
+		return;*/
 ?>
 			<div class="friends-page">
 <?php
@@ -2427,7 +2452,10 @@ class MobileView extends BaseView {
 		$viewingSelf = ($viewUserID == $user->id);
 		$navName = $viewingSelf?NAVNAME_YOU:NAVNAME_USERS;
 		$this->printHeader($navName, array());
-
+		// TEST: bare page
+		/*echo "<p><b><font color='white'>USER PAGE</font></b></p>";
+		$this->printFooter(NAVNAME_USERS);
+		return;*/
 ?>
 			<h2 class="arrow" ><?php echo "$viewUser->firstName $viewUser->lastName"; ?> <a href="#" class="arrows expand" >&nbsp;</a></h2>
 			<div class="cl">&nbsp;</div>
@@ -2594,7 +2622,7 @@ class MobileView extends BaseView {
 			<div class="cl">&nbsp;</div>
 <?php
 		if(!$userHasGoal) {
-			echo "<br/>You do not have this goal. Please visit the web version to adopt it!<br/>";
+			echo "<br/><p><b><font color='white'>You do not have this goal. Please visit the web version to adopt it!</font></b></p><br/>";
 		}
 		else {
 			$obj = $db->doQueryRFR("SELECT * FROM goals_status WHERE user_id=%s", $user->id);
