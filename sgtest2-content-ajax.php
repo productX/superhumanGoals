@@ -13,31 +13,17 @@
 	<script type="text/javascript">
 		var lastPage = 'user';
 		
-		function loadPageHTMLAsync(page) {
-			// make request
-			var xmlhttp;
-			if (window.XMLHttpRequest) {
-				// code for IE7+, Firefox, Chrome, Opera, Safari
-				xmlhttp=new XMLHttpRequest();
-			}
-			else {
-				// code for IE6, IE5
-				xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-			}
-			xmlhttp.onreadystatechange=function() {
-				if (xmlhttp.readyState==4 && xmlhttp.status==200) {
-					response = xmlhttp.responseText;
-					// DONE
-					document.getElementById('main').innerHTML = response;
-				}
-			}
-			xmlhttp.open("GET","sgtest2-content-ajax-controller.php?rand="+Math.floor(Math.random()*1000000)+"&page="+page,true);
-			xmlhttp.send();
-		}
 		function changePage(newPage) {
 			document.getElementById(lastPage+'-button').setAttribute('class','');
 			document.getElementById(newPage+'-button').setAttribute('class','active');
-			loadPageHTMLAsync(newPage);
+
+			$.ajax({
+				url: "sgtest2-content-ajax-controller.php?d="+Math.floor(Math.random()*1000000)+"&page="+newPage,
+				success: function(data) {
+					$('#main').html(data);
+				}
+			});
+
 			lastPage = newPage;
 		}
 	</script>
