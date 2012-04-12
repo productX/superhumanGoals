@@ -8,9 +8,13 @@
 - multi-page JQM test: 14 switches
 - SG test: 10 switches
 
-20-second test TRIAL 2
+20-second test TRIAL 3
 - JQM test (one-page): 22 switches
 - JQM test (multi-page): 14 switches
 - SG test (multi-page): 11 switches
 
 theoretical SG test one-page: 17 switches
+
+SG bare mobile: 21
+SG ajax mobile: 16
+JQM mobile: 23
