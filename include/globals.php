@@ -18,6 +18,16 @@ function initError() {
 	// assert options
 	assert_options(ASSERT_ACTIVE, 1);
 	assert_options(ASSERT_BAIL, 1);
+	
+	// use custom exception handler
+	set_exception_handler('exceptionHandler');
+}
+
+function exceptionHandler($exception) {
+	echo "<b>EXCEPTION THROWN</b><br/>";
+	var_dump($exception);
+	echo "<br/><br/>STACK:<br/>";
+	var_dump(debug_backtrace());
 }
 
 function initTime() {
