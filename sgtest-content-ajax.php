@@ -31,7 +31,7 @@
 
 			// load the new stuff
 			$.ajax({
-				url: "sgtest-content-ajax-controller.php?page="+pageID,
+				url: "sgtest-content-ajax-controller.php?d="+Math.floor(Math.random()*1000000)+"&page="+pageID,
 				success: function(data) {
 					$('#'+pageID+'-main').html(data);
 				}
@@ -76,6 +76,7 @@
 			<div style="height:160px;">&nbsp;</div>
 			<div class="daily-entry-page" id="user-main">
 			</div>
+			<div style="height:160px;">&nbsp;</div>
 		</div>
 		<!-- END Main -->
 		<!--  Navigation -->
@@ -131,6 +132,7 @@
 			<div style="height:160px;">&nbsp;</div>
 			<div class="activity-page" id="activity-main">
 			</div>
+			<div style="height:160px;">&nbsp;</div>
 		</div>
 		<!-- END Main -->
 		<!--  Navigation -->
@@ -187,6 +189,7 @@
 			<div style="height:160px;">&nbsp;</div>
 			<div class="friends-page" id="users-main">
 			</div>
+			<div style="height:160px;">&nbsp;</div>
 		</div>
 		<!-- END Main -->
 		<!--  Navigation -->

@@ -110,6 +110,531 @@ if($_GET['page']=='user') {
 					<li>
 						<form action="#" method="post" class="jqtransform" >
 							<div class="title">
+								<p class="num green" id="levelBox1">8</p>
+								<h5>Career</h5>
+								<span class="arrow" onclick="window.location='goal.php?id=12';">&nbsp;</span>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<div class="holder">
+							<script type="text/javascript">								
+								var timer=null;
+								function onChangeEvent1() {
+									// validate
+									if(parseFloat(document.all['eventNewLevel1'].value)==0) {
+										return;
+									}
+								
+									// trigger save timer
+									if(timer != null) {
+										clearTimeout(timer);
+									}
+									timer=setTimeout("doSaveEvent1()",200);
+								}
+								
+								function doSaveEvent1() {
+									// make request
+									var xmlhttp;
+									if (window.XMLHttpRequest) {
+										// code for IE7+, Firefox, Chrome, Opera, Safari
+										xmlhttp=new XMLHttpRequest();
+									}
+									else {
+										// code for IE6, IE5
+										xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+									}
+									xmlhttp.onreadystatechange=function() {
+										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											response = xmlhttp.responseText;
+											// DONE
+										}
+									}
+									xmlhttp.open("GET","ajax/ajax_saveEvent.php?userID=10&goalID=12&oldLevel=8&newLevel="+parseFloat(document.getElementById("eventNewLevel1").value)+"&letterGrade="+document.getElementById("eventLetterGrade1").value+"&why="+escape(document.getElementById("eventWhy1").value),true);
+									xmlhttp.send();
+								}
+							</script>
+								<input type="hidden" id="eventNewLevel1" value="8" />
+								<input type="hidden" id="eventOriginalLevel1" value="5" />
+								<input type="hidden" id="eventLetterGrade1" value="" />
+								<div class="buttons">
+									<a href="#" class="plus" onclick="adjustLevel1(1);">+</a>
+									<a href="#" class="minus" onclick="adjustLevel1(-1);">-</a>
+								</div>
+								<script type="text/javascript">
+									function adjustLevel1(adjustment) {
+										var currentLevel = document.getElementById('eventNewLevel1').value;
+										currentLevel = parseInt(currentLevel)+adjustment;
+										if((currentLevel>=1) && (currentLevel<=10)) {
+											document.getElementById('eventNewLevel1').value=currentLevel;
+											document.getElementById('levelBox1').innerHTML=currentLevel;
+											var newLevelColor = "green";
+											if(currentLevel<7) {
+												newLevelColor = "yellow";
+											}
+											if(currentLevel<4) {
+												newLevelColor = "red";
+											}
+											document.getElementById('levelBox1').className="num "+newLevelColor;
+											
+											originalLevel = parseInt(document.getElementById('eventOriginalLevel1').value);
+											letterGrade = "A";
+											if(currentLevel<originalLevel) {
+												letterGrade = "F";
+											}
+											document.getElementById('eventLetterGrade1').value=letterGrade;
+											
+											expandEvent1();
+											onChangeEvent1();
+										}
+									}
+									function eventButtonClicked1() {
+										collapseEvent1();
+									}
+									function expandEvent1() {
+										document.getElementById('testsDisplay1').style.display="none";
+										document.getElementById('eventDisplay1').style.display="block";
+										document.getElementById('eventButtonDisplay1').style.display="block";
+									}
+									function collapseEvent1() {
+										document.getElementById('eventDisplay1').style.display="none";
+										document.getElementById('eventButtonDisplay1').style.display="none";
+										document.getElementById('testsDisplay1').style.display="block";
+									}
+								</script>
+								<div class="holder-right" id="eventDisplay1" style="display:none;">
+									<fieldset>
+										<textarea rows="4" cols="50" class="field" id="eventWhy1" onkeyup="onChangeEvent1();" >cats</textarea> 
+									</fieldset>
+								</div>
+								<div class="holder-right" id="testsDisplay1">
+								</div>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<input type="button" value="Done" class="button" id="eventButtonDisplay1" onclick="eventButtonClicked1()" style="display:none;" />
+						</form>
+					</li>
+					<li>
+						<form action="#" method="post" class="jqtransform" >
+							<div class="title">
+								<p class="num green" id="levelBox1">8</p>
+								<h5>Career</h5>
+								<span class="arrow" onclick="window.location='goal.php?id=12';">&nbsp;</span>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<div class="holder">
+							<script type="text/javascript">								
+								var timer=null;
+								function onChangeEvent1() {
+									// validate
+									if(parseFloat(document.all['eventNewLevel1'].value)==0) {
+										return;
+									}
+								
+									// trigger save timer
+									if(timer != null) {
+										clearTimeout(timer);
+									}
+									timer=setTimeout("doSaveEvent1()",200);
+								}
+								
+								function doSaveEvent1() {
+									// make request
+									var xmlhttp;
+									if (window.XMLHttpRequest) {
+										// code for IE7+, Firefox, Chrome, Opera, Safari
+										xmlhttp=new XMLHttpRequest();
+									}
+									else {
+										// code for IE6, IE5
+										xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+									}
+									xmlhttp.onreadystatechange=function() {
+										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											response = xmlhttp.responseText;
+											// DONE
+										}
+									}
+									xmlhttp.open("GET","ajax/ajax_saveEvent.php?userID=10&goalID=12&oldLevel=8&newLevel="+parseFloat(document.getElementById("eventNewLevel1").value)+"&letterGrade="+document.getElementById("eventLetterGrade1").value+"&why="+escape(document.getElementById("eventWhy1").value),true);
+									xmlhttp.send();
+								}
+							</script>
+								<input type="hidden" id="eventNewLevel1" value="8" />
+								<input type="hidden" id="eventOriginalLevel1" value="5" />
+								<input type="hidden" id="eventLetterGrade1" value="" />
+								<div class="buttons">
+									<a href="#" class="plus" onclick="adjustLevel1(1);">+</a>
+									<a href="#" class="minus" onclick="adjustLevel1(-1);">-</a>
+								</div>
+								<script type="text/javascript">
+									function adjustLevel1(adjustment) {
+										var currentLevel = document.getElementById('eventNewLevel1').value;
+										currentLevel = parseInt(currentLevel)+adjustment;
+										if((currentLevel>=1) && (currentLevel<=10)) {
+											document.getElementById('eventNewLevel1').value=currentLevel;
+											document.getElementById('levelBox1').innerHTML=currentLevel;
+											var newLevelColor = "green";
+											if(currentLevel<7) {
+												newLevelColor = "yellow";
+											}
+											if(currentLevel<4) {
+												newLevelColor = "red";
+											}
+											document.getElementById('levelBox1').className="num "+newLevelColor;
+											
+											originalLevel = parseInt(document.getElementById('eventOriginalLevel1').value);
+											letterGrade = "A";
+											if(currentLevel<originalLevel) {
+												letterGrade = "F";
+											}
+											document.getElementById('eventLetterGrade1').value=letterGrade;
+											
+											expandEvent1();
+											onChangeEvent1();
+										}
+									}
+									function eventButtonClicked1() {
+										collapseEvent1();
+									}
+									function expandEvent1() {
+										document.getElementById('testsDisplay1').style.display="none";
+										document.getElementById('eventDisplay1').style.display="block";
+										document.getElementById('eventButtonDisplay1').style.display="block";
+									}
+									function collapseEvent1() {
+										document.getElementById('eventDisplay1').style.display="none";
+										document.getElementById('eventButtonDisplay1').style.display="none";
+										document.getElementById('testsDisplay1').style.display="block";
+									}
+								</script>
+								<div class="holder-right" id="eventDisplay1" style="display:none;">
+									<fieldset>
+										<textarea rows="4" cols="50" class="field" id="eventWhy1" onkeyup="onChangeEvent1();" >cats</textarea> 
+									</fieldset>
+								</div>
+								<div class="holder-right" id="testsDisplay1">
+								</div>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<input type="button" value="Done" class="button" id="eventButtonDisplay1" onclick="eventButtonClicked1()" style="display:none;" />
+						</form>
+					</li>
+					<li>
+						<form action="#" method="post" class="jqtransform" >
+							<div class="title">
+								<p class="num green" id="levelBox1">8</p>
+								<h5>Career</h5>
+								<span class="arrow" onclick="window.location='goal.php?id=12';">&nbsp;</span>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<div class="holder">
+							<script type="text/javascript">								
+								var timer=null;
+								function onChangeEvent1() {
+									// validate
+									if(parseFloat(document.all['eventNewLevel1'].value)==0) {
+										return;
+									}
+								
+									// trigger save timer
+									if(timer != null) {
+										clearTimeout(timer);
+									}
+									timer=setTimeout("doSaveEvent1()",200);
+								}
+								
+								function doSaveEvent1() {
+									// make request
+									var xmlhttp;
+									if (window.XMLHttpRequest) {
+										// code for IE7+, Firefox, Chrome, Opera, Safari
+										xmlhttp=new XMLHttpRequest();
+									}
+									else {
+										// code for IE6, IE5
+										xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+									}
+									xmlhttp.onreadystatechange=function() {
+										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											response = xmlhttp.responseText;
+											// DONE
+										}
+									}
+									xmlhttp.open("GET","ajax/ajax_saveEvent.php?userID=10&goalID=12&oldLevel=8&newLevel="+parseFloat(document.getElementById("eventNewLevel1").value)+"&letterGrade="+document.getElementById("eventLetterGrade1").value+"&why="+escape(document.getElementById("eventWhy1").value),true);
+									xmlhttp.send();
+								}
+							</script>
+								<input type="hidden" id="eventNewLevel1" value="8" />
+								<input type="hidden" id="eventOriginalLevel1" value="5" />
+								<input type="hidden" id="eventLetterGrade1" value="" />
+								<div class="buttons">
+									<a href="#" class="plus" onclick="adjustLevel1(1);">+</a>
+									<a href="#" class="minus" onclick="adjustLevel1(-1);">-</a>
+								</div>
+								<script type="text/javascript">
+									function adjustLevel1(adjustment) {
+										var currentLevel = document.getElementById('eventNewLevel1').value;
+										currentLevel = parseInt(currentLevel)+adjustment;
+										if((currentLevel>=1) && (currentLevel<=10)) {
+											document.getElementById('eventNewLevel1').value=currentLevel;
+											document.getElementById('levelBox1').innerHTML=currentLevel;
+											var newLevelColor = "green";
+											if(currentLevel<7) {
+												newLevelColor = "yellow";
+											}
+											if(currentLevel<4) {
+												newLevelColor = "red";
+											}
+											document.getElementById('levelBox1').className="num "+newLevelColor;
+											
+											originalLevel = parseInt(document.getElementById('eventOriginalLevel1').value);
+											letterGrade = "A";
+											if(currentLevel<originalLevel) {
+												letterGrade = "F";
+											}
+											document.getElementById('eventLetterGrade1').value=letterGrade;
+											
+											expandEvent1();
+											onChangeEvent1();
+										}
+									}
+									function eventButtonClicked1() {
+										collapseEvent1();
+									}
+									function expandEvent1() {
+										document.getElementById('testsDisplay1').style.display="none";
+										document.getElementById('eventDisplay1').style.display="block";
+										document.getElementById('eventButtonDisplay1').style.display="block";
+									}
+									function collapseEvent1() {
+										document.getElementById('eventDisplay1').style.display="none";
+										document.getElementById('eventButtonDisplay1').style.display="none";
+										document.getElementById('testsDisplay1').style.display="block";
+									}
+								</script>
+								<div class="holder-right" id="eventDisplay1" style="display:none;">
+									<fieldset>
+										<textarea rows="4" cols="50" class="field" id="eventWhy1" onkeyup="onChangeEvent1();" >cats</textarea> 
+									</fieldset>
+								</div>
+								<div class="holder-right" id="testsDisplay1">
+								</div>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<input type="button" value="Done" class="button" id="eventButtonDisplay1" onclick="eventButtonClicked1()" style="display:none;" />
+						</form>
+					</li>
+					<li>
+						<form action="#" method="post" class="jqtransform" >
+							<div class="title">
+								<p class="num green" id="levelBox1">8</p>
+								<h5>Career</h5>
+								<span class="arrow" onclick="window.location='goal.php?id=12';">&nbsp;</span>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<div class="holder">
+							<script type="text/javascript">								
+								var timer=null;
+								function onChangeEvent1() {
+									// validate
+									if(parseFloat(document.all['eventNewLevel1'].value)==0) {
+										return;
+									}
+								
+									// trigger save timer
+									if(timer != null) {
+										clearTimeout(timer);
+									}
+									timer=setTimeout("doSaveEvent1()",200);
+								}
+								
+								function doSaveEvent1() {
+									// make request
+									var xmlhttp;
+									if (window.XMLHttpRequest) {
+										// code for IE7+, Firefox, Chrome, Opera, Safari
+										xmlhttp=new XMLHttpRequest();
+									}
+									else {
+										// code for IE6, IE5
+										xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+									}
+									xmlhttp.onreadystatechange=function() {
+										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											response = xmlhttp.responseText;
+											// DONE
+										}
+									}
+									xmlhttp.open("GET","ajax/ajax_saveEvent.php?userID=10&goalID=12&oldLevel=8&newLevel="+parseFloat(document.getElementById("eventNewLevel1").value)+"&letterGrade="+document.getElementById("eventLetterGrade1").value+"&why="+escape(document.getElementById("eventWhy1").value),true);
+									xmlhttp.send();
+								}
+							</script>
+								<input type="hidden" id="eventNewLevel1" value="8" />
+								<input type="hidden" id="eventOriginalLevel1" value="5" />
+								<input type="hidden" id="eventLetterGrade1" value="" />
+								<div class="buttons">
+									<a href="#" class="plus" onclick="adjustLevel1(1);">+</a>
+									<a href="#" class="minus" onclick="adjustLevel1(-1);">-</a>
+								</div>
+								<script type="text/javascript">
+									function adjustLevel1(adjustment) {
+										var currentLevel = document.getElementById('eventNewLevel1').value;
+										currentLevel = parseInt(currentLevel)+adjustment;
+										if((currentLevel>=1) && (currentLevel<=10)) {
+											document.getElementById('eventNewLevel1').value=currentLevel;
+											document.getElementById('levelBox1').innerHTML=currentLevel;
+											var newLevelColor = "green";
+											if(currentLevel<7) {
+												newLevelColor = "yellow";
+											}
+											if(currentLevel<4) {
+												newLevelColor = "red";
+											}
+											document.getElementById('levelBox1').className="num "+newLevelColor;
+											
+											originalLevel = parseInt(document.getElementById('eventOriginalLevel1').value);
+											letterGrade = "A";
+											if(currentLevel<originalLevel) {
+												letterGrade = "F";
+											}
+											document.getElementById('eventLetterGrade1').value=letterGrade;
+											
+											expandEvent1();
+											onChangeEvent1();
+										}
+									}
+									function eventButtonClicked1() {
+										collapseEvent1();
+									}
+									function expandEvent1() {
+										document.getElementById('testsDisplay1').style.display="none";
+										document.getElementById('eventDisplay1').style.display="block";
+										document.getElementById('eventButtonDisplay1').style.display="block";
+									}
+									function collapseEvent1() {
+										document.getElementById('eventDisplay1').style.display="none";
+										document.getElementById('eventButtonDisplay1').style.display="none";
+										document.getElementById('testsDisplay1').style.display="block";
+									}
+								</script>
+								<div class="holder-right" id="eventDisplay1" style="display:none;">
+									<fieldset>
+										<textarea rows="4" cols="50" class="field" id="eventWhy1" onkeyup="onChangeEvent1();" >cats</textarea> 
+									</fieldset>
+								</div>
+								<div class="holder-right" id="testsDisplay1">
+								</div>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<input type="button" value="Done" class="button" id="eventButtonDisplay1" onclick="eventButtonClicked1()" style="display:none;" />
+						</form>
+					</li>
+					<li>
+						<form action="#" method="post" class="jqtransform" >
+							<div class="title">
+								<p class="num green" id="levelBox1">8</p>
+								<h5>Career</h5>
+								<span class="arrow" onclick="window.location='goal.php?id=12';">&nbsp;</span>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<div class="holder">
+							<script type="text/javascript">								
+								var timer=null;
+								function onChangeEvent1() {
+									// validate
+									if(parseFloat(document.all['eventNewLevel1'].value)==0) {
+										return;
+									}
+								
+									// trigger save timer
+									if(timer != null) {
+										clearTimeout(timer);
+									}
+									timer=setTimeout("doSaveEvent1()",200);
+								}
+								
+								function doSaveEvent1() {
+									// make request
+									var xmlhttp;
+									if (window.XMLHttpRequest) {
+										// code for IE7+, Firefox, Chrome, Opera, Safari
+										xmlhttp=new XMLHttpRequest();
+									}
+									else {
+										// code for IE6, IE5
+										xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+									}
+									xmlhttp.onreadystatechange=function() {
+										if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+											response = xmlhttp.responseText;
+											// DONE
+										}
+									}
+									xmlhttp.open("GET","ajax/ajax_saveEvent.php?userID=10&goalID=12&oldLevel=8&newLevel="+parseFloat(document.getElementById("eventNewLevel1").value)+"&letterGrade="+document.getElementById("eventLetterGrade1").value+"&why="+escape(document.getElementById("eventWhy1").value),true);
+									xmlhttp.send();
+								}
+							</script>
+								<input type="hidden" id="eventNewLevel1" value="8" />
+								<input type="hidden" id="eventOriginalLevel1" value="5" />
+								<input type="hidden" id="eventLetterGrade1" value="" />
+								<div class="buttons">
+									<a href="#" class="plus" onclick="adjustLevel1(1);">+</a>
+									<a href="#" class="minus" onclick="adjustLevel1(-1);">-</a>
+								</div>
+								<script type="text/javascript">
+									function adjustLevel1(adjustment) {
+										var currentLevel = document.getElementById('eventNewLevel1').value;
+										currentLevel = parseInt(currentLevel)+adjustment;
+										if((currentLevel>=1) && (currentLevel<=10)) {
+											document.getElementById('eventNewLevel1').value=currentLevel;
+											document.getElementById('levelBox1').innerHTML=currentLevel;
+											var newLevelColor = "green";
+											if(currentLevel<7) {
+												newLevelColor = "yellow";
+											}
+											if(currentLevel<4) {
+												newLevelColor = "red";
+											}
+											document.getElementById('levelBox1').className="num "+newLevelColor;
+											
+											originalLevel = parseInt(document.getElementById('eventOriginalLevel1').value);
+											letterGrade = "A";
+											if(currentLevel<originalLevel) {
+												letterGrade = "F";
+											}
+											document.getElementById('eventLetterGrade1').value=letterGrade;
+											
+											expandEvent1();
+											onChangeEvent1();
+										}
+									}
+									function eventButtonClicked1() {
+										collapseEvent1();
+									}
+									function expandEvent1() {
+										document.getElementById('testsDisplay1').style.display="none";
+										document.getElementById('eventDisplay1').style.display="block";
+										document.getElementById('eventButtonDisplay1').style.display="block";
+									}
+									function collapseEvent1() {
+										document.getElementById('eventDisplay1').style.display="none";
+										document.getElementById('eventButtonDisplay1').style.display="none";
+										document.getElementById('testsDisplay1').style.display="block";
+									}
+								</script>
+								<div class="holder-right" id="eventDisplay1" style="display:none;">
+									<fieldset>
+										<textarea rows="4" cols="50" class="field" id="eventWhy1" onkeyup="onChangeEvent1();" >cats</textarea> 
+									</fieldset>
+								</div>
+								<div class="holder-right" id="testsDisplay1">
+								</div>
+								<div class="cl">&nbsp;</div>
+							</div>
+							<input type="button" value="Done" class="button" id="eventButtonDisplay1" onclick="eventButtonClicked1()" style="display:none;" />
+						</form>
+					</li>
+					<li>
+						<form action="#" method="post" class="jqtransform" >
+							<div class="title">
 								<p class="num yellow" id="levelBox2">6</p>
 								<h5>Money</h5>
 								<span class="arrow" onclick="window.location='goal.php?id=11';">&nbsp;</span>
@@ -508,6 +1033,97 @@ elseif($_GET['page']=='users') {
 					<div class="row">
 						<div class="cl">&nbsp;</div>
 						<h3 id="D" >D</h3>
+						<div class="box left">
+							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
+							<p>
+								4 goals<br/>
+								Visits daily							</p>
+							<a href="user.php?id=10"><img class="img" src="http://orquidomania.com/images/50x50.gif" alt="Roger Dickey" /></a>
+						</div>
+						<div class="box left">
+							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
+							<p>
+								4 goals<br/>
+								Visits daily							</p>
+							<a href="user.php?id=10"><img class="img" src="http://orquidomania.com/images/50x50.gif" alt="Roger Dickey" /></a>
+						</div>
+						<div class="box left">
+							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
+							<p>
+								4 goals<br/>
+								Visits daily							</p>
+							<a href="user.php?id=10"><img class="img" src="http://orquidomania.com/images/50x50.gif" alt="Roger Dickey" /></a>
+						</div>
+						<div class="box left">
+							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
+							<p>
+								4 goals<br/>
+								Visits daily							</p>
+							<a href="user.php?id=10"><img class="img" src="http://orquidomania.com/images/50x50.gif" alt="Roger Dickey" /></a>
+						</div>
+						<div class="box left">
+							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
+							<p>
+								4 goals<br/>
+								Visits daily							</p>
+							<a href="user.php?id=10"><img class="img" src="http://orquidomania.com/images/50x50.gif" alt="Roger Dickey" /></a>
+						</div>
+						<div class="box left">
+							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
+							<p>
+								4 goals<br/>
+								Visits daily							</p>
+							<a href="user.php?id=10"><img class="img" src="http://orquidomania.com/images/50x50.gif" alt="Roger Dickey" /></a>
+						</div>
+						<div class="box left">
+							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
+							<p>
+								4 goals<br/>
+								Visits daily							</p>
+							<a href="user.php?id=10"><img class="img" src="http://orquidomania.com/images/50x50.gif" alt="Roger Dickey" /></a>
+						</div>
+						<div class="box left">
+							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
+							<p>
+								4 goals<br/>
+								Visits daily							</p>
+							<a href="user.php?id=10"><img class="img" src="http://orquidomania.com/images/50x50.gif" alt="Roger Dickey" /></a>
+						</div>
+						<div class="box left">
+							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
+							<p>
+								4 goals<br/>
+								Visits daily							</p>
+							<a href="user.php?id=10"><img class="img" src="http://orquidomania.com/images/50x50.gif" alt="Roger Dickey" /></a>
+						</div>
+						<div class="box left">
+							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
+							<p>
+								4 goals<br/>
+								Visits daily							</p>
+							<a href="user.php?id=10"><img class="img" src="http://orquidomania.com/images/50x50.gif" alt="Roger Dickey" /></a>
+						</div>
+						<div class="box left">
+							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
+							<p>
+								4 goals<br/>
+								Visits daily							</p>
+							<a href="user.php?id=10"><img class="img" src="http://orquidomania.com/images/50x50.gif" alt="Roger Dickey" /></a>
+						</div>
+						<div class="box left">
+							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
+							<p>
+								4 goals<br/>
+								Visits daily							</p>
+							<a href="user.php?id=10"><img class="img" src="http://orquidomania.com/images/50x50.gif" alt="Roger Dickey" /></a>
+						</div>
+						<div class="box left">
+							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
+							<p>
+								4 goals<br/>
+								Visits daily							</p>
+							<a href="user.php?id=10"><img class="img" src="http://orquidomania.com/images/50x50.gif" alt="Roger Dickey" /></a>
+						</div>
 						<div class="box left">
 							<h5><a href="user.php?id=10">Roger <b>Dickey</b></a></h5>
 							<p>
