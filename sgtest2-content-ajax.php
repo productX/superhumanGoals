@@ -12,10 +12,6 @@
 	<!--<script src="http://www.superhumanGoals.com/ui/mobile/js/functions.js" type="text/javascript" charset="utf-8"></script>-->
 	<script type="text/javascript">
 		var lastPage = 'user';
-		var pageData = new Array();
-		pageData['user'] = "<p><b><font color='white'>USER PAGE</font></b></p>";
-		pageData['activity'] = "<p><b><font color='white'>ACTIVITY PAGE</font></b></p>";
-		pageData['users'] = "<p><b><font color='white'>ALL USERS PAGE</font></b></p>";
 		
 		function loadPageHTMLAsync(page) {
 			// make request
@@ -35,7 +31,7 @@
 					document.getElementById('main').innerHTML = response;
 				}
 			}
-			xmlhttp.open("GET","sgtest2-ajax-controller.php?rand="+Math.floor(Math.random()*1000000)+"&page="+page,true);
+			xmlhttp.open("GET","sgtest2-content-ajax-controller.php?rand="+Math.floor(Math.random()*1000000)+"&page="+page,true);
 			xmlhttp.send();
 		}
 		function changePage(newPage) {
