@@ -2806,6 +2806,7 @@ class MobileView extends BaseView {
 <?php		
 		$currentTime=time();
 		$type = 'none';
+
 		$this->goalstatusPrintList($viewUserID, $currentTime, $viewingSelf, $type);
 ?>
 			</div>

@@ -1,0 +1,16 @@
+20-second test TRIAL 1
+- all-in-one JQM test: 22 switches
+- multi-page JQM test: 12 switches
+- SG test: 11 switches
+
+20-second test TRIAL 2
+- all-in-one JQM test: 22 switches
+- multi-page JQM test: 14 switches
+- SG test: 10 switches
+
+20-second test TRIAL 2
+- JQM test (one-page): 22 switches
+- JQM test (multi-page): 14 switches
+- SG test (multi-page): 11 switches
+
+theoretical SG test one-page: 17 switches
