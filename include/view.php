@@ -344,18 +344,19 @@ abstract class BaseView {
 	abstract public function printHelpPage();
 	abstract public function printAllGoalsPage();
 	public function printActivityPage() {
-		global $db;
+		global $db, $viewSwitch;
 		
 		$this->printHeader(NAVNAME_ACTIVITY, array(new ChromeTitleElementHeader("Activity")));
 		// TEST: bare page
-		/*echo "<p><b><font color='white'>ACTIVITY PAGE</font></b></p>";
-		$this->printFooter(NAVNAME_USERS);
-		return;*/
+		if($viewSwitch->issetViewFlag("bare")) {
+			echo "<p><b><font color='white'>ACTIVITY PAGE</font></b></p>";
+			$this->printFooter(NAVNAME_ACTIVITY);
+			return;
+		}
 	
 		$this->printActivityPagePre();
 
 		$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE ORDER BY entered_at DESC LIMIT 100");
-		echo 'adam rocks';
 		$this->storyPrintListForRS($rs);
 		$this->printActivityPagePost();
 
@@ -2698,11 +2699,15 @@ class MobileView extends BaseView {
 	public function printHelpPage() { // this page doesn't exist on mobile
 	}
 	public function printAllUsersPage() {
+		global $viewSwitch;
+		
 		$this->printHeader(NAVNAME_USERS, array(new ChromeTitleElementHeader("All People")));
 		// TEST: bare page
-		/*echo "<p><b><font color='white'>USERS PAGE</font></b></p>";
-		$this->printFooter(NAVNAME_USERS);
-		return;*/
+		if($viewSwitch->issetViewFlag("bare")) {
+			echo "<p><b><font color='white'>USERS PAGE</font></b></p>";
+			$this->printFooter(NAVNAME_USERS);
+			return;
+		}
 ?>
 			<div class="friends-page">
 <?php
@@ -2782,15 +2787,17 @@ class MobileView extends BaseView {
 	
 	// &&&&&&
 	public function printUserPage($viewUser) {
-		global $user, $db;
+		global $user, $db, $viewSwitch;
 		$viewUserID = $viewUser->id;
 		$viewingSelf = ($viewUserID == $user->id);
 		$navName = $viewingSelf?NAVNAME_YOU:NAVNAME_USERS;
 		$this->printHeader($navName, array());
 		// TEST: bare page
-		/*echo "<p><b><font color='white'>USER PAGE</font></b></p>";
-		$this->printFooter(NAVNAME_USERS);
-		return;*/
+		if($viewSwitch->issetViewFlag("bare")) {
+			echo "<p><b><font color='white'>USER PAGE</font></b></p>";
+			$this->printFooter(NAVNAME_YOU);
+			return;
+		}
 ?>
 			<h2 class="arrow" ><?php echo "$viewUser->firstName $viewUser->lastName"; ?> <a href="#" class="arrows expand" >&nbsp;</a></h2>
 			<div class="cl">&nbsp;</div>

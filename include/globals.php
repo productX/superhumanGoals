@@ -12,6 +12,7 @@ $user = null;
 $appAuth = null;
 $db = null;
 $view = null;
+$viewSwitch = null;
 
 function initError() {
 	// assert options
@@ -37,17 +38,17 @@ function initSession() {
 }
 
 function initView() {
-	global $view;
+	global $view, $viewSwitch;
 	if(!is_null($view)) {
 		return;
 	}
 	
-	// do some magic to figure out if we're mobile or PC
-	$viewmode = ViewSwitch::getViewmode(	VIEWSWITCH_MOBILEVIEWSERVER,
-											VIEWSWITCH_MOBILEVIEWQS,
-											VIEWSWITCH_WEBVIEWSERVER,
-											VIEWSWITCH_WEBVIEWQS
-										);
+	// figure out if we're mobile or PC
+	$viewSwitch = new ViewSwitch(	VIEWSWITCH_MOBILEVIEWSERVER,
+									VIEWSWITCH_MOBILEVIEWQS,
+									VIEWSWITCH_WEBVIEWSERVER,
+									VIEWSWITCH_WEBVIEWQS);
+	$viewmode = $viewSwitch->getViewmode();
 
 	// create view
 	switch($viewmode) {
