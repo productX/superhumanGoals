@@ -1,0 +1,31 @@
+20-second test TRIAL 1
+- all-in-one JQM test: 22 switches
+- multi-page JQM test: 12 switches
+- SG test: 11 switches
+
+20-second test TRIAL 2
+- all-in-one JQM test: 22 switches
+- multi-page JQM test: 14 switches
+- SG test: 10 switches
+
+20-second test TRIAL 3
+- JQM test (one-page): 22 switches
+- JQM test (multi-page): 14 switches
+- SG test (multi-page): 11 switches
+
+theoretical SG test one-page: 17 switches
+
+SG bare no-ajax mobile JQM: 21
+SG content ajax mobile JQM: 16
+JQM mobile: 23
+SG bare no-ajax mobile no-JQM: 26
+SG content ajax mobile no-JQM: 16
+SG bare ajax mobile no-JQM: 14
+
+parameters
+- SG/foo
+- bare/content
+- ajax/page-cached
+- one-page/multi-page
+- JQM/no-JQM
+- mobile/PC

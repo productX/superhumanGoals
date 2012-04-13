@@ -12,11 +12,22 @@ $user = null;
 $appAuth = null;
 $db = null;
 $view = null;
+$viewSwitch = null;
 
 function initError() {
 	// assert options
 	assert_options(ASSERT_ACTIVE, 1);
 	assert_options(ASSERT_BAIL, 1);
+	
+	// use custom exception handler
+	set_exception_handler('exceptionHandler');
+}
+
+function exceptionHandler($exception) {
+	echo "<b>EXCEPTION THROWN</b><br/>";
+	var_dump($exception);
+	echo "<br/><br/>STACK:<br/>";
+	var_dump(debug_backtrace());
 }
 
 function initTime() {
@@ -37,17 +48,17 @@ function initSession() {
 }
 
 function initView() {
-	global $view;
+	global $view, $viewSwitch;
 	if(!is_null($view)) {
 		return;
 	}
 	
-	// do some magic to figure out if we're mobile or PC
-	$viewmode = ViewSwitch::getViewmode(	VIEWSWITCH_MOBILEVIEWSERVER,
-											VIEWSWITCH_MOBILEVIEWQS,
-											VIEWSWITCH_WEBVIEWSERVER,
-											VIEWSWITCH_WEBVIEWQS
-										);
+	// figure out if we're mobile or PC
+	$viewSwitch = new ViewSwitch(	VIEWSWITCH_MOBILEVIEWSERVER,
+									VIEWSWITCH_MOBILEVIEWQS,
+									VIEWSWITCH_WEBVIEWSERVER,
+									VIEWSWITCH_WEBVIEWQS);
+	$viewmode = $viewSwitch->getViewmode();
 
 	// create view
 	switch($viewmode) {

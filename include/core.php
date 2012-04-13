@@ -49,6 +49,11 @@ class User {
 			$user = new User($authObj, $sgObj);
 			
 		}
+		if(is_null($user)) {
+			echo "<b>USER OBJ NULL IN getObjFromUserID</b><br/><br/>";
+			var_dump(debug_backtrace());
+			assert(false);
+		}
 		return $user;
 	}
 	
@@ -74,6 +79,11 @@ class User {
 		$fullName = $authClientUserData['firstName']." ".$authClientUserData['lastName'];
 		$db->doQuery("INSERT INTO users (auth_id, picture_url, visit_history, full_name) VALUES (%s, %s, %s, %s)", $authID, $pictureURL, $visitHistoryStr, $fullName);
 		$newID = mysql_insert_id();
+		if(is_null($newID)) {
+			echo "<b>USER OBJ NULL IN getObjFromUserID</b><br/><br/>";
+			var_dump(debug_backtrace());
+			assert(false);
+		}
 		return $newID;
 	}
 
@@ -304,8 +314,10 @@ class Goal {
 	public static function getFullObjFromGoalID($goalID,$userID) {
 		global $db;
 	
+	
 		$rs = $db->doQuery("SELECT * FROM goals WHERE id=%s", $goalID);
 
+		$goal_display_style = 0;
 		while($obj = mysql_fetch_object($rs)) {
 			
 			$goal_status_rs = $db->doQuery("SELECT display_style, description FROM goals_status WHERE user_id=%s AND goal_id = %s", $userID, $goalID);
