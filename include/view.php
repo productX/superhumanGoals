@@ -1179,12 +1179,14 @@ Is it really that hard to figure out? :P
 						
 					<!-- Lightbox for issuing Goal Events -->
 					<div class="lightbox-panel" id="lightbox-panel<?php echo $goal->id; ?>" style="display:none;">
+						<a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->id; ?>)">X</a>
 						<div class="newscore-row">
-							<label for="score-1"><span class="new_level">New Level:</span></label><input type="text" class="field" id="eventNewScore<?php echo $goal->id;?>"  />
+									<span class="new_level" style="font-weight:bold;"><?php echo GPC::strToPrintable($goal->name);?> </span><br/>
+									<span class="new_level">New Level:</span><input type="text" class="field" id="eventNewScore<?php echo $goal->id;?>"  />
 							<div class="cl">&nbsp;</div>
 						</div>
 						<div class="grade-row">
-							<label>Letter grade:</label>
+							<span class="new_level">Letter grade:</span>
 							<select name="grade" id="eventLetterGrade<?php echo $goal->id;?>" size="1">
 								<option value="A" >A</option>
 								<option value="B" >B</option>
@@ -1194,12 +1196,8 @@ Is it really that hard to figure out? :P
 							</select>
 						</div>
 						<div class="cl">&nbsp;</div>
-						<label for="textarea-1">Why:</label><br/>
-						<textarea name="textarea" id="eventWhy<?php echo $goal->id;?>" class="field" rows="8" cols="40"></textarea>
+						<textarea name="textarea" style="color:#999;" onclick="clearWhy(<?php echo $goal->id;?>)" id="eventWhy<?php echo $goal->id;?>" class="field" rows="4" cols="40">Why?</textarea>
 						<button type="submit" value="submit" onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->id; ?>, <?php echo $goalstatus->level; ?>)">submit</button>
-					    <p align="center">
-					        <a id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->id; ?>)">Close this window</a>
-					    </p>
 					</div><!-- /lightbox-panel -->						
 					<div class="lightbox" id="lightbox<?php echo $goal->id; ?>"> </div><!-- /lightbox -->
 						
