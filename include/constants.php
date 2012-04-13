@@ -20,16 +20,15 @@ const PAGE_AJAX_MODIFY_STRATEGY = 'ajax/ajax_modifyStrategy.php';
 const PAGE_AJAX_CREATE_STRATEGY = 'ajax/ajax_createStrategy.php';
 const PAGE_AJAX_SET_TRACKING = 'ajax/ajax_setTracking.php';
 const PAGE_AJAX_ALTER_GOAL_DESCRIPTION = 'ajax/ajax_alterGoalDescription.php';
-
-
-
-
+const PAGE_AJAX_MOBILE_PAGE = 'ajax/ajax_mobilePage.php';
 
 // enum for nav elements
 const NAVNAME_NONE = 'none';
 const NAVNAME_ACTIVITY = 'activity';
 const NAVNAME_YOU = 'you';
+const NAVNAME_USER = 'user';
 const NAVNAME_USERS = 'users';
 const NAVNAME_GOALS = 'goals';
+const NAVNAME_GOAL = 'goal';
 
 ?>

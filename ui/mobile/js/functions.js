@@ -3,15 +3,11 @@ $(document).on('mobileinit', function(){
 
 });
 
-$(document).on('pageshow', function(){
-	$('.profile').on('vclick', function(){
-		$(this).find('.dropdown').toggle();
-	});
-		
-	 $(document).on('vclick', '.daily-entry-page ul li .title h5', function(){
-		 	$(this).parents('li').find('.arrow').toggleClass('opened');
-		  	$(this).parents('li').find('.holder').stop(true , true).slideToggle(function(){ $(this).trigger('updateLayout');});
-//		$(this).parents('li').find('.ui-btn').stop(true , true).slideToggle(function(){  });
+$(document).on('pageshow', function(){		
+	$(document).on('vclick', '.daily-entry-page ul li .title h5', function(){
+		$(this).parents('li').find('.arrow').toggleClass('opened');
+		$(this).parents('li').find('.holder').stop(true , true).slideToggle(function(){ $(this).trigger('updateLayout');});
+		//$(this).parents('li').find('.ui-btn').stop(true , true).slideToggle(function(){  });
 	});
 	
 	$('.expand').click(function () { 
@@ -32,9 +28,6 @@ $(document).on('pageshow', function(){
 
 $(function() {
 
-	$('.jqtransform').jqTransform();
-
-       
 	 $(document).on('vclick', '.goal-detail-page ul li .more', function(){
  	   		if ($(this).parent().find('.inner').hasClass('opened')) {
  	 	   		var height = 40;

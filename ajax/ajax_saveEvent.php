@@ -15,7 +15,7 @@ $goalID = GPC::strToInt($_GET["goalID"]);
 $newLevel = GPC::strToFloat($_GET["newLevel"]);
 $oldLevel = GPC::strToFloat($_GET["oldLevel"]);
 $letterGrade = GPC::strToLetterGrade($_GET["letterGrade"]);
-$why = $_GET["why"];
+$why = GPC::strToStr($_GET["why"]);
 
 // create a new event or update today's event for this user/goal
 EventStory::createNewOrUpdate($userID, $goalID, $newLevel, $oldLevel, $letterGrade, $why);

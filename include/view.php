@@ -94,6 +94,7 @@ abstract class BaseView {
 	
 	abstract protected function goalstatusPrintPre();
 	abstract protected function goalstatusPrintPost();
+	abstract public function handleNoGoalForGoalPage();
 	
 	
 	//&&&&&&
@@ -260,7 +261,6 @@ abstract class BaseView {
 			}
 		}
 		
-		
 		array_multisort($lnListNonletters, $userListNonletters);
 		array_multisort($lnListLetters, $userListLetters);
 
@@ -274,18 +274,22 @@ abstract class BaseView {
 			$this->userPrintListSectionPost();
 		}
 		$lastLetter = "?";
+		$uniqueLastNameLetters = array();
 		foreach($userListLetters as $lUser) {
 			$currentLetter = strtoupper(substr($lUser->lastName, 0, 1));
 			if($currentLetter != $lastLetter) {
 				$lastLetter = $currentLetter;
 				$this->userPrintListSectionPost();
 				$this->userPrintListSectionPre($currentLetter);
+				$uniqueLastNameLetters[] = $currentLetter;
 			}
 			$this->userPrintCard($lUser);
 		}
 		
 		$this->userPrintListSectionPost();
 		$this->userPrintListPost();
+		
+		return $uniqueLastNameLetters;
 	}
 	protected function userPrintListAll() {
 		global $db;
@@ -296,8 +300,7 @@ abstract class BaseView {
 			$userIDList[] = $obj->id;
 		}
 
-		$this->userPrintListBase($userIDList);
-
+		return $this->userPrintListBase($userIDList);
 	}
 	protected function userPrintListByGoal($goalID) {
 		global $db;
@@ -338,29 +341,30 @@ abstract class BaseView {
 	abstract protected function userPrintCardPrint($user, $numGoals, $visitFreqText);
 
 	// public
-	abstract public function printHeader($navSelect, $chromeTitleElements, $justOuterChrome);
-	abstract public function printFooter($navSelect, $justOuterChrome);
+	abstract public function printHeader($navSelect, $chromeTitleElements, $justOuterChrome, $justBody);
+	abstract public function printFooter($navSelect, $justOuterChrome, $justBody);
 	abstract public function printAboutPage();
 	abstract public function printHelpPage();
 	abstract public function printAllGoalsPage();
 	public function printActivityPage() {
-		global $db, $viewSwitch;
-		
 		$this->printHeader(NAVNAME_ACTIVITY, array(new ChromeTitleElementHeader("Activity")));
+
+		$this->printActivityPageMainDiv();
+
+		$this->printFooter(NAVNAME_ACTIVITY);
+	}
+	public function printActivityPageMainDiv() {
 		// TEST: bare page
+		global $db, $viewSwitch;
 		if($viewSwitch->issetViewFlag("bare")) {
 			echo "<p><b><font color='white'>ACTIVITY PAGE</font></b></p>";
-			$this->printFooter(NAVNAME_ACTIVITY);
 			return;
 		}
-	
-		$this->printActivityPagePre();
 
+		$this->printActivityPagePre();
 		$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE ORDER BY entered_at DESC LIMIT 100");
 		$this->storyPrintListForRS($rs);
 		$this->printActivityPagePost();
-
-		$this->printFooter(NAVNAME_ACTIVITY);
 	}
 	protected function printActivityPagePre() {
 	}
@@ -399,8 +403,12 @@ abstract class BaseView {
 };
 
 class WebView extends BaseView {
+	public function handleNoGoalForGoalPage() {
+		redirect(PAGE_GOALS);
+	}
+
 	// public
-	public function printHeader($navSelect, $chromeTitleElements, $justOuterChrome=false) {
+	public function printHeader($navSelect, $chromeTitleElements, $justOuterChrome=false, $justBody=false) {
 		global $user, $appAuth;
 
 	?>
@@ -593,17 +601,16 @@ class WebView extends BaseView {
 			PerformanceMeter::addTimestamp("Header render done");
 		}
 	}
-	public function printFooter($navSelect, $justOuterChrome=false) {
-		global $user, $appAuth;
+	public function printFooter($navSelect, $justOuterChrome=false, $justBody=false) {
+		global $user, $appAuth, $viewSwitch;
+		
 		if(!$justOuterChrome) {
 			PerformanceMeter::addTimestamp("Page render done");
-			PerformanceMeter::printRenderReport();
-		}
-	?>
+			if($viewSwitch->issetViewFlag("pagereport")) {
+				PerformanceMeter::printReport();
+			}
 
-	<?php
-		if(!$justOuterChrome) {
-	?>
+			?>
 					</div>
 					<!-- End Scollarea -->
 				</div>
@@ -1424,12 +1431,6 @@ Is it really that hard to figure out? :P
 		}
 
 	}
-		
-		
-		
-		
-		
-		
 		
 	public function printGoalPage($goalID) {
 		global $db, $user;
@@ -2497,46 +2498,126 @@ Is it really that hard to figure out? :P
 
 
 class MobileView extends BaseView {
-	// public
-	public function printHeader($navSelect, $chromeTitleElements, $justOuterChrome=false) {
-		global $user, $appAuth;
-?>
+	public function handleNoGoalForGoalPage() {
+		die("ERROR: must specify a goalID");
+	}
+
+	// private
+	private function printJQMPage($page) {
+		$this->printPageHead();
+	?>
+	<div data-role='page' id='home'>
+		<!-- redirect to the first page -->
+		<script type="text/javascript">
+			$('#home').live('pagecreate',function(event){
+				$.mobile.changePage("#<?php echo $page; ?>");
+			});
+		</script>
+	</div>
+	<div data-role='page' id='<?php echo NAVNAME_USERS;?>'>
+	<?php
+		$this->printHeader(NAVNAME_USERS, array(new ChromeTitleElementHeader("All People")), false, true);
+		$this->printFooter(NAVNAME_USERS, false, true);
+	?>
+	</div>
+	<div data-role='page' id='<?php echo NAVNAME_ACTIVITY;?>'>
+	<?php
+		$this->printHeader(NAVNAME_ACTIVITY, array(new ChromeTitleElementHeader("Activity")), false, true);
+		$this->printFooter(NAVNAME_ACTIVITY, false, true);
+	?>
+	</div>
+	<div data-role='page' id='<?php echo NAVNAME_GOAL;?>'>
+	<?php
+		$this->printHeader(NAVNAME_GOAL, array(), false, true);
+		$this->printFooter(NAVNAME_GOAL, false, true);
+	?>
+	</div>
+	<div data-role='page' id='<?php echo NAVNAME_USER;?>'>
+	<?php
+		$this->printHeader(NAVNAME_USER, array(), false, true);
+		$this->printFooter(NAVNAME_USER, false, true);
+	?>
+	</div>
+	<script type="text/javascript">
+		var nextQS = "";
+		$('div').live('pagebeforeshow',function(event, ui) {
+			// pull the page's ID
+			var pageID = $.mobile.activePage.attr('id');
+			
+			// clear the main div's HTML
+			//$('#main-'+pageID).html('');
+
+			// load the new stuff
+			$.ajax({
+				url: "<?php echo PAGE_AJAX_MOBILE_PAGE; ?>?"+nextQS+"&d="+Math.floor(Math.random()*1000000)+"&page="+pageID,
+				success: function(data) {
+					$('#main-'+pageID).html(data);
+					$("form.jqtransform").jqTransform();
+				}
+			});
+			
+			// clear it to not confuse next page
+			setNextQS('');
+		});
+		function setNextQS(newNextQS) {
+			nextQS = newNextQS;
+		}		
+	</script>
+	<?php
+		$this->printPageFoot();
+	}
+	private function printPageHead() {
+	?>
 <!DOCTYPE html>
 <html lang="en-US" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
 <head>
 	<title>Superhuman</title>
+	<!-- GENERAL -->
 	<meta charset="utf-8" />
 	<meta name="viewport" content="width=640"/>  
-	<link rel="shortcut icon" href="<?php echo BASEPATH_UI;?>/mobile/css/images/favicon.ico" />
-	<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/mobile/css/jquery.mobile.structure-1.1.0-rc.1.css" type="text/css" media="all" />
-	<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/mobile/css/style.css" type="text/css" media="all" />
-	<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/mobile/css/jqtransform.css" type="text/css" media="all" />
+	<!-- JQ -->
 	<script src="<?php echo BASEPATH_UI;?>/mobile/js/jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<!-- JQ TRANSFORM -->
+	<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/mobile/css/jqtransform.css" type="text/css" media="all" />
 	<script src="<?php echo BASEPATH_UI;?>/mobile/js/jquery.jqtransform.js" type="text/javascript" charset="utf-8"></script>
-	<script src="<?php echo BASEPATH_UI;?>/mobile/js/functions.js" type="text/javascript" charset="utf-8"></script>
+	<!-- JQ MOBILE -->
+	<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/mobile/css/jquery.mobile.structure-1.1.0-rc.1.css" type="text/css" media="all" />
 	<script src="<?php echo BASEPATH_UI;?>/mobile/js/jquery.mobile-1.1.0-rc.1.min.js" type="text/javascript" charset="utf-8"></script>
-	<script type="text/javascript">
-		jQuery('div').live('pagehide', function(event, ui) {
-			var page = jQuery(event.target);
-
-			if(page.attr('data-cache') == 'never') {
-				page.remove();
-			};
-		});
-	</script>
+	<!-- APP -->
+	<link rel="shortcut icon" href="<?php echo BASEPATH_UI;?>/mobile/css/images/favicon.ico" />
+	<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/mobile/css/style.css" type="text/css" media="all" />
+	<script src="<?php echo BASEPATH_UI;?>/mobile/js/functions.js" type="text/javascript" charset="utf-8"></script>
 </head>
 <body>
-<div data-role="page" data-cache="never">
+	<?php
+	}
+	private function printPageFoot() {
+	?>
+</body>
+</html>
+	<?php
+	}
+
+	// public
+	public function printHeader($navSelect, $chromeTitleElements, $justOuterChrome=false, $justBody=false) {
+		global $user, $appAuth;
+		static $headerID = 0;
+		
+		if(!$justBody) {
+			$this->printPageHead();
+			echo "<div data-role='page'>";
+		}
+?>
 	<!-- Shell -->
 	<div class="shell">
 		<!-- Header -->
 		<header>
-			<h1 id="logo" ><a href="<?php echo PAGE_INDEX; ?>">Superhuman</a></h1>
+			<h1 id="logo" ><a href="#<?php echo NAVNAME_ACTIVITY; ?>">Superhuman</a></h1>
 			
 	<?php
 		if(isset($appAuth) && $appAuth->isLoggedIn()) {
 	?>
-			<div class="profile">
+			<div class="profile" id="profile<?php echo $headerID; ?>">
 				<a href="#" class="link" >
 					<img src="<?php echo $user->pictureURL; ?>" alt="" style="width:87px;height:87px" />
 					<span class="arrow" >&nbsp;</span>
@@ -2544,10 +2625,15 @@ class MobileView extends BaseView {
 				<div class="dropdown">
 					<ul>
 						<!--<li><a href="#">Change Password</a></li>-->
-						<li><a href="<?php echo $appAuth->getLogoutPageURL(); ?>">Log Out</a></li>
+						<li><a href="<?php echo $appAuth->getLogoutPageURL(); ?>" rel="external">Log Out</a></li>
 					</ul>
 				</div>
 			</div>
+			<script type="text/javascript">
+				$('#profile<?php echo $headerID; ?>').on('vclick', function() {
+					$(this).find('.dropdown').toggle();
+				});
+			</script>
 	<?php
 		}
 	?>
@@ -2556,17 +2642,23 @@ class MobileView extends BaseView {
 		<!-- END Header -->
 		
 		<!-- Main -->
-		<div id="main">
+		<div id="main-<?php echo $navSelect;?>">
 <?php
 		if(!$justOuterChrome) {
 			StatusMessages::printMessages();
 			PerformanceMeter::addTimestamp("Header render done");
 		}
+		
+		++$headerID;
 	}
-	public function printFooter($navSelect, $justOuterChrome=false) {
+	public function printFooter($navSelect, $justOuterChrome=false, $justBody=false) {
+		global $viewSwitch;
+		
 		if(!$justOuterChrome) {
 			PerformanceMeter::addTimestamp("Page render done");
-			PerformanceMeter::printRenderReport();
+			if($viewSwitch->issetViewFlag("pagereport")) {
+				PerformanceMeter::printReport();
+			}
 		}
 ?>
 		</div>
@@ -2577,9 +2669,9 @@ class MobileView extends BaseView {
 		<!--  Navigation -->
 		<nav>
 			<ul>
-				<li><a href="<?php echo PAGE_USER; ?>" data-transition="none" class="<?php echo ($navSelect==NAVNAME_YOU)?"active":"";?>"><span class="icon icon-1" >&nbsp;</span>Daily Entry</a></li>
-				<li><a href="<?php echo PAGE_ACTIVITY; ?>" data-transition="none" class="<?php echo ($navSelect==NAVNAME_ACTIVITY)?"active":"";?>" ><span class="icon icon-2" >&nbsp;</span>Activity</a></li>
-				<li><a href="<?php echo PAGE_USERS; ?>" data-transition="none" class="<?php echo ($navSelect==NAVNAME_USERS)?"active":"";?>"><span class="icon icon-3" >&nbsp;</span>Friends</a></li>
+				<li><a href="#<?php echo NAVNAME_USER; ?>" data-transition="none" class="<?php echo ($navSelect==NAVNAME_USER)?"active":"";?>"><span class="icon icon-1" >&nbsp;</span>Daily Entry</a></li>
+				<li><a href="#<?php echo NAVNAME_ACTIVITY; ?>" data-transition="none" class="<?php echo ($navSelect==NAVNAME_ACTIVITY)?"active":"";?>" ><span class="icon icon-2" >&nbsp;</span>Activity</a></li>
+				<li><a href="#<?php echo NAVNAME_USERS; ?>" data-transition="none" class="<?php echo ($navSelect==NAVNAME_USERS)?"active":"";?>"><span class="icon icon-3" >&nbsp;</span>Friends</a></li>
 			</ul>
 		</nav>
 		<!-- END Navigation -->
@@ -2588,10 +2680,11 @@ class MobileView extends BaseView {
 ?>
 	</div>
 	<!-- END Shell -->
-</div>
-</body>
-</html>
 <?php
+		if(!$justBody) {
+			echo "</div>";
+			$this->printPageFoot();
+		}
 		PerformanceMeter::addTimestamp("Footer render done");
 	}
 	protected function storyPrintEventStoryPrint($user, $goal, $eventStory, $changeWord, $goodBad, $timeSinceStr) {
@@ -2599,9 +2692,9 @@ class MobileView extends BaseView {
 ?>
 					<li>
 						<div class="text">
-							<a href="<?php echo $user->getPagePath(); ?>" id="<?php echo "imgholder_$divID";?>">
+							<a href="#<?php echo NAVNAME_USER;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')" id="<?php echo "imgholder_$divID";?>">
 								<img class='img' src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" />
-								<!-- HACK: image is inserted later. if specified literally here, safari will load the page 2x. no other fix could be found. -->
+								<!-- HA/CK: image is inserted later. if specified literally here, safari will load the page 2x. no other fix could be found. -->
 							</a>
 							<!--<script type="text/javascript">
 								setTimeout("loadUserImage('<?php echo "imgholder_$divID"; ?>', '<?php echo GPC::strToPrintable($user->pictureURL); ?>')", 4000);
@@ -2609,7 +2702,7 @@ class MobileView extends BaseView {
 									document.getElementById(divID).innerHTML="<img class='img' src='"+imgPath+"' />";
 								}
 							</script>-->
-							<h4><a href="<?php echo $user->getPagePath(); ?>"><?php echo "$user->firstName $user->lastName"; ?></a> <?php echo $changeWord; ?> his level for <a href="<?php echo $goal->getPagePath(); ?>"><?php echo GPC::strToPrintable($goal->name); ?></a> from <?php echo $eventStory->oldLevel; ?> to <?php echo $eventStory->newLevel; ?>.</h4>
+							<h4><a href="#<?php echo NAVNAME_USER;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')"><?php echo "$user->firstName $user->lastName"; ?></a> <?php echo $changeWord; ?> his level for <a href="#<?php echo NAVNAME_GOAL;?>" onclick="setNextQS('id=<?php echo $goal->id; ?>')"><?php echo GPC::strToPrintable($goal->name); ?></a> from <?php echo $eventStory->oldLevel; ?> to <?php echo $eventStory->newLevel; ?>.</h4>
 							
 							<p class="letter" ><?php echo $eventStory->letterGrade; ?></p>
 							<div class="quote">
@@ -2633,11 +2726,11 @@ class MobileView extends BaseView {
 	protected function storyPrintDailyscoreStoryPrint($user, $numGoalsTouched, $totalGoals, $goodBad, $score, $goalLinkList, $timeSinceStr) {
 ?>
 					<li>
-<!--						<div class="img" style="background:url();">-->
-							<a href="<?php echo $user->getPagePath(); ?>"><img class="img" src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" alt="<?php echo "$user->firstName $user->lastName"; ?>" />
-<!--						</div>-->
+						<!--<div class="img" style="background:url();">-->
+							<a href="#<?php echo NAVNAME_USER;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')"><img class="img" src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" alt="<?php echo "$user->firstName $user->lastName"; ?>" /></a>
+						<!--</div>-->
 						<div class="text">
-							<h4><a href="<?php echo $user->getPagePath(); ?>"><?php echo "$user->firstName $user->lastName"; ?></a> just entered daily goal progress, touching <?php echo $numGoalsTouched; ?> out of <?php echo $totalGoals; ?> of their goals.</h4>
+							<h4><a href="#<?php echo NAVNAME_USER;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')"><?php echo "$user->firstName $user->lastName"; ?></a> just entered daily goal progress, touching <?php echo $numGoalsTouched; ?> out of <?php echo $totalGoals; ?> of their goals.</h4>
 							
 							<p class="percent" ><?php echo $score; ?><span>%</span></p>
 							<div class="links">
@@ -2658,6 +2751,9 @@ class MobileView extends BaseView {
 ?>
 			</div>
 <?php
+	}
+	public function printActivityPage() {
+		$this->printJQMPage(NAVNAME_ACTIVITY);
 	}
 	protected function printSignupPagePrint() {
 		global $appAuth;
@@ -2698,57 +2794,56 @@ class MobileView extends BaseView {
 	}
 	public function printHelpPage() { // this page doesn't exist on mobile
 	}
-	public function printAllUsersPage() {
-		global $viewSwitch;
-		
-		$this->printHeader(NAVNAME_USERS, array(new ChromeTitleElementHeader("All People")));
+	public function printAllUsersPage() {		
+		$this->printJQMPage(NAVNAME_USERS);
+	}
+	public function printAllUsersPageMainDiv() {
 		// TEST: bare page
+		global $viewSwitch;
 		if($viewSwitch->issetViewFlag("bare")) {
 			echo "<p><b><font color='white'>USERS PAGE</font></b></p>";
-			$this->printFooter(NAVNAME_USERS);
 			return;
 		}
 ?>
 			<div class="friends-page">
 <?php
-		$this->userPrintListAll();
+		// print user list, return section letters
+		$uniqueLastNameLetters = $this->userPrintListAll();
 ?>
 				<div class="nav">
 					<ul>
 						<!--<li class="search" ><a href="#"><img src="css/images/search.png" alt="" /></a></li>-->
-						<li><a href="#A">A</a></li>
-						<li><a href="#B">B</a></li>
-						<li><a href="#C">C</a></li>
-						<li><a href="#D">D</a></li>
-						<li><a href="#E">E</a></li>
-						<li><a href="#F">F</a></li>
-						<li><a href="#G">G</a></li>
-						<li><a href="#H">H</a></li>
-						<li><a href="#I">I</a></li>
-						<li><a href="#J">J</a></li>
-						<li><a href="#K">K</a></li>
-						<li><a href="#L">L</a></li>
-						<li><a href="#M">M</a></li>
-						<li><a href="#N">N</a></li>
-						<li><a href="#O">O</a></li>
-						<li><a href="#P">P</a></li>
-						<li><a href="#Q">Q</a></li>
-						<li><a href="#R">R</a></li>
-						<li><a href="#S">S</a></li>
-						<li><a href="#T">T</a></li>
-						<li><a href="#U">U</a></li>
-						<li><a href="#V">V</a></li>
-						<li><a href="#W">W</a></li>
-						<li><a href="#X">X</a></li>
-						<li><a href="#Y">Y</a></li>
-						<li><a href="#Z">Z</a></li>
+<?php
+		// build list of links for each letter in right-aligned letter map
+		$links = null;
+		if(count($uniqueLastNameLetters)) {
+			$baseASCIIVal = 65;
+			$lnOrds = array();
+			foreach($uniqueLastNameLetters as $val) {
+				$lnOrds[] = ord($val)-$baseASCIIVal;
+			}
+			$links = array();
+			for($i=0; $i<26; ++$i) {
+				$closest = array_closest_num($lnOrds, $i);
+				$links[] = chr($baseASCIIVal+$closest);
+			}
+		}
+		else {
+			$links = array_fill(0,26,"A");
+		}
+		
+		// loop through & display all letters
+		for($i=0; $i<26; ++$i) {
+			$letter = chr($baseASCIIVal+$i);
+			echo "<li><a href='#".$links[$i]."'>$letter</a></li>";
+		}
+?>
 						<li><a href="#other">#</a></li>
 					</ul>
 				</div>
 				<div class="cl">&nbsp;</div>
 			</div>
 <?php
-		$this->printFooter(NAVNAME_USERS);
 	}
 	protected function userPrintListPre() {
 ?>
@@ -2775,27 +2870,28 @@ class MobileView extends BaseView {
 	protected function userPrintCardPrint($user, $numGoals, $visitFreqText) {
 ?>
 						<div class="box left">
-							<h5><a href="<?php echo $user->getPagePath();?>"><?php echo "$user->firstName <b>$user->lastName</b>";?></a></h5>
+							<h5><a href="#<?php echo NAVNAME_USER;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')"><?php echo "$user->firstName <b>$user->lastName</b>";?></a></h5>
 							<p>
 								<?php echo $numGoals;?> goals<br/>
 								<?php echo $visitFreqText;?>
 							</p>
-							<a href="<?php echo $user->getPagePath();?>"><img class="img" src="<?php echo GPC::strToPrintable($user->pictureURL);?>" alt="<?php echo "$user->firstName $user->lastName";?>" /></a>
+							<a href="#<?php echo NAVNAME_USER;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')"><img class="img" src="<?php echo GPC::strToPrintable($user->pictureURL);?>" alt="<?php echo "$user->firstName $user->lastName";?>" /></a>
 						</div>
 <?php
 	}
 	
 	// &&&&&&
 	public function printUserPage($viewUser) {
+		$this->printJQMPage(NAVNAME_USER);
+	}
+	public function printUserPageMainDiv($viewUser) {
 		global $user, $db, $viewSwitch;
 		$viewUserID = $viewUser->id;
 		$viewingSelf = ($viewUserID == $user->id);
-		$navName = $viewingSelf?NAVNAME_YOU:NAVNAME_USERS;
-		$this->printHeader($navName, array());
+
 		// TEST: bare page
 		if($viewSwitch->issetViewFlag("bare")) {
 			echo "<p><b><font color='white'>USER PAGE</font></b></p>";
-			$this->printFooter(NAVNAME_YOU);
 			return;
 		}
 ?>
@@ -2811,8 +2907,6 @@ class MobileView extends BaseView {
 ?>
 			</div>
 <?php		
-
-		$this->printFooter($navName);
 	}
 	protected function goalstatusPrintPre() {
 ?>
@@ -2841,17 +2935,25 @@ class MobileView extends BaseView {
 							<div class="title">
 								<p class="num <?php echo $goalNumColor;?>" id="levelBox<?php echo $rowID;?>"><?php echo $goalstatus->level;?></p>
 								<h5><?php echo GPC::strToPrintable($goal->name);?></h5>
-								<span class="arrow" onclick="window.location='<?php echo $goal->getPagePath();?>';">&nbsp;</span>
+								<span class="arrow"
+<?php
+		if($isEditable) {
+?>								
+								onclick="setNextQS('id=<?php echo $goal->id; ?>'); $.mobile.changePage('#<?php echo NAVNAME_GOAL; ?>');" style="cursor:pointer"
+<?php
+		}
+?>							
+								>&nbsp;</span>
 								<div class="cl">&nbsp;</div>
 							</div>
 							<div class="holder">
 <?php
-			if($isEditable) {
-				$originalLevelVal = $db->doQueryOne("SELECT event_new_level FROM stories WHERE user_id=%s AND event_goal_id=%s AND type='' AND entered_at_day <> %s ORDER BY entered_at DESC LIMIT 1", $goalstatus->userID, $goal->id, Date::now()->toDay());
-				if(is_null($originalLevelVal)) {
-					$originalLevelVal=5;
-				}
-				$this->goalstatusPrintAjaxEventSave($rowID, "eventNewLevel", "onChangeEvent", PAGE_AJAX_SAVEEVENT, $goalstatus, $goal, "eventWhy", "eventLetterGrade", "");
+		if($isEditable) {
+			$originalLevelVal = $db->doQueryOne("SELECT event_new_level FROM stories WHERE user_id=%s AND event_goal_id=%s AND type='' AND entered_at_day <> %s ORDER BY entered_at DESC LIMIT 1", $goalstatus->userID, $goal->id, Date::now()->toDay());
+			if(is_null($originalLevelVal)) {
+				$originalLevelVal=5;
+			}
+			$this->goalstatusPrintAjaxEventSave($rowID, "eventNewLevel", "onChangeEvent", PAGE_AJAX_SAVEEVENT, $goalstatus, $goal, "eventWhy", "eventLetterGrade", "");
 ?>
 								<input type="hidden" id="eventNewLevel<?php echo $rowID;?>" value="<?php echo $newLevelVal; ?>" />
 								<input type="hidden" id="eventOriginalLevel<?php echo $rowID;?>" value="<?php echo $originalLevelVal; ?>" />
@@ -2907,12 +3009,12 @@ class MobileView extends BaseView {
 									</fieldset>
 								</div>
 <?php
-			}
+		}
 ?>
 								<div class="holder-right" id="testsDisplay<?php echo $rowID;?>">
 <?php
 		foreach($dailytests as $dailytest) {
-			$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id)?"checked":"";
+			$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, Date::now()->toDay())?"checked":"";
 			$ajaxSaveDailytestPath = PAGE_AJAX_SAVEDAILYTEST;
 ?>
 									<div class="row">
@@ -2949,27 +3051,27 @@ class MobileView extends BaseView {
 								</div>
 								<div class="cl">&nbsp;</div>
 							</div>
-							<input type="button" value="Done" class="button" id="eventButtonDisplay<?php echo $rowID; ?>" onclick="eventButtonClicked<?php echo $rowID; ?>()" style="display:none;" />
+							<input type="button" value="Done" class="ui-btn" id="eventButtonDisplay<?php echo $rowID; ?>" onclick="eventButtonClicked<?php echo $rowID; ?>()" style="display:none;" />
 						</form>
 					</li>
 <?php
 	}
 	public function printGoalPage($goalID) {
+		$this->printJQMPage(NAVNAME_GOAL);
+	}
+	public function printGoalPageMainDiv($goalID) {
 		global $user, $db;
-	
-		$this->printHeader(NAVNAME_GOALS, array());
-
 		$goal = Goal::getObjFromGoalID($goalID);
 		$userHasGoal = GoalStatus::doesUserHaveGoal($user->id, $goalID);
 ?>
-			<h2><a href="<?php echo PAGE_USER; ?>" class="arrow" >&nbsp;</a> <?php echo $goal->name; ?></h2>
+			<h2><a href="#" onclick="history.back();" class="arrow" >&nbsp;</a> <?php echo $goal->name; ?></h2>
 			<div class="cl">&nbsp;</div>
 <?php
 		if(!$userHasGoal) {
-			echo "<br/><p><b><font color='white'>You do not have this goal. Please visit the web version to adopt it!</font></b></p><br/>";
+			echo "<br/><p><b><font color='white'>&nbsp;&nbsp;You do not have this goal. Please visit the web version to adopt it!</font></b></p><br/>";
 		}
 		else {
-			$obj = $db->doQueryRFR("SELECT * FROM goals_status WHERE user_id=%s", $user->id);
+			$obj = $db->doQueryRFR("SELECT * FROM goals_status WHERE user_id=%s AND goal_id=%s", $user->id, $goalID);
 			$goalstatus = GoalStatus::getObjFromDBData($obj);
 			$level = $goalstatus->level;
 
@@ -3030,8 +3132,6 @@ class MobileView extends BaseView {
 			</div>
 <?php
 		}
-		
-		$this->printFooter(NAVNAME_GOALS);
 	}
 };
 
@@ -3111,14 +3211,22 @@ class ChromeTitleElementTabs {
 function printHeaderAuth($title) {
 	include(dirname(__FILE__)."/../template/userFacingBase.php");
 	
-	global $view;
+	// get view
+	//global $view;
+	// HACK: enforce web no matter where user is
+	$view = new WebView();
+
 	$view->printHeader(NAVNAME_NONE, array(), true);
 	echo "<div style='padding:20px; background-color:white; border-color:#808080; border-style:solid; border-width:thin' >";
 }
 function printFooterAuth() {
 	include(dirname(__FILE__)."/../template/userFacingBase.php");
 
-	global $view;
+	// get view
+	//global $view;
+	// HACK: enforce web no matter where user is
+	$view = new WebView();
+
 	echo "</div>";
 	$view->printFooter(NAVNAME_NONE, true);
 }

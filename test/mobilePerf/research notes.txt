@@ -15,8 +15,17 @@
 
 theoretical SG test one-page: 17 switches
 
-SG bare mobile JQM: 21
-SG ajax mobile JQM: 16
+SG bare no-ajax mobile JQM: 21
+SG content ajax mobile JQM: 16
 JQM mobile: 23
-SG bare mobile no-JQM: 26
-SG ajax mobile no-JQM: 16
+SG bare no-ajax mobile no-JQM: 26
+SG content ajax mobile no-JQM: 16
+SG bare ajax mobile no-JQM: 14
+
+parameters
+- SG/foo
+- bare/content
+- ajax/page-cached
+- one-page/multi-page
+- JQM/no-JQM
+- mobile/PC
