@@ -1607,17 +1607,32 @@ Is it really that hard to figure out? :P
 
 
 
+
+
+
 		<!-- KPIS start here -->
 					<div class="user_page_items">
 						<span class="user_page_sub_title"> Measurements and Milestones </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'kpi')" href="#">+</a><br/>
 		<?php if(!empty($kpis)){
+				
 					foreach($kpis as $kpi) {	
 						if($kpi->kpi_active == 1){						
-							if($isEditable) {?>
+/*					echo "<pre>";
+					print_r($kpi);
+					echo "</pre>";
+*/
+						?>
+
+						<?php			
+							if($isEditable) {
+				?>
 									<label for="testKPICheck<?php echo $kpi->id;?>" style="float:left;">
 										<input onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->id;?>, 'completed','')" type="checkbox" value="Check" id="testKPICheck<?php echo $kpi->id;?>" <?php echo $checkedVal; ?> onclick="" />
 									</label>
-						<?php}?>
+				<?php
+							}
+?>
+
 							<div class="kpi_label" id="kpiBox<?php echo $kpi->id;?>">
 									<div style="display:none;" id="KPIElement<?php echo $kpi->id;?>"> 
 										Name: <input id="newKPIName<?php echo $kpi->id;?>" type="text" value="<?php echo GPC::strToPrintable($kpi->kpi_name);?>" style="width:275px; font-size:13px; color:#666;"/> Test: <input id="newKPITestName<?php echo $kpi->id;?>" type="text" value="<?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo $kpi->kpi_tests[0]->test_name;}?>" style="width:145px; font-size:13px; color:#666;"/>
@@ -1630,6 +1645,7 @@ Is it really that hard to figure out? :P
 									}else{ 
 										$isTest = "none"; 
 									}
+
 									?><span style='display:'<?php echo $isTest;?>' id='curKPITestText<?php echo $kpi->id;?>'><?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo "("; echo $kpi->kpi_tests[0]->test_name; echo ")"; } ?></span>
 
 
