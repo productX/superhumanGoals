@@ -7,7 +7,7 @@ $testID = $_POST['testID'];
 $goalID = $_POST['goalID'];
 $type = $_POST['type'];
 $newKPIName = $_POST['newKPIName'];
-$newKPIDescription = $_POST['newKPIDescription']
+$newKPIDescription = $_POST['newKPIDescription'];
 $newKPITestName = $_POST['newKPITestName'];
 $newKPITestDescription = $_POST['newKPITestDescription'];
 $newKPITestFrequency = $_POST['newKPITestFrequency'];
@@ -29,9 +29,11 @@ if($type == 'adopt'){
 	$kpiID = $kpiInfo[0];
 	$testID = $kpiInfo[1];
 	KPI::adoptKPI($userID, $kpiID, $goalID);
-	if($kpiTestName != ''){
+	if($newKPITestName != ''){
 		KPI::adoptTest($userID, $kpiID, $goalID, $testID);
 	}
+	
+	echo json_encode($kpiInfo);
 }
 
 
