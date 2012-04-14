@@ -116,7 +116,7 @@ h1#logo a:hover { background-position: 0 bottom; }
 .case { padding: 3px 15px 35px 21px; }
 .case a { color: #214390; }
 .goals { padding-left: 51px; }
-.boxes { padding: 23px 11px 35px 41px; }
+.boxes { padding: 23px 11px 35px 14px; }
 
 .post .user-name { margin-right: 10px; margin-bottom: 0; }
 .post .cnt { float: left; display: inline; width: 442px;  }
@@ -183,15 +183,15 @@ h1#logo a:hover { background-position: 0 bottom; }
 .status-message-good { display: block; padding: 7px 16px 10px 11px; margin: 0 0 16px 0; background:#FFFFCC;  border:solid 1px #DEDEDE; box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
 .status-message-bad { display: block; padding: 7px 16px 10px 11px; margin: 0 0 16px 0; background:#DF8B8B;  border:solid 1px #9C5C5C; box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; color:#222222;}
 
-.box { display: block; width:680px; padding: 7px 16px 10px 11px; margin: 0 0 16px 0; background: #f3f3f3; border: solid 1px #868686; box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
+.box { display: block; width:784px; padding: 7px 7px 10px; margin: 0 0 16px 0; background: #f3f3f3; border: solid 1px #868686; box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
 .box .fitness { padding: 0 18px 0 0; border-right: solid 1px #dedede; text-align: center; float: left; }
 .box .fitness a.title { display: block; font-size: 16px; line-height:26px; }
 .box .fitness .number { padding: 0 15px; font-size: 28px; line-height: 44px; position: relative; background: #fff; border: solid 1px #d0d0d0; }
 .box .fitness .number .add { position: absolute; right: -8px; bottom: -1px; width: 17px; height: 17px; display: block; background: url(images/add-btn.png) no-repeat 0 0; font-size: 0; line-height: 0; text-indent: -4000px; }
-.box .tests { float: left; display: inline; padding: 0 13px 0 16px; border-right: solid 1px #dedede; }
+.box .tests { float: left; display: inline; padding: 0 0px 0 4px; }
 .box .tests .row { padding: 4px 0; }
 .box .tests .row input { display: none; }
-.box .tests .row label { background: #fff; width: 45px; height: 45px; border: solid 1px #868686; float: left; display: inline; margin-right: 7px; cursor: pointer; }
+.box .tests .row label { background: #fff; width: 42px; height: 42px; border: solid 1px #868686; float: left; display: inline; margin-right: 7px; cursor: pointer; }
 .box .tests .row label.checked { 
 
 
@@ -254,15 +254,17 @@ background: url(images/check.png) no-repeat 0 0; }
 .choose_kpi_heading {font-weight:bold; color:white; padding:10px; float: left; height: 26px; width: 325px; background: #826D8C; margin-left:5px;}
 .chosen_kpis {background:green; color: white; height:26px; padding:10px; font-weight:bold; float:left; width:300px; margin-left:10px;}
 .score .kpi_results { font-size:14px; min-width: 310px; max-width: 310px;  margin-left:10px; float:left; min-height:1px; margin-right:10px;}
-.habit_label {color:#444; line-height:15px; width:250px; float:left; font-size:12px; margin-right: 5px; border: 1px solid #B2A100; background: none repeat scroll 0 0 #FEF9BF; padding:7px 2px 7px 5px; max-heigh:31px; min-height:31px;}
-.tactic_label {color:#444; line-height:15px; float:left; font-size:12px; margin-right: 5px; padding:0px 2px 4px 5px; max-heigh:31px; min-height:31px; margin-left:10px;}
-.kpi_label {color:#444; line-height:15px; float:left; font-size:12px; margin-right: 5px; padding:0px 2px 4px 5px; max-heigh:31px; min-height:31px;}
-.todo_label {color:#444; line-height:15px; float:left; font-size:12px; margin-right: 5px; padding:0px 2px 4px 5px; max-heigh:31px; min-height:31px;}
+.habit_label {color:#222; line-height:18px; width:244px; float:left; font-size:14px; margin-right: 5px; border: 1px dotted #B2A100; background: none repeat scroll 0 0 #FFF8DD; padding:2px 4px 11px 8px; max-height:28px; min-height:28px;}
+.tactic_label {color:#444; line-height:15px; float:left; font-size:12px; margin-right: 5px; padding:0px 2px 4px 5px; max-heigh:31px; min-height:31px; margin-left:10px; min-width:740px;}
+.kpi_label {color:#444; line-height:15px; float:left; font-size:12px; margin-right: 5px; padding:0px 2px 4px 5px; max-heigh:31px; min-height:31px; min-width:735px;}
+.todo_label {color:#444; line-height:15px; float:left; font-size:12px; margin-right: 5px; padding:0px 2px 4px 5px; max-heigh:31px; min-height:31px; min-width:735px;}
 .user_page_items { margin-top:15px; padding:10px; background: #fbfbfb; border: 2px dotted #e2e2e2;}
 .user_page_sub_title { font-size:15px; color: #777; margin-bottom:5px; display: inline-block;}
 .no_elements {  font-size:13px; color: #999; display: inline-block; }
 .editLink { font-size:11px; color: #999;}
-.goals_section { border: 1px solid #999; min-height:200px; margin-bottom: 10px; margin-left:30px; max-width:670px; margin-top: 10px; box-shadow: 2px 2px 2px #888; background: #f6f6f6}
+.goals_section { border: 1px solid #999; min-height:200px; margin-bottom: 10px; margin-left:30px; max-width:670px; margin-top: 10px; box-shadow: 2px 2px 2px #888; background: #f6f6f6;}
+.other_goals_section { border: 1px solid #fff; min-height:200px; margin-bottom: 10px; margin-left:30px; max-width:670px; margin-top: 10px; background: #fff;}
+
 .goal_list { margin-left:20px; margin-right: 5px; float:left; min-width:195px;}
 
 .all_strategies { background: #FAFAFA; float:left; overflow:auto; max-height:400px; width: 678px; margin-bottom:30px; border: 1px solid #E8E8E8; padding: 5px;}
@@ -271,15 +273,17 @@ background: url(images/check.png) no-repeat 0 0; }
 .chosen_strategies {background:green; color: white; height:26px; padding:10px; font-weight:bold; float:left; width:300px; margin-left:10px;}
 .score .strategy_results { font-size:14px; min-width: 310px; max-width: 310px; margin-left:10px; float:left; min-height:1px; margin-right:10px;}
 .habit_title { margin-left:5px;}
-.habit_title a { color: #666;}
-.habit_title .goal_level { -webkit-border-radius: 99px; -moz-border-radius: 99px; border-radius: 99px; behavior: url(PIE.htc); width: 36px; height: 36px; padding: 0px 5px 0px 6px; background: #fff; border: 1px solid #999; color: #888; text-align: center; font: 18px Arial, sans-serif; }
+.habit_title a { color: #555;}
+.habit_title .goal_level { -webkit-border-radius: 99px; -moz-border-radius: 99px; border-radius: 99px; behavior: url(PIE.htc); width: 36px; height: 36px; padding: 0px 5px 0px 6px; background: #fff; border: 1px solid #777; color: #777; text-align: center; font: 18px Arial, sans-serif; }
 .close_window { -webkit-border-radius: 99px; -moz-border-radius: 99px; border-radius: 99px; behavior: url(PIE.htc); width: 12px; height: 22px; padding: 0px 5px 0px 6px; background: #B94141; border: 1px solid #999; color: white !important; text-decoration: none !important; text-align: center; font: 18px Arial, sans-serif; float: right;}
 .new_level { float:left; margin-right:10px; position:relative; bottom:3px; font-size:16px; color:#444;}
+.new_tactic { float:left; margin-right:10px; position:relative; bottom:3px; font-size:16px; color:#444; margin-bottom:10px;}
+.optional_input { color: #888; font-size: 14px; margin-left:5px; }
 
-.habit_title .add_goal_comment { behavior: url(PIE.htc); width: 9px; height: 10px; padding: 1px 1px 1px 1px; background: #e3e3e3; border: 1px #999 dotted; color: #777; font-weight:bold; text-align: center; font: 14px Arial,sans-serif; position:relative; top:5px; line-height:9px; margin-left:2px; display:inline-block; }
+.add_goal_comment { float:right; behavior: url(PIE.htc); width: 15px; height: 14px; padding: 1px 1px 1px 1px; background: #e3e3e3; border: 1px #999 dotted; color: #777 !important; font-weight:bold; text-align: center; font: 23px Arial,sans-serif; position:relative; top:5px; line-height:13px; margin-left:2px; display:inline-block; text-decoration:none !important;}
 .lightbox { display:none; background:#000000; opacity:0.9; filter:alpha(opacity=90); position:absolute; top:0px; left:0px; min-width:100%; min-height:100%; z-index:1000; }
 .lightbox-panel { display:none; position:fixed; top:200px; left:50%; margin-left:-200px; width:400px; background:#f4f4f4; padding:10px 15px 10px 15px; border:10px solid #555; z-index:1001; -webkit-border-radius: 15px; -moz-border-radius: 15px; border-radius: 15px; behavior: url(PIE.htc); box-shadow: 2px 2px 4px #222222;}
-
+.text_input { width:180px;  }
 
 
 #footer { position: fixed; bottom: 0; left: 0; height: 69px; background: #000; border-top: solid 1px #e8e8e8; width: 100%; z-index: 30; }
