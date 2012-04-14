@@ -21,6 +21,9 @@ if($type == 'adopt'){
 }elseif($type == 'edit'){
 	Dailytest::editStrategy($userID,$strategyID,$goalID,$newStrategyName,$strategyType);
 	echo "Strategy Edited!";
+}elseif($type == 'completed'){
+	Dailytest::editTodo($userID,$strategyID,$goalID);
+	echo "Strategy Edited!";
 }
 
 

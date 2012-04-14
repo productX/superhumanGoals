@@ -19,8 +19,10 @@ if($adopt == 'true'){
 	
 	
 	KPI::adoptKPI($userID, $kpiID, $goalID);
-	KPI::adoptTest($userID, $kpiID, $goalID, $testID);
-
+	if($kpiTestName != ''){
+		KPI::adoptTest($userID, $kpiID, $goalID, $testID);
+	}
+	
 	echo json_encode($kpiInfo);
 
 }elseif($adopt == 'false'){

@@ -662,21 +662,23 @@ class Dailytest {
 		$db->doQuery("UPDATE user_strategies SET is_active = 0 WHERE strategy_id = %s", $strategyID);
 
 		// Check if there is already a strategy by the new name in the DB
-		$isNewStrategy = $db->doQuery("SELECT * FROM strategies WHERE name = %s", $newStrategyName);
-		if(is_null($isNewStrategy)) {
+		$isNewStrategy = $db->doQueryOne("SELECT * FROM strategies WHERE name = %s", $newStrategyName);
 		
+		if(is_null($isNewStrategy)) {
+
 			// If no, create a new strategy in the strategies table and then 
 			if(empty($description)){ $description = ''; }		
+
 			$db->doQuery("INSERT INTO strategies (goal_id, name, description, strategy_type, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW())", $goalID, $newStrategyName, $description, $strategyType, $userID);
+
 			$newStrategyID = mysql_insert_id();
+
 			// INSERT into the user_strategies row with the new strategy information
 			$db->doQuery("INSERT INTO user_strategies (user_id, strategy_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active =1, date_created = NOW()", $userID, $newStrategyID, $goalID);
 
 		}else{
-			while($obj = mysql_fetch_object($isNewStrategy)) {
-				$newStrategyID = $obj->id;
-			}
-		
+			
+			$newStrategyID = $isNewStrategy;
 		// If yes INSERT or ON DUPLICATE UPDATE the user_strategies row with the new strategy information
 			$db->doQuery("INSERT INTO user_strategies (user_id, strategy_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active =1, date_created = NOW()", $userID, $newStrategyID, $goalID);
 		
@@ -684,6 +686,30 @@ class Dailytest {
 		
 				
 	}	
+
+	public static function editTodo($userID, $strategyID, $goalID) {
+		global $db;
+
+		$oldTodoStatus = $db->doQueryOne("SELECT is_completed FROM user_strategies WHERE strategy_id = %s", $strategyID);
+
+		if($oldTodoStatus == 1){
+			$db->doQuery("UPDATE user_strategies SET is_completed = 0 WHERE strategy_id = %s", $strategyID);
+		}else{
+			$db->doQuery("UPDATE user_strategies SET is_completed = 1 WHERE strategy_id = %s", $strategyID);
+		}
+	}
+
+	public static function getCompletedStatus($userID, $strategyID) {
+		global $db; 
+
+		$todoStatus = $db->doQueryOne("SELECT is_completed FROM user_strategies WHERE strategy_id = %s", $strategyID);
+
+		if($todoStatus == 1){
+			return true;
+		}else{
+			return false;
+		}
+	}
 
 	public static function removeStrategy($userID, $strategyID, $goalID) {
 		global $db;
@@ -798,12 +824,13 @@ class KPI {
 		
 		$info[] = $kpiID;
 
-		if(empty($testDescription)){ $testDescription = ''; }
-		if(empty($testFrequency)){ $testFrequency = 30; }
-		$db->doQuery("INSERT INTO kpi_tests (kpi_id, test_description, test_name, test_frequency, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW())", $kpiID, $testDescription, $testName, $testFrequency, $userID);
-		$testID = mysql_insert_id();
-	
-		$info[] = $testID;
+		if($testName != ''){
+			if(empty($testDescription)){ $testDescription = ''; }
+			if(empty($testFrequency) || intval($testFrequency) == '0' ){ $testFrequency = 30; }
+			$db->doQuery("INSERT INTO kpi_tests (kpi_id, test_description, test_name, test_frequency, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW())", $kpiID, $testDescription, $testName, $testFrequency, $userID);
+			$testID = mysql_insert_id();		
+			$info[] = $testID;
+		}
 			
 		$db->doQuery("INSERT INTO goals_to_kpis (goal_id, kpi_id, associated_by, date_created) VALUES (%s, %s, %s, NOW())", $goalID, $kpiID, $userID);
 		
@@ -842,6 +869,70 @@ class KPI {
 		
 	}	
 
+	public static function editKPI($userID, $kpiID, $goalID, $newKPIName, $newKPITestName, $testID) {
+		global $db;
+
+
+		//%%% Deal with the kpi %%%//
+		//%%%%%%%%%%%%%%%%%%%%%%%%%%//
+			
+		// Change the is_active value of the current kpi in user_kpis to 0  
+		$db->doQuery("UPDATE user_kpis SET is_active = 0 WHERE kpi_id = %s", $kpiID);
+
+		// Check if there is already a kpi by the new name in the DB
+		$isNewKPI = $db->doQueryOne("SELECT id FROM kpis WHERE kpi_name = %s", $newKPIName);
+		
+		if(is_null($isNewKPI)) {
+
+			// If no, create a new kpi in the kpis table and then 
+			if(empty($description)){ $description = ''; }		
+
+			$db->doQuery("INSERT INTO kpis (kpi_name, kpi_desc, created_by, date_created) VALUES (%s, %s, %s, NOW())", $newKPIName, $description, $userID);
+			$KPIID = mysql_insert_id();
+
+			// INSERT into the user_kpis row with the new kpi information
+			$db->doQuery("INSERT INTO user_kpis (user_id, kpi_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active = %s, date_created = NOW()", $userID, $KPIID, $goalID, 1);
+
+		}else{
+			
+			$KPIID = $isNewKPI;
+		// If yes INSERT or ON DUPLICATE UPDATE the user_kpis row with the new kpi information
+			$db->doQuery("INSERT INTO user_kpis (user_id, kpi_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active = %s, date_created = NOW()", $userID, $KPIID, $goalID, 1);
+		}
+		
+		// Associate the new KPI with the relevant goal			
+		$db->doQuery("INSERT INTO goals_to_kpis (goal_id, kpi_id, associated_by, date_created) VALUES (%s, %s, %s, NOW()) ON DUPLICATE KEY UPDATE goal_id = goal_id", $goalID, $KPIID, $userID);
+		
+		//%%% Deal with the test %%%//
+		//%%%%%%%%%%%%%%%%%%%%%%%%%%//
+
+		// Change the is_active value of the current test in user_tests to 0  
+		$db->doQuery("UPDATE user_tests SET is_active = 0 WHERE test_id = %s", $testID);
+		
+		// If there is a test name update or create new test and update. Otherwise do nothing
+		if(!empty($newKPITestName)){
+
+			// check if that test exists
+			$isNewTest = $db->doQueryOne("SELECT id FROM kpi_tests WHERE test_name=%s AND kpi_id = %s", $newKPITestName, $KPIID);
+			
+			// If the test doesn't exist, create it
+			if(is_null($isNewTest)) {
+				if(empty($testDescription)){ $testDescription = ''; }
+				if(empty($testFrequency)){ $testFrequency = 30; }
+				$db->doQuery("INSERT INTO kpi_tests (kpi_id, test_description, test_name, test_frequency, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW())", $KPIID, $testDescription, $newKPITestName, $testFrequency, $userID);
+				
+				$KPITestID = mysql_insert_id();
+			}else{
+				$KPITestID = $isNewTest;
+			}
+			
+			// Associate the test with the kpi in user_tests
+			$db->doQuery("INSERT INTO user_tests (user_id, goal_id, kpi_id, test_id, is_active, date_created) VALUES (%s, %s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active = 1 , date_created = NOW()", $userID, $goalID, $KPIID, $KPITestID);
+
+		}
+
+	}	
+
 	public static function modifyTest($userID, $kpiID, $goalID, $testID, $newActiveStatus) {
 		global $db;
 				
@@ -877,20 +968,19 @@ class KPI {
 						}
 					}
 					
-			# for each kpi_id, get all kpi_test data and put it in an array
+			# for each kpi_id, get all kpi_test data for the active tests and put it in an array
 			$rds = $db->doQuery("SELECT * FROM kpi_tests WHERE kpi_id=%s", $obj->kpi_id);
 					while($obj_three = mysql_fetch_object($rds)) {
 
 						$test_is_active = $db->doQueryOne("SELECT is_active FROM user_tests WHERE user_id=%s AND kpi_id = %s AND goal_id = %s AND test_id = %s", $userID, $obj->kpi_id, $goalID, $obj_three->id);
 						if(!empty($test_is_active)){
 							$test_active = '1';
+							$obj_three->active = $test_active;						
+							$tests[] = $obj_three;
 						}else{
 							$test_active = '0';
 						}
 						
-						$obj_three->active = $test_active;						
-						$tests[] = $obj_three;
-					
 					}
 			$kpi_obj = new stdClass;
 			$kpi_obj->id = $kpi_id;
