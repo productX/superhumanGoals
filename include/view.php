@@ -784,7 +784,7 @@ class WebView extends BaseView {
 		$k = 0;
 		for($i=0; $i<count($colContents); ++$i) {
 			if(isset($colContents[$i])) {
-				echo "<div><ul>";
+				echo "<div>";
 				foreach($colContents[$i] as $goal) {
 					$userHasGoal = GoalStatus::doesUserHaveGoal($user->id, $goal->id);
 					if($userHasGoal){
@@ -792,8 +792,7 @@ class WebView extends BaseView {
 					$numAdopters = $goal->getNumAdopters();					
 					
 					?>
-					<li class="goal_list" id="goalEntry<?php echo $k; ?>"><a href=<?php echo $pagePath;?>><?php echo htmlspecialchars($goal->name); ?></a> (<span id="numAdopters<?php echo $k;?>"><?php echo $numAdopters;?></span>)
-					
+					<div class="goal_list" id="goalEntry<?php echo $k; ?>"><a href=<?php echo $pagePath;?>><?php echo htmlspecialchars($goal->name); ?></a> (<span id="numAdopters<?php echo $k;?>"><?php echo $numAdopters;?></span>)
 					<?php 		
 					if($userHasGoal){?>
 					<a style="color: #999; text-decoration:none;" class="deactivate" id="deactivate<?php echo $k;?>" onclick="modifySpecificGoal('remove', <?php echo $goal->id; ?>, <?php echo $numAdopters; ?>, <?php echo $k; ?>, '<?php echo $goal->name; ?>')">remove</a>
@@ -805,12 +804,12 @@ class WebView extends BaseView {
 					}
 					
 					?>
-					</li>
+					</div>
 
 					<?php
 					$k = $k+1;
 				}}
-				echo "</ul></div>";
+				echo "</div>";
 				
 			}
 		}
@@ -823,7 +822,7 @@ class WebView extends BaseView {
 		<?php
 		for($i=0; $i<count($colContents); ++$i) {
 			if(isset($colContents[$i])) {
-				echo "<div><ul>";
+				echo "<div>";
 				foreach($colContents[$i] as $goal) {
 					$userHasGoal = GoalStatus::doesUserHaveGoal($user->id, $goal->id);
 					if(!$userHasGoal){
@@ -831,7 +830,7 @@ class WebView extends BaseView {
 					$numAdopters = $goal->getNumAdopters();					
 					
 					?>
-					<li class="goal_list" id="goalEntry<?php echo $k; ?>"><a href=<?php echo $pagePath;?>><?php echo htmlspecialchars($goal->name); ?></a> (<span id="numAdopters<?php echo $k;?>"><?php echo $numAdopters;?></span>)
+					<div class="goal_list" id="goalEntry<?php echo $k; ?>"><a href=<?php echo $pagePath;?>><?php echo htmlspecialchars($goal->name); ?></a> (<span id="numAdopters<?php echo $k;?>"><?php echo $numAdopters;?></span>)
 					
 					<a style="color: #999; text-decoration:none;" class="deactivate" id="deactivate<?php echo $k;?>" onclick="modifySpecificGoal('remove', <?php echo $goal->id; ?>, <?php echo $numAdopters; ?>, <?php echo $k; ?>, '<?php echo $goal->name; ?>')">remove</a>
 					<?php
@@ -842,12 +841,12 @@ class WebView extends BaseView {
 					}
 					
 					?>
-					</li>
+					</div>
 
 					<?php
 					$k = $k+1;
 				}}
-				echo "</ul></div>";
+				echo "</div>";
 				
 			}
 		}
@@ -1309,22 +1308,51 @@ Is it really that hard to figure out? :P
 					var new_strategy_name = $("#newStrategyName" + strategy_id).attr("value");
 				}else if(type == 'remove'){
 					var cur_name = $("#curElementText" + strategy_id).html();
+				    var answer = confirm('Remove "' + cur_name + '"?');
+				    
+				    
+				}else if((type == 'create') && (strategy_type == 'todo')){
+					var new_strategy_name = $("#newToDoName" + goal_id).attr("value"); 
+					var new_strategy_description = $("#newToDoDescription" + goal_id).attr("value");
+				}else if((type == 'create') && (strategy_type == 'tactic')){
+					var new_strategy_name = $("#newTacticName" + goal_id).attr("value"); 
+					var new_strategy_description = $("#newTacticDescription" + goal_id).attr("value");
 				}
 
-			    var answer = confirm('Remove "' + cur_name + '"?');
-
-    			if (answer){
-				
+			
+    			if ( ( answer ) || ( type == 'create') ) {				
 				    $.ajax({  
 				        type: "POST", 
 				        url: '<?php echo $ajaxModifyStrategy; ?>', 
-				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&newStrategyName="+ new_strategy_name+"&type="+ type+"&strategyType="+ strategy_type,
+				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&newStrategyName="+ new_strategy_name+"&newStrategyDescription="+ new_strategy_description+"&type="+ type+"&strategyType="+ strategy_type,
 				        dataType: "html",
-				        complete: function(data){
-				            $("#ratingBox").html(data.responseText);  
-				        }  
+				        complete: function(data){				        
+							var val = data.responseText;       	
+							new_strategy_id = val;
+
+							if( (strategy_type == 'todo') && (type == 'create') ){
+								var newTodohtml = "<label for='testCheck"+new_strategy_id+"' style='float:left;'><input type='checkbox' value='Check' id='testCheck"+new_strategy_id+"' onclick='modifyStrategy("+new_strategy_id+","+goal_id+", &quot;completed&quot;, &quot;"+strategy_type+"&quot;)' /></label><div class='todo_label' id='strategyBox"+new_strategy_id+"'><div style='display:none;' id='element"+new_strategy_id+"'> <input id='newStrategyName"+new_strategy_id+"' type='text' value='"+new_strategy_name+"' style='width:375px; font-size:13px; color:#666;'/><button onclick='modifyStrategy("+new_strategy_id+","+goal_id+", &quot;edit&quot;, &quot;"+strategy_type+"&quot;)'>submit</button><button  onclick='editElement("+new_strategy_id+",0)'>cancel</button></div><span style='' id='curElementText"+new_strategy_id+"'>"+new_strategy_name+"</span><span class='editLink' id='editButton"+new_strategy_id+"' onclick='editElement("+new_strategy_id+",1)'> edit</span><span class='editLink' style='float:right;' id='removeButton"+new_strategy_id+"' onclick='modifyStrategy("+new_strategy_id+","+goal_id+", &quot;remove&quot;, &quot;"+strategy_type+"&quot;)'>x</span></div><div class='cl'>&nbsp;</div>";
+
+							 	$("#new_todo_place"+goal_id).prepend(newTodohtml);
+							 	$("#todo-lightbox-panel"+goal_id).hide();
+							 	$("#no_todo_elements"+goal_id).hide();							
+							}else if( (strategy_type == 'tactic') && (type == 'create') ){						
+							
+								var newTactichtml = "<div class='tactic_label' id='strategyBox"+new_strategy_id+"'><li><div style='display:none;' id='element"+new_strategy_id+"'><input id='newStrategyName"+new_strategy_id+"' type='text' value='"+new_strategy_name+"' style='width:375px; font-size:13px; color:#666;'/><button onclick='modifyStrategy("+new_strategy_id+","+goal_id+", &quot;edit&quot;, &quot;"+strategy_type+"&quot;)'>submit</button><button  onclick='editElement("+new_strategy_id+",0)'>cancel</button></div><span id='curElementText"+new_strategy_id+"'>"+new_strategy_name+"</span><span class='editLink' id='editButton"+new_strategy_id+">' onclick='editElement("+new_strategy_id+",1)'> edit</span><span class='editLink' style='float:right;' id='removeButton"+new_strategy_id+"' onclick='modifyStrategy("+new_strategy_id+","+goal_id+", &quot;remove&quot;, &quot;"+strategy_type+"&quot;)'>x</span></li></div><div class='cl'>&nbsp;</div>";
+
+							 	$("#new_tactic_place"+goal_id).prepend(newTactichtml);
+							 	$("#tactic-lightbox-panel"+goal_id).hide();
+							 	$("#no_tactic_elements"+goal_id).hide();							
+				        	}  
+				       }  
 				    });
 				}
+							
+							
+							
+							
+							
+							
 							 
 				 if(type == 'edit'){
 					$("#element"+strategy_id).hide();	
@@ -1339,10 +1367,12 @@ Is it really that hard to figure out? :P
 				 	}
 				 }else if (type == 'remove'){
     				if (answer){
+    				
 				 		$("#strategyBox"+strategy_id).hide();
 				 		if(strategy_type == 'todo'){
 				 			$("#testCheck"+strategy_id).hide();
 						}
+						
 				 	}
 				 }
 			}
@@ -1370,19 +1400,59 @@ Is it really that hard to figure out? :P
 				}else if(type == 'remove'){
 					var cur_kpi_name = $("#curKPIElementText" + kpi_id).html();
 				    var answer = confirm('Remove "' + cur_kpi_name + '"?');
+				}else if(type == 'create'){
+					var new_kpi_name = $("#newKPIName" + goal_id).attr("value"); 
+					var new_kpi_description = $("#newKPIDescription" + goal_id).attr("value");
+					var new_kpi_test_name = $("#newKPITestName" + goal_id).attr("value");
+					var new_kpi_test_description = $("#newKPITestDescription" + goal_id).attr("value"); 
+					var new_kpi_test_frequency = $("#newKPITestFrequency" + goal_id).attr("value"); 
 				}
 
-				if( ( ( type == 'edit' ) && ( new_kpi_name != '' ) ) || ( ( type = 'remove') && (answer)) ) {
+				if((( type == 'edit' ) && ( new_kpi_name != '' ))){
+					var go = true;
+				}else if(((type == 'remove') && (answer))){
+					var go = true;
+				}else if(type == 'create') {
+					if(new_kpi_name != ''){
+						var go = true;
+					}else{
+						alert('Please enter a Measure/Milestone name');
+					}
+				}
+				
+				if(go){
 				    $.ajax({  
 				        type: "POST", 
 				        url: '<?php echo $ajaxModifyKPI; ?>', 
-				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&kpiID="+ kpi_id+"&newKPIName="+ new_kpi_name+"&type="+ type+"&newKPITestName="+ new_kpi_test_name+"&testID="+ test_id,
+				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&kpiID="+ kpi_id+"&newKPIName="+ new_kpi_name+"&type="+ type+"&newKPITestName="+ new_kpi_test_name+"&newKPIDescription="+ new_kpi_description+"&newKPITestDescription="+ new_kpi_test_description+"&newKPITestFrequency="+ new_kpi_test_frequency+"&testID="+ test_id,
 				        dataType: "html",
 				        complete: function(data){
-				            $("#ratingBox").html(data.responseText);  
+							var val = jQuery.parseJSON(data.responseText);  
+
+				        	// Get the new KPI id
+				        	var kpi_id = val[0];
+				        	// Get the new Test id
+				        	var kpi_test_id = val[1];
+				        	
+						 	if(new_kpi_test_name != ''){
+						 		var display = '';
+						 		var name_text = " (" + new_kpi_test_name + ")";
+						 	}else{
+						 		var display = 'none';
+						 	}
+						 	
+						 	// create the html for the new KPI and insert it into the html 
+							var newKPIhtml = "<label for='testKPICheck"+kpi_id+"' style='float:left;'><input onclick='modifyKPI("+kpi_id+","+goal_id+", &quot;completed&quot;,&quot;&quot;)' type='checkbox' value='Check' id='testKPICheck"+kpi_id+"' onclick='' /></label><div class='kpi_label' id='kpiBox"+kpi_id+"'><div style='display:none;' id='KPIElement"+kpi_id+"'> Name: <input id='newKPIName"+kpi_id+"' type='text' value='"+new_kpi_name+"' style='width:275px; font-size:13px; color:#666;'/> Test: <input id='newKPITestName"+kpi_id+"' type='text' value='"+new_kpi_test_name+"' style='width:145px; font-size:13px; color:#666;'/><button onclick='modifyKPI("+kpi_id+","+goal_id+", 'edit', "+ kpi_test_id +")'>submit</button><button  onclick='editKPIElement("+kpi_id+",0)'>cancel</button></div> <span style='' id='curKPIElementText"+kpi_id+"'>"+new_kpi_name+"</span><span style='display:'"+display+"' id='curKPITestText"+kpi_id+"'>"+name_text+"</span><span class='editLink' id='editKPIButton"+kpi_id+"' onclick='editKPIElement("+kpi_id+",1)'> edit</span><span class='editLink' style='float:right;' id='removeKPIButton"+kpi_id+"' onclick='modifyKPI("+kpi_id+","+goal_id+", &quot;remove&quot;,&quot;&quot;)'>x</span></div><div class='cl'>&nbsp;</div>";
+						 	
+						 	$("#new_kpi_place"+goal_id).prepend(newKPIhtml);
+						 	$("#kpi-lightbox-panel"+goal_id).hide();
+						 	$("#no_kpi_elements"+goal_id).hide();
+						 	
+						 	
 				        }  
 				    });
 			 	}
+
 
 				 if(type == 'edit'){
 					$("#KPIElement"+kpi_id).hide();	
@@ -1408,9 +1478,7 @@ Is it really that hard to figure out? :P
 				 		$("#testKPICheck"+kpi_id).hide();
 				 		$("#kpiBox"+kpi_id).hide();
 				 	}
-				 }
-				 
-				 
+				 }		 
 			}
 			
 			function editKPIElement(element_id, status){
@@ -1469,12 +1537,12 @@ Is it really that hard to figure out? :P
 							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->id; ?>,'tactic')">X</a>
 								<div class="newscore-row">
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->name);?> Tactic</div>
-									<div class="new_tactic">Tactic Name: <input type="text" class="text_input" id="newStrategyName<?php echo $goal->id;?>"  /></div>
-									<div class="new_tactic">Tactic Description: <input type="text" class="text_input" id="newStrategyDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</span></div><br/>
+									<div class="new_tactic">Tactic Name: <input type="text" class="text_input" id="newTacticName<?php echo $goal->id;?>"  /></div>
+									<div class="new_tactic">Tactic Description: <input type="text" class="text_input" id="newTacticDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</span></div><br/>
 									<div class="cl">&nbsp;</div>
 								</div>
 								<div class="cl">&nbsp;</div>
-								<center><button type="submit" value="submit" onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->id; ?>, <?php echo $goalstatus->level; ?>)">submit</button></center>
+								<center><button type="submit" value="submit" onclick="modifyStrategy('', <?php echo $goal->id; ?>, 'create','tactic')">submit</button></center>
 							</div><!-- /lightbox-panel -->						
 							<div class="lightbox" id="lightbox<?php echo $goal->id; ?>"> </div><!-- /lightbox -->
 
@@ -1484,12 +1552,12 @@ Is it really that hard to figure out? :P
 							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->id; ?>,'todo')">X</a>
 								<div class="newscore-row">
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->name);?> ToDo</div>
-									<div class="new_tactic">Todo Name: <input type="text" class="text_input" id="newStrategyName<?php echo $goal->id;?>"  /></div>
-									<div class="new_tactic">Todo Description: </span><input type="text" class="text_input" id="newStrategyDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</div>
+									<div class="new_tactic">Todo Name: <input type="text" class="text_input" id="newToDoName<?php echo $goal->id;?>"  /></div>
+									<div class="new_tactic">Todo Description: </span><input type="text" class="text_input" id="newToDoDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</div>
 									<div class="cl">&nbsp;</div>
 								</div>
 								<div class="cl">&nbsp;</div>
-								<center><button type="submit" value="submit" onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->id; ?>, <?php echo $goalstatus->level; ?>)">submit</button></center>
+								<center><button type="submit" value="submit" onclick="modifyStrategy('', <?php echo $goal->id; ?>, 'create','todo')">submit</button></center>
 							</div><!-- /lightbox-panel -->						
 							<div class="lightbox" id="lightbox<?php echo $goal->id; ?>"> </div><!-- /lightbox -->
 
@@ -1500,12 +1568,13 @@ Is it really that hard to figure out? :P
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->name);?> Measure / Milestone</div>
 									<div class="new_tactic">KPI Name: <input type="text" class="text_input" id="newKPIName<?php echo $goal->id;?>"  /></div>
 									<div class="new_tactic">KPI Description: </span><input type="text" class="text_input" id="newKPIDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</div>
-									<div class="new_tactic">Test Name: <input type="text" class="text_input" id="newKPITestName<?php echo $goal->id;?>"  /></div>
+									<div class="new_tactic">Test Name: <input type="text" class="text_input" id="newKPITestName<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</span></div>
 									<div class="new_tactic">Test Description: </span><input type="text" class="text_input" id="newKPITestDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</div>
+									<div class="new_tactic">Test Frequency: </span><input type="text" class="text_input" id="newKPITestFrequency<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</div>
 									<div class="cl">&nbsp;</div>
 								</div>
 								<div class="cl">&nbsp;</div>
-								<center><button type="submit" value="submit" onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->id; ?>, <?php echo $goalstatus->level; ?>)">submit</button></center>
+								<center><button type="submit" value="submit" onclick="modifyKPI(0, <?php echo $goal->id; ?>, 'create',0)">submit</button></center>
 							</div><!-- /lightbox-panel -->						
 							<div class="lightbox" id="lightbox<?php echo $goal->id; ?>"> </div><!-- /lightbox -->
 
@@ -1519,7 +1588,7 @@ Is it really that hard to figure out? :P
 						
 		<!-- Tactics start here -->	
 			<div class="user_page_items">
-				<span class="user_page_sub_title"> Tactics </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'tactic')" href="#">+</a><br/>
+				<span class="user_page_sub_title"> Tactics </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'tactic')" href="#">+</a><br/><div id="new_tactic_place<?php echo GPC::strToPrintable($goal->id);?>"></div>
 		<?php if(!empty($dailytests)){?>
 						<ul style="list-style-type:square;">
 <?php				$isToDo = 0;
@@ -1546,23 +1615,18 @@ Is it really that hard to figure out? :P
 					}
 					?></ul> <?php
 					if($isToDo == 0){
-						echo "<span class='no_elements'> Adopt some Tactics here.</span>";
+						echo "<span class='no_tactic_elements' id='no_tactic_elements" . $goal->id . "'>  Adopt some Tactics here.</span>";
 					}
 					?>
 			<?php }else{
-					echo "<span class='no_elements'> Adopt some Tactics here.</span>";
+					echo "<span class='no_tactic_elements' id='no_tactic_elements" . $goal->id . "'> Adopt some Tactics here.</span>";
 			}?>
 			</div>		
 
 
-
-
-
-
 		<!-- TODOS start here -->
 		<div class="user_page_items">
-			<span class="user_page_sub_title"> ToDos </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'todo')" href="#">+</a><br/>
-
+			<span class="user_page_sub_title"> ToDos </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'todo')" href="#">+</a><br/><div id="new_todo_place<?php echo GPC::strToPrintable($goal->id);?>"></div>
 		<?php 				
 				if(!empty($dailytests)){?>
 <?php				$isToDo = 0;
@@ -1571,13 +1635,11 @@ Is it really that hard to figure out? :P
 						if($dailytest->strategy_type == 'todo'){
 							$isToDo = 1;
 							$checkedVal = Dailytest::getCompletedStatus($user->id, $dailytest->id)?"checked":"";
-
 							if($checkedVal == "checked"){
 								$strikethrough = "text-decoration: line-through;";
 							}else{
 								$strikethrough = "";
 							}
-
 							if($isEditable) {
 				?>
 									<label for="testCheck<?php echo $dailytest->id;?>" style="float:left;">
@@ -1585,7 +1647,6 @@ Is it really that hard to figure out? :P
 									</label>
 				<?php
 							}?>
-							
 							<div class="todo_label" id="strategyBox<?php echo $dailytest->id;?>">
 									<div style="display:none;" id="element<?php echo $dailytest->id;?>"> 
 										<input id="newStrategyName<?php echo $dailytest->id;?>" type="text" value="<?php echo GPC::strToPrintable($dailytest->name);?>" style="width:375px; font-size:13px; color:#666;"/>
@@ -1598,41 +1659,29 @@ Is it really that hard to figure out? :P
 <?php					}
 					}
 					if($isToDo == 0){
-						echo "<span class='no_elements'> Adopt some ToDos here.</span>";
+						echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->id . "'> Adopt some ToDos here.</span>";
 					}?>
 			<?php }else{
-					echo "<span class='no_elements'> Adopt some ToDos here.</span>";
+					echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->id . "'> Adopt some ToDos here.</span>";
 			}?>			
 		</div>		
 
 
 
-
-
-
 		<!-- KPIS start here -->
 					<div class="user_page_items">
-						<span class="user_page_sub_title"> Measurements and Milestones </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'kpi')" href="#">+</a><br/>
-		<?php if(!empty($kpis)){
-				
+						<span class="user_page_sub_title"> Measurements and Milestones </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'kpi')" href="#">+</a><br/><div id="new_kpi_place<?php echo GPC::strToPrintable($goal->id);?>"></div>
+		<?php 
+			 $kpi_active = 0;
+			 if(!empty($kpis)){
 					foreach($kpis as $kpi) {	
-						if($kpi->kpi_active == 1){						
-/*					echo "<pre>";
-					print_r($kpi);
-					echo "</pre>";
-*/
-						?>
-
-						<?php			
-							if($isEditable) {
-				?>
+						if($kpi->kpi_active == 1){
+							$kpi_active = 1;						
+							if($isEditable) {?>
 									<label for="testKPICheck<?php echo $kpi->id;?>" style="float:left;">
 										<input onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->id;?>, 'completed','')" type="checkbox" value="Check" id="testKPICheck<?php echo $kpi->id;?>" <?php echo $checkedVal; ?> onclick="" />
 									</label>
-				<?php
-							}
-?>
-
+						<?php } ?>
 							<div class="kpi_label" id="kpiBox<?php echo $kpi->id;?>">
 									<div style="display:none;" id="KPIElement<?php echo $kpi->id;?>"> 
 										Name: <input id="newKPIName<?php echo $kpi->id;?>" type="text" value="<?php echo GPC::strToPrintable($kpi->kpi_name);?>" style="width:275px; font-size:13px; color:#666;"/> Test: <input id="newKPITestName<?php echo $kpi->id;?>" type="text" value="<?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo $kpi->kpi_tests[0]->test_name;}?>" style="width:145px; font-size:13px; color:#666;"/>
@@ -1647,45 +1696,35 @@ Is it really that hard to figure out? :P
 									}
 
 									?><span style='display:'<?php echo $isTest;?>' id='curKPITestText<?php echo $kpi->id;?>'><?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo "("; echo $kpi->kpi_tests[0]->test_name; echo ")"; } ?></span>
-
-
 									<span class="editLink" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->id;?>, 'remove','')">x</span>
 							</div>
-
-
-
-
 							<div class="cl">&nbsp;</div>
 <?php					
 						}
 					}
 					?>
-			<?php }else{
-						echo "<span class='no_elements'> Adopt some Measurements and Milestones here.</span>";
+			<?php }
+			if($kpi_active == 0){
+						echo "<span class='no_kpi_elements' id='no_kpi_elements" . $goal->id . "'> Adopt some Measurements and Milestones here.</span>";
 			}
 			?>
 					</div>		
-
-
-							
-							
-							
-							
-							
-							
-							
-							
-							
-							
-						</div>
-
+				</div>
 						<!-- End Box -->
 <?php
-		
-		
 		}
-
 	}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		
 	public function printGoalPage($goalID) {
 		global $db, $user;

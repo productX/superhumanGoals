@@ -18,7 +18,8 @@ if(isset($_POST["newGoalName"])) {
 			$strategyName = $_POST["dailytestName".($i+1)];
 			$strategyDescription = $_POST["dailytestDescription".($i+1)];
 			$strategyType = $_POST["dailytestType".($i+1)];
-			if($strategyName!="") {
+			
+			if($strategyName != ''){
 				Dailytest::createNew($newID, $strategyName, $strategyDescription, $strategyType, $user->id);
 			}
 		}
@@ -33,7 +34,7 @@ if(isset($_POST["newGoalName"])) {
 			$kpiTestFrequency = $_POST["kpiTestFrequency".($i+1)];
 			if($kpiName!="") {
 
-				KPI::createNew($newID, $kpiName, $kpiDescription, $kpiTestDescription, $kpiTestName, $kpiTestFrequency, $user->id);
+				//KPI::createNew($newID, $kpiName, $kpiDescription, $kpiTestDescription, $kpiTestName, $kpiTestFrequency, $user->id);
 			}
 		}
 	}

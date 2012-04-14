@@ -639,7 +639,7 @@ class Dailytest {
 	// public
 	public static function createNew($goalID, $name, $description, $type, $userID) {
 		global $db;
-		
+		echo "INSERT INTO strategies (goal_id, name, description, strategy_type, created_by, date_created) VALUES ($goalID, $name, $description, $type, $userID, NOW())";
 		if(empty($description)){ $description = ''; }		
 		$db->doQuery("INSERT INTO strategies (goal_id, name, description, strategy_type, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW())", $goalID, $name, $description, $type, $userID);
 		

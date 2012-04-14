@@ -260,12 +260,14 @@ background: url(images/check.png) no-repeat 0 0; }
 .todo_label {color:#444; line-height:15px; float:left; font-size:12px; margin-right: 5px; padding:0px 2px 4px 5px; max-heigh:31px; min-height:31px; min-width:735px;}
 .user_page_items { margin-top:15px; padding:10px; background: #fbfbfb; border: 2px dotted #e2e2e2;}
 .user_page_sub_title { font-size:15px; color: #777; margin-bottom:5px; display: inline-block;}
-.no_elements {  font-size:13px; color: #999; display: inline-block; }
+.no_todo_elements {  font-size:13px; color: #999; display: inline-block; }
+.no_tactic_elements {  font-size:13px; color: #999; display: inline-block; }
+.no_kpi_elements {  font-size:13px; color: #999; display: inline-block; }
 .editLink { font-size:11px; color: #999;}
-.goals_section { border: 1px solid #999; min-height:200px; margin-bottom: 10px; margin-left:30px; max-width:670px; margin-top: 10px; box-shadow: 2px 2px 2px #888; background: #f6f6f6;}
-.other_goals_section { border: 1px solid #fff; min-height:200px; margin-bottom: 10px; margin-left:30px; max-width:670px; margin-top: 10px; background: #fff;}
+.goals_section { border: 1px solid #999; min-height:200px; margin-bottom: 25px; margin-left:30px; max-width:750px; margin-top: 25px; box-shadow: 2px 2px 2px #888; background: #f6f6f6;}
+.other_goals_section { border: 1px solid #fff; min-height:200px; margin-bottom: 10px; margin-left:30px; max-width:750px; margin-top: 10px; background: #fff;}
 
-.goal_list { margin-left:20px; margin-right: 5px; float:left; min-width:195px;}
+.goal_list { margin-left:20px; margin-right: 5px; float:left; min-width:195px; min-width:225px; max-width:225px; font-size:15px;}
 
 .all_strategies { background: #FAFAFA; float:left; overflow:auto; max-height:400px; width: 678px; margin-bottom:30px; border: 1px solid #E8E8E8; padding: 5px;}
 .strategy_headings { float:left;}
