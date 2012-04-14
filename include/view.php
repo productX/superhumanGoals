@@ -2816,8 +2816,8 @@ class MobileView extends BaseView {
 <?php
 		// build list of links for each letter in right-aligned letter map
 		$links = null;
+		$baseASCIIVal = 65;
 		if(count($uniqueLastNameLetters)) {
-			$baseASCIIVal = 65;
 			$lnOrds = array();
 			foreach($uniqueLastNameLetters as $val) {
 				$lnOrds[] = ord($val)-$baseASCIIVal;
