@@ -639,11 +639,12 @@ class Dailytest {
 	// public
 	public static function createNew($goalID, $name, $description, $type, $userID) {
 		global $db;
-		echo "INSERT INTO strategies (goal_id, name, description, strategy_type, created_by, date_created) VALUES ($goalID, $name, $description, $type, $userID, NOW())";
+
 		if(empty($description)){ $description = ''; }		
 		$db->doQuery("INSERT INTO strategies (goal_id, name, description, strategy_type, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW())", $goalID, $name, $description, $type, $userID);
 		
 		$newID = mysql_insert_id();
+		
 		return $newID;
 	}
 
@@ -725,11 +726,17 @@ class Dailytest {
 		
 	}	
 
-	public static function getListFromGoalID($goalID,$userID) {
+	public static function getListFromUserIDGoalID($goalID,$userID,$type) {
 		global $db;
 
 		// This is actually getting the list of strategies that are active for a user
+		
+		if($type == 'user'){
 		$rs = $db->doQuery("SELECT strategies.id, strategies.goal_id, strategies.name, strategies.description, strategies.strategy_type, strategies.created_by, strategies.date_created FROM strategies, user_strategies WHERE strategies.goal_id=%s AND strategies.goal_id = user_strategies.goal_id AND user_strategies.user_id = %s AND strategies.id = user_strategies.strategy_id AND user_strategies.is_active = 1", $goalID, $userID );
+		}elseif($type == 'adoptable'){
+		$rs = $db->doQuery("SELECT * FROM strategies WHERE goal_id = %s AND id NOT IN (SELECT strategy_id FROM user_strategies WHERE user_id = %s AND goal_id = %s AND is_active = 1); ", $goalID, $userID, $goalID );
+		}
+		
 		$list = array();
 		$obj = null;
 		
@@ -750,7 +757,6 @@ class Dailytest {
 
 		return $list;
 	}
-	
 	
 	// &&&&&&
 	public function __construct($dbData) {
@@ -995,6 +1001,9 @@ class KPI {
 	
 		return $list;
 	}
+
+
+
 	
 	public function __construct($dbData) {
 		$this->id = $dbData->id;
