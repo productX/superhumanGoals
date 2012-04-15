@@ -431,7 +431,18 @@ class WebView extends BaseView {
 		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery.mousewheel.js" type="text/javascript"></script>
 		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery.fileinput.js" type="text/javascript"></script>
 		<script src="<?php echo BASEPATH_UI;?>/web/js/functions.js" type="text/javascript"></script>
-		<script type="text/javascript"> $(document).ready(function() { autoHeightContainer(); }) </script>
+		<script type="text/javascript">
+			$(document).ready(function() { autoHeightContainer(); })
+		</script>
+		<!-- USERVOICE -->
+		<script type="text/javascript">
+			var uvOptions = {};
+			(function() {
+				var uv = document.createElement('script'); uv.type = 'text/javascript'; uv.async = true;
+				uv.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'widget.uservoice.com/79l8TjaTAxyl1MaLK0VWMQ.js';
+				var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(uv, s);
+			})();
+		</script>
 	</head>
 
 	<body>
@@ -855,55 +866,60 @@ class WebView extends BaseView {
 		?>
 		</div>
 		
-		
-								<div class="cl">&nbsp;</div>
-								</div>
-								<!-- End Cols -->
-								<?php if($user->permissions == 1){?>
-								<div class="form">
-									<p> Add new goals:</p>
-									<form action="<?php echo PAGE_GOALS;?>" method="post" name="goalForm">
-										<label for="name">Goal Name:</label>
-										<input type="text" class="field" value="" id="newGoalName" name="newGoalName" />
-										<div class="cl">&nbsp;</div>
-										<label for="description">Description:</label>
-										<textarea id="newGoalDescription" name="newGoalDescription" rows="2" cols="40"></textarea>
-										<div class="cl">&nbsp;</div>
-		
-										<script type="text/javascript">
-											var numDailytests = 0;
-											var numkpis = 0;
-																				
-											function addKPI(postedTo) {
-												document.goalForm.numkpis=++numkpis;
-												var newKPI = "<label class='small-label'>KPI "+numkpis+":</label><input type='text' class='small-field' name='kpiName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='kpiDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Name:</label><input type='text' class='small-field' name='kpiTestName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Test Description:</label><input type='text' class='small-field' name='kpiTestDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Frequency (in days):</label><input type='text' class='small-field' name='kpiTestFrequency"+numkpis+"' /><div class='cl'>&nbsp;</div><br/>";
-												$("#kpis").append(newKPI);
-												$("#numkpis").attr('value',numkpis);
-											}
-											
-											function addDailytest(postedTo) {
-												document.goalForm.numDailytests=++numDailytests;
-												var newStrategy = "<label class='small-label'>Strategy "+numDailytests+":</label><input type='text' class='small-field' name='dailytestName"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='dailytestDescription"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Type:</label><select name='dailytestType"+numDailytests+"'><option value='adherence'>Habit</option><option value='todo'>ToDo</option><option value='tactic'>Tactic</option></select><div class='cl'>&nbsp;</div>";
+		<div class="cl">&nbsp;</div>
+	</div>
+	<!-- End Cols -->
+	<?php if($user->permissions == 1){?>
+	<div class="form">
+		<p> Add new goals:</p>
+		<form action="<?php echo PAGE_GOALS;?>" method="post" name="goalForm">
+			<label for="name">Goal Name:</label>
+			<input type="text" class="field" value="" id="newGoalName" name="newGoalName" />
+			<div class="cl">&nbsp;</div>
+			<label for="description">Description:</label>
+			<textarea id="newGoalDescription" name="newGoalDescription" rows="2" cols="40"></textarea>
+			<div class="cl">&nbsp;</div>
 
-												$("#dailytests").append(newStrategy);
-												$("#numDailytests").attr('value',numDailytests);
-											}
-										</script>
-										<div id="kpis"></div>								
-										<div id="dailytests"></div>
-		
-										<input type="button" value="Add KPI" onclick="addKPI();" class="small-add-btn"/>
-										<input type="hidden" name="numkpis" id="numkpis" value="0" />
-		
-										<input type="button" value="Add Strategy" onclick="addDailytest();" class="small-add-btn"/>
-										<input type="hidden" name="numDailytests" id="numDailytests" value="0" />
-										<div class="cl" style="height:5px;">&nbsp;</div>
-										<input type="submit" value="Add Goal &raquo;" class="add-btn" />
-									</form>
-									<?php } ?>
-								</div>
-							</div>
-							<!-- End Case -->
+			<script type="text/javascript">
+				var numDailytests = 0;
+				var numkpis = 0;
+													
+				function addKPI(postedTo) {
+					document.goalForm.numkpis=++numkpis;
+					var newKPI = "<label class='small-label'>KPI "+numkpis+":</label><input type='text' class='small-field' name='kpiName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='kpiDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Name:</label><input type='text' class='small-field' name='kpiTestName"+numkpis+"' /><label class='small-label'>&nbsp;&nbsp;Test Description:</label><input type='text' class='small-field' name='kpiTestDescription"+numkpis+"' /><br/><br/><label class='small-label'>&nbsp;&nbsp;Test Frequency (in days):</label><input type='text' class='small-field' name='kpiTestFrequency"+numkpis+"' /><div class='cl'>&nbsp;</div><br/>";
+					$("#kpis").append(newKPI);
+					$("#numkpis").attr('value',numkpis);
+				}
+				
+				function addDailytest(postedTo) {
+					document.goalForm.numDailytests=++numDailytests;
+					var newStrategy = "<label class='small-label'>Strategy "+numDailytests+":</label><input type='text' class='small-field' name='dailytestName"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='dailytestDescription"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Type:</label><select name='dailytestType"+numDailytests+"'><option value='adherence'>Habit</option><option value='todo'>ToDo</option><option value='tactic'>Tactic</option></select><div class='cl'>&nbsp;</div>";
+
+					$("#dailytests").append(newStrategy);
+					$("#numDailytests").attr('value',numDailytests);
+				}
+			</script>
+			<div id="kpis"></div>								
+			<div id="dailytests"></div>
+
+			<input type="button" value="Add KPI" onclick="addKPI();" class="small-add-btn"/>
+			<input type="hidden" name="numkpis" id="numkpis" value="0" />
+
+			<input type="button" value="Add Strategy" onclick="addDailytest();" class="small-add-btn"/>
+			<input type="hidden" name="numDailytests" id="numDailytests" value="0" />
+			<div class="cl" style="height:5px;">&nbsp;</div>
+			<input type="submit" value="Add Goal &raquo;" class="add-btn" />
+		</form>
+	</div>
+<?php	}
+			else {
+?>
+	&nbsp;&nbsp;&nbsp;&nbsp;Don't see your goal here? <a href="http://superhuman.uservoice.com/forums/158093-general">Let us know.</a><br/>
+<?php
+			}
+?>
+</div>
+	<!-- End Case -->
 
 		<?php
 		$this->printFooter(NAVNAME_GOALS);
@@ -1237,7 +1253,6 @@ By winners, for winners.
 
 				// May need to remove 'completed' option
     			if ( ( answer ) || ( type == 'create') || ( type == 'completed') || (type == 'edit' ) ) {				
-
 				    $.ajax({  
 				        type: "POST", 
 				        url: '<?php echo $ajaxModifyStrategy; ?>', 
@@ -1777,6 +1792,7 @@ By winners, for winners.
 
 		// get the ID & determine if user has the goal
 		$userHasGoal = GoalStatus::doesUserHaveGoal($user->id, $goalID);
+
 		$goal = Goal::getFullObjFromGoalID($goalID,$user->id);
 
 		$goal_name = $goal->goal->name;
@@ -2336,29 +2352,6 @@ By winners, for winners.
 			</div>		
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 		<!-- TODOS start here -->
 		<div class="user_page_items">
 			<span class="user_page_sub_title"> ToDos </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->goal->id);?>,'todo')" href="#">+</a><br/><div class="adopted_strategies" id="new_todo_place<?php echo GPC::strToPrintable($goal->goal->id);?>"></div>
@@ -2449,10 +2442,6 @@ By winners, for winners.
 		</div>
 
 
-
-
-
-
 		<!-- Habits start here -->
 		<div class="user_page_items">
 			<span class="user_page_sub_title"> Habits </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->goal->id);?>,'todo')" href="#">+</a><br/><div class="adopted_strategies"  id="new_habit_place<?php echo GPC::strToPrintable($goal->goal->id);?>"></div>
@@ -2539,12 +2528,6 @@ By winners, for winners.
 
 
 
-
-
-
-
-
-
 		<!-- KPIS start here -->
 					<div class="user_page_items">
 						<span class="user_page_sub_title"> Measurements and Milestones </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->goal->id);?>,'kpi')" href="#">+</a><br/><div class="adopted_strategies" id="new_kpi_place<?php echo GPC::strToPrintable($goal->goal->id);?>"></div>
@@ -2587,10 +2570,6 @@ By winners, for winners.
 			}
 			?>
 					</div>		
-				
-				
-				
-				
 				
 				
 					<div class="user_page_items">
@@ -2646,50 +2625,10 @@ By winners, for winners.
 				
 				
 				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
-				
 		<!-- End Box -->		
 		<?php
 				break;
+				
 			case PAGEMODE_ACTIVITY:
 				// only returns event type stories for this goal
 				$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE AND type='".EventStory::STORY_TYPENAME."' AND event_goal_id=%s ORDER BY entered_at DESC LIMIT 100", $goalID);
@@ -2705,16 +2644,14 @@ By winners, for winners.
 				
 				break;
 				
-				
-				
 			case PAGEMODE_PEOPLE:
 				BaseView::userPrintListByGoal($goalID);
-
-
 				break;
+
 			case PAGEMODE_FACTS:
-		
-		?>
+				$numAdopters = $goal->goal->getNumAdopters();
+				$average = $db->doQueryOne("SELECT AVG(level) FROM goals_status WHERE goal_id=$goalID");
+?>
 		<div class="facts">
 			<div class="adopted_desc">
 				<p>
@@ -2722,13 +2659,15 @@ By winners, for winners.
 				<input id="removeDescButton" type="button" value="X" onclick="removeDescription();" class="small-add-btn up-down" style="display:none;"/>
 			</div>
 		
-		
-			<div id="who_else_adopted">		
-				<ul>
-				    <li><p class="res-box"><span><?php echo $numAdopters; ?></span></p><p class="label">People have this goal</p></li>
-				    <li class="last"><p class="res-box"><span><?php echo sprintf("%1.1f",$average); ?></span></p><p class="label">Average level</p></li>
-				</ul>
-				
+			<div class="score" id="who_else_adopted">
+				<br/><br/>
+				<div class="results" style="margin-left:auto; margin-right:auto;">
+					<ul>
+						<li><p class="res-box"><span><?php echo $numAdopters; ?></span></p><p class="label"><a href="<?php echo $goal->goal->getPagePath();?>&t=people">People</a> have this goal</p></li>
+						<li class="last"><p class="res-box"><span><?php echo sprintf("%1.1f",$average); ?></span></p><p class="label">Average level</p></li>
+					</ul>
+				</div>
+				<div class="cl">&nbsp;</div>
 				<div class="five_friends"> 
 					<!-- Insert 5 images of people who are have this goal here prioritizing friends -->
 				</div>
