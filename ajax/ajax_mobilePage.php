@@ -23,10 +23,15 @@ switch($page) {
 		Controller::processGoalPage($goalID);
 		$view->printGoalPageMainDiv($goalID);
 		break;
-	case NAVNAME_USER:
+	case NAVNAME_MYHABITS:
 		$viewUser = null;
 		Controller::processUserPage($viewUser);
-		$view->printUserPageMainDiv($viewUser);
+		$view->printUserPageMainDiv($viewUser, USERPAGEMODE_MYHABITS);
+		break;
+	case NAVNAME_MYGOALS:
+		$viewUser = null;
+		Controller::processUserPage($viewUser);
+		$view->printUserPageMainDiv($viewUser, USERPAGEMODE_MYGOALS);
 		break;
 	default:
 		die("ERROR: invalid page requested");
