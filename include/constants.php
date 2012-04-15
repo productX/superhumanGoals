@@ -25,10 +25,17 @@ const PAGE_AJAX_MOBILE_PAGE = 'ajax/ajax_mobilePage.php';
 // enum for nav elements
 const NAVNAME_NONE = 'none';
 const NAVNAME_ACTIVITY = 'activity';
-const NAVNAME_YOU = 'you';
-const NAVNAME_USER = 'user';
 const NAVNAME_USERS = 'users';
-const NAVNAME_GOALS = 'goals';
 const NAVNAME_GOAL = 'goal';
+const NAVNAME_USER = 'user';
+const NAVNAME_MYHABITS = 'myhabits';
+const NAVNAME_MYGOALS = 'mygoals';
+const NAVNAME_GOALS = 'goals';
+// deprecated?
+const NAVNAME_YOU = 'you';
+
+// user page modes
+const USERPAGEMODE_MYHABITS = 'myhabits';
+const USERPAGEMODE_MYGOALS = 'mygoals';
 
 ?>
