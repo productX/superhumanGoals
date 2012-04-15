@@ -362,7 +362,6 @@ abstract class BaseView {
 			echo "<p><b><font color='white'>ACTIVITY PAGE</font></b></p>";
 			return;
 		}
-
 		$this->printActivityPagePre();
 		$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE ORDER BY entered_at DESC LIMIT 100");
 		$this->storyPrintListForRS($rs);
@@ -609,7 +608,6 @@ class WebView extends BaseView {
 					<!-- Scollarea -->
 					<div class="scrollarea">
 	<?php
-	
 			StatusMessages::printMessages();
 			PerformanceMeter::addTimestamp("Header render done");
 		}
@@ -1776,7 +1774,6 @@ By winners, for winners.
 		while($obj = mysql_fetch_object($rs)) {
 			$goalstatus = GoalStatus::getObjFromDBData($obj);
 		}
-		
 
 		$ajaxModifyGoal = PAGE_AJAX_MODIFY_GOAL;
 		$ajaxModifyKPI = PAGE_AJAX_MODIFY_KPI;
@@ -1826,6 +1823,9 @@ By winners, for winners.
 			default:
 				assert(false);
 				break;
+		}
+		if(!$userHasGoal && ($mode==PAGEMODE_EDIT)) {
+			$mode = PAGEMODE_FACTS;
 		}
 				
 		$this->printHeader(NAVNAME_GOALS, array(

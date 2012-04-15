@@ -101,7 +101,7 @@ function appAuthGetUserForAuthID($lastAuthClientUserID) {
 }
 
 function appAuthCreateNewUser($lastAuthClientUserID, $authClientUserData) {
-	User::createNewForSignup($lastAuthClientUserID, $authClientUserData);
+	return User::createNewForSignup($lastAuthClientUserID, $authClientUserData);
 }
 
 const FUNCNAME_HANDLESQLARGOBJ='handleSQLArgObj';

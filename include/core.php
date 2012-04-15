@@ -47,7 +47,6 @@ class User {
 			$authObj = (object)$authArr;			
 			
 			$user = new User($authObj, $sgObj);
-			
 		}
 		if(is_null($user)) {
 			echo "<b>USER OBJ NULL IN getObjFromUserID</b><br/><br/>";
