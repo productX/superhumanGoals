@@ -122,10 +122,10 @@ abstract class BaseView {
 				$eventDivDefaultDisplay = "block";
 			}
 		}
-		static $numDaysBack = 11;
+		static $numDaysBack = 9;
 		
 		//&&&&&& Get all the strategies from the DB
-		$dailytests = Dailytest::getListFromGoalID($goalstatus->goalID,$goalstatus->userID);
+		$dailytests = Dailytest::getListFromUserIDGoalID($goalstatus->goalID,$goalstatus->userID, 'user');
 		
 		// HACK: stash styleArray's in the dailytest objects
 		foreach($dailytests as $dailytest) {
@@ -1114,26 +1114,26 @@ By winners, for winners.
 		$ajaxModifyStrategy = PAGE_AJAX_MODIFY_STRATEGY;
 		$ajaxModifyKPI = PAGE_AJAX_MODIFY_KPI;
 		
-		
 		$noHabitStrategies = 0;
 
-//		echo "<pre>";
-//		print_r($goalstatus);
-//		echo "</pre>";
-//		echo "<pre>";
-//		print_r($dailytests);
-//		echo "</pre>";		
-		
 		if(	(count($dailytests) == 1) && ( $dailytests[0]->strategy_type != 'adherence')){		
 			$noHabitStrategies = 1;
 		}
 		
+		if( empty($_GET['id']) ){
+		      $is_user = true;
+        }elseif ($_GET['id'] != $user->id){
+              $is_user = false;
+        }else{
+              $is_user = true;
+        }
+		
 ?>
 
 <script>
-		//////////////////////////////////////////////////////////////////////////
+		///////////////////////////////////////////////////////////////////////////////
 		// AJAX for modifying (adding/removing/readopting, not creating) a Strategy //
-		////////////////////////////////////////////////////////////////////////
+		/////////////////////////////////////////////////////////////////////////////
 
 		function modifyDailyStrategy(user_id, strategy_id, div_id, date){
 			// Get the status of the particular div that is being called
@@ -1155,6 +1155,11 @@ By winners, for winners.
 		    });  
 		    
 		}
+			
+		//////////////////////////////////////////////////////////////////////////
+		//                         Other JS                                    //
+		////////////////////////////////////////////////////////////////////////
+			
 			
 		function modify_lightbox(display, element_id, type){
 
@@ -1181,6 +1186,12 @@ By winners, for winners.
 				     $("#kpi-lightbox-panel"+element_id).show();
 				}else{
 				     $("#kpi-lightbox-panel"+element_id).hide();
+				}
+			}else if(type == 'habit'){
+				if(display == 1){
+				     $("#habit-lightbox-panel"+element_id).show();
+				}else{
+				     $("#habit-lightbox-panel"+element_id).hide();
 				}
 			}
 
@@ -1216,112 +1227,8 @@ By winners, for winners.
 				$("#eventWhy" + goal_id).attr("value","");
 			});
 		}
-			
 
 
-
-</script>
-<?php 
-				if( ( $type == 'habits') && ( !empty($dailytests)) && ($noHabitStrategies != 1) ) {
-				
-?>						
-				<!-- Box -->
-				<div class="box">
-					<!-- GOAL TITLE & CATEGORY(?) -->
-					<div class="habit_box" >
-						<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')"> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" href="#">+</a>--></div>
-						
-					<!-- Lightbox for issuing Goal Events -->
-					<div class="lightbox-panel" id="lightbox-panel<?php echo $goal->id; ?>" style="display:none;">
-						<a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->id; ?>,'goal')">X</a>
-						<div class="newscore-row">
-									<span class="new_level" style="font-weight:bold;"><?php echo GPC::strToPrintable($goal->name);?> </span><br/>
-									<span class="new_level">New Level:</span><input type="text" class="field" id="eventNewScore<?php echo $goal->id;?>"  />
-							<div class="cl">&nbsp;</div>
-						</div>
-						<div class="grade-row">
-							<span class="new_level">Letter grade:</span>
-							<select name="grade" id="eventLetterGrade<?php echo $goal->id;?>" size="1">
-								<option value="A" >A</option>
-								<option value="B" >B</option>
-								<option value="C" >C</option>
-								<option value="D" >D</option>
-								<option value="F" >F</option>
-							</select>
-						</div>
-						<div class="cl">&nbsp;</div>
-						<textarea name="textarea" style="color:#999; margin-top:5px;" onclick="clearWhy(<?php echo $goal->id;?>)" id="eventWhy<?php echo $goal->id;?>" class="field" rows="4" cols="40">Why?</textarea>
-						<button type="submit" value="submit" onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->id; ?>, <?php echo $goalstatus->level; ?>)">submit</button>
-					</div><!-- /lightbox-panel -->						
-					<div class="lightbox" id="lightbox<?php echo $goal->id; ?>"> </div><!-- /lightbox -->
-						
-					<!-- HABITS -->
-					<div class="tests">
-<?php
-						for($t=0;$t<10;$t++){
-							$today = date("D", strtotime("-".$t." day")); 	
-							$today = (string)$today;
-							if($t == 0){ $margin = '263px; font-size:12px; font-weight:bold';}elseif( $t == 1 ){ $margin = '14px; font-size:14px'; }else{ $margin = '7px; font-size:14px'; }
-							?>
-							
-							<div style="float:left; margin-left:<?php echo $margin; ?>; width:44px;"><center><?php if($t == 0){ echo 'Today';}else{echo $today;}?></center></div>	
-<?php									
-						}
-						?><?php
-
-					foreach($dailytests as $dailytest) {
-					
-						if($dailytest->strategy_type == 'adherence'){
-							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, date("Y-m-d"))?"checked":"";
-							
-	?>
-							<div class="row">
-								<div class="habit_label"><?php echo GPC::strToPrintable($dailytest->name);?></div>
-	<?php
-								if($isEditable) {
-					?>
-														<label for="testCheck<?php echo $dayID; echo $dailytest->id;?>"><input type="checkbox" value="Check" id="testCheck<?php echo $dayID; echo $dailytest->id;?>" <?php echo $checkedVal; ?> onclick="modifyDailyStrategy(<?php echo $user->id; ?>, <?php echo $dailytest->id;?>, <?php echo $dayID; echo $dailytest->id;?>, '<?php echo date("Y-m-d");?>');" /></label>
-					<?php
-									++$dayID;
-								}
-	?>
-								<div class="test-cnt">
-									<div>
-	<?php
-										$r = 1;
-										foreach($dailytest->getStashedStyleArray() as $style) {
-											$date = date("Y-m-d", strtotime("-".$r." day")); 	
-											$date = (string)$date;		
-											$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, $date)?"checked":"";
-							?>
-											<label for="testCheck<?php echo $dayID; echo $dailytest->id;?>"><input type="checkbox" value="Check" id="testCheck<?php echo $dayID; echo $dailytest->id;?>" <?php echo $checkedVal; ?> onclick="modifyDailyStrategy(<?php echo $user->id; ?>, <?php echo $dailytest->id;?>, <?php echo $dayID; echo $dailytest->id;?>, '<?php echo $date;?>');" /></label>
-						<?php				++$dayID;
-											++$r;
-										}?>
-										<div class="cl">&nbsp;</div>
-									</div>
-								</div>
-								<div class="cl">&nbsp;</div>
-							</div>
-<?php					}
-					}?>
-					</div>
-				</div>
-					<div class="cl">&nbsp;</div>
-				</div>
-				<!-- End Box -->
-<?php
-		}elseif($type == 'goals'){
-
-			$kpis = KPI::getListFromGoalID($goal->id, $user->id);
-/*			echo "<pre>";
-			print_r($kpis);
-			echo "</pre>";
-*/
-		
-		?>
-
-			<script>
 			////////////////////////////////////
 			// AJAX for modifying a Strategy //
 			//////////////////////////////////
@@ -1330,6 +1237,7 @@ By winners, for winners.
 			
 				if( type == 'edit' ) {
 					var new_strategy_name = $("#newStrategyName" + strategy_id).attr("value");
+										
 				}else if(type == 'remove'){
 					var cur_name = $("#curElementText" + strategy_id).html();
 				    var answer = confirm('Remove "' + cur_name + '"?');
@@ -1343,11 +1251,12 @@ By winners, for winners.
 					var new_strategy_description = $("#newTacticDescription" + goal_id).attr("value");
 				}
 
-    			if ( ( answer ) || ( type == 'create') || ( type == 'completed') ) {				
+				// May need to remove 'completed' option
+    			if ( ( answer ) || ( type == 'create') || ( type == 'completed') || (type == 'edit' ) ) {				
 				    $.ajax({  
 				        type: "POST", 
 				        url: '<?php echo $ajaxModifyStrategy; ?>', 
-				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&newStrategyName="+ new_strategy_name+"&newStrategyDescription="+ new_strategy_description+"&type="+ type+"&strategyType="+ strategy_type,
+				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&newStrategyName="+ new_strategy_name+"&newStrategyDescription="+ new_strategy_description+"&type="+ type+"&strategyType="+ strategy_type+"&page="+ 0,
 				        dataType: "html",
 				        complete: function(data){				        
 							var val = data.responseText;       	
@@ -1394,7 +1303,8 @@ By winners, for winners.
 				 }
 			}
 			
-								
+
+
 			function editElement(element_id, status){
 				if(status == 1){
 					$("#editButton"+element_id).hide();	
@@ -1512,15 +1422,145 @@ By winners, for winners.
 				}
 			}
 			
-			
-			</script>
 
+
+			
+</script>
+<?php 
+				if( ( $type == 'habits') && ( !empty($dailytests)) && ($noHabitStrategies != 1) ) {
+				
+?>						
+				<!-- Box -->
+				<div class="box">
+					<!-- GOAL TITLE & CATEGORY(?) -->
+					<div class="habit_box" >
+						<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" <?php if($is_user){ ?> onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" <?php } ?>> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" href="#">+</a>--></div>
+						
+					<!-- Lightbox for issuing Goal Events -->
+					<div class="lightbox-panel" id="lightbox-panel<?php echo $goal->id; ?>" style="display:none;">
+						<a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->id; ?>,'goal')">X</a>
+						<div class="newscore-row">
+									<span class="new_level" style="font-weight:bold;"><?php echo GPC::strToPrintable($goal->name);?> </span><br/>
+									<span class="new_level">New Level:</span><input type="text" class="field" id="eventNewScore<?php echo $goal->id;?>"  />
+							<div class="cl">&nbsp;</div>
+						</div>
+						<div class="grade-row">
+							<span class="new_level">Letter grade:</span>
+							<select name="grade" id="eventLetterGrade<?php echo $goal->id;?>" size="1">
+								<option value="A" >A</option>
+								<option value="B" >B</option>
+								<option value="C" >C</option>
+								<option value="D" >D</option>
+								<option value="F" >F</option>
+							</select>
+						</div>
+						<div class="cl">&nbsp;</div>
+						<textarea name="textarea" style="color:#999; margin-top:5px;" onclick="clearWhy(<?php echo $goal->id;?>)" id="eventWhy<?php echo $goal->id;?>" class="field" rows="4" cols="40">Why?</textarea>
+						<button type="submit" value="submit" <?php if($is_user){ ?> onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->id; ?>, <?php echo $goalstatus->level; ?>)" <?php } ?>>submit</button>
+					</div><!-- /lightbox-panel -->						
+					<div class="lightbox" id="lightbox<?php echo $goal->id; ?>"> </div><!-- /lightbox -->
+
+
+					<!-- Lightbox for creating Habits -->
+					<div class="lightbox-panel" id="habit-lightbox-panel<?php echo $goal->id; ?>" style="display:none;">
+					    <a class="close_window" id="close-panel" href="#" <?php if($is_user){ ?>  onclick="modify_lightbox(0, <?php echo $goal->id; ?>,'habit')" <?php } ?>>X</a>
+					    <form method="POST" <?php if($is_user){ ?>  action="../ajax/ajax_modifyStrategy.php" <?php } ?> >
+
+    						<div class="newscore-row">
+    							<div class="new_habit" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->name);?> Habit</div>
+    							<div class="new_habit">Habit Name: <input type="text" class="text_input" name="newStrategyName" id="newStrategyName<?php echo $goal->id;?>"  /></div>
+    							<div class="new_habit">Habit Description: </span><input type="text" class="text_input" name="newStrategyDescription" id="newStrategyDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</div>
+                                <input type="hidden" value="<?php echo $user->id; ?>" name="userID"/>
+                                <input type="hidden" value="<?php echo $goal->id; ?>" name="goalID"/>
+                                <input type="hidden" value="adherence" name="strategyType"/>
+                                <input type="hidden" value="create" name="type"/>
+                                <input type="hidden" value="0" name="strategyID"/>
+                                <input type="hidden" value="1" name="page"/>
+    							<div class="cl">&nbsp;</div>
+    						</div>
+    						<div class="cl">&nbsp;</div>
+    						<center><button type="submit" value="submit">submit</button></center>
+                        </form>
+					</div><!-- /lightbox-panel -->						
+					<div class="lightbox" id="lightbox<?php echo $goal->id; ?>"> </div><!-- /lightbox -->
+
+
+						
+					<!-- HABITS -->
+					<div class="tests">
+<?php
+						for($t=0;$t<10;$t++){
+							$today = date("D", strtotime("-".$t." day")); 	
+							$today = (string)$today;
+							if($t == 0){ $margin = '263px; font-size:12px; font-weight:bold';}elseif( $t == 1 ){ $margin = '14px; font-size:14px'; }else{ $margin = '7px; font-size:14px'; }
+							?>
+							
+							<div style="float:left; margin-left:<?php echo $margin; ?>; width:44px;"><center><?php if($t == 0){ echo 'Today';}else{echo $today;}?></center></div>	
+<?php									
+						}
+						?><?php
+
+					foreach($dailytests as $dailytest) {
+					
+						if($dailytest->strategy_type == 'adherence'){
+							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, date("Y-m-d"))?"checked":"";
+							
+	?>
+							<div class="row">
+									
+								<div class="habit_label">
+                        			<div style="display:none;" id="element<?php echo $dailytest->id;?>"> 
+										<input id="newStrategyName<?php echo $dailytest->id;?>" type="text" value="<?php echo GPC::strToPrintable($dailytest->name);?>" style="width:235px; font-size:13px; color:#666;"/>
+										<button <?php if($is_user){ ?>  onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')" <?php } ?> >submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
+									</div> 
+								    <span id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
+								    <?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $dailytest->id;?>"   onclick="editElement(<?php echo $dailytest->id;?>,1)"> edit</span> <?php } ?>
+
+								</div>
+	<?php
+								if($isEditable) {
+					?>
+														<label for="testCheck<?php echo $dayID; echo $dailytest->id;?>"><input type="checkbox" class="dailies" value="Check" id="testCheck<?php echo $dayID; echo $dailytest->id;?>" <?php echo $checkedVal; ?>   onclick="modifyDailyStrategy(<?php echo $user->id; ?>, <?php echo $dailytest->id;?>, <?php echo $dayID; echo $dailytest->id;?>, '<?php echo date("Y-m-d");?>');"  /></label>
+					<?php
+									++$dayID;
+								}
+	?>
+								<div class="test-cnt">
+									<div>
+	<?php
+										$r = 1;
+										foreach($dailytest->getStashedStyleArray() as $style) {
+											$date = date("Y-m-d", strtotime("-".$r." day")); 	
+											$date = (string)$date;		
+											$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, $date)?"checked":"";
+							?>
+											<label for="testCheck<?php echo $dayID; echo $dailytest->id;?>"><input class="dailies" type="checkbox" value="Check" id="testCheck<?php echo $dayID; echo $dailytest->id;?>" <?php echo $checkedVal; ?> <?php if($is_user){ ?> onclick="modifyDailyStrategy(<?php echo $user->id; ?>, <?php echo $dailytest->id;?>, <?php echo $dayID; echo $dailytest->id;?>, '<?php echo $date;?>');" <?php }else{ ?> disabled="disabled" <?php } ?> /></label>
+						<?php				++$dayID;
+											++$r;
+										}?>
+										<div class="cl">&nbsp;</div>
+									</div>
+								</div>
+								
+								<div class="cl">&nbsp;</div>
+							</div>
+<?php					}
+					}?>
+					<?php if($is_user){ ?> <a class="add_habit" id="show-panel" <?php if($is_user){ ?>  onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'habit')" <?php } ?> href="#">create a new habit</a> <?php } ?>
+					</div>
+				</div>
+					<div class="cl">&nbsp;</div>
+				</div>
+				<!-- End Box -->
+<?php
+		}elseif($type == 'goals'){
+
+			$kpis = KPI::getListFromGoalID($goal->id, $user->id);
+		?>
 						<!-- Box -->
 						<div class="box">
-
 							<!-- GOAL TITLE & LEVEL -->
-							<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')"> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" href="#">+</a>--></div>
-							
+							<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" <?php if($is_user){ ?> onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')"<?php } ?>> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" href="#">+</a>--></div>
 							
 							<!-- %%%%%%%%%%%% LIGHTBOXES FOR ELEMENT CREATION %%%%%%%%%%%% -->
 							
@@ -1544,7 +1584,7 @@ By winners, for winners.
 								</div>
 								<div class="cl">&nbsp;</div>
 								<textarea name="textarea" style="color:#999; margin-top:5px;" onclick="clearWhy(<?php echo $goal->id;?>)" id="eventWhy<?php echo $goal->id;?>" class="field" rows="4" cols="40">Why?</textarea>
-								<button type="submit" value="submit" onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->id; ?>, <?php echo $goalstatus->level; ?>)">submit</button>
+								<button type="submit" value="submit" <?php if($is_user){ ?> onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->id; ?>, <?php echo $goalstatus->level; ?>)" <?php } ?>>submit</button>
 							</div><!-- /lightbox-panel -->						
 							<div class="lightbox" id="lightbox<?php echo $goal->id; ?>"> </div><!-- /lightbox -->
 
@@ -1559,7 +1599,7 @@ By winners, for winners.
 									<div class="cl">&nbsp;</div>
 								</div>
 								<div class="cl">&nbsp;</div>
-								<center><button type="submit" value="submit" onclick="modifyStrategy('', <?php echo $goal->id; ?>, 'create','tactic')">submit</button></center>
+								<center><button type="submit" value="submit" <?php if($is_user){ ?> onclick="modifyStrategy('', <?php echo $goal->id; ?>, 'create','tactic')" <?php } ?>>submit</button></center>
 							</div><!-- /lightbox-panel -->						
 							<div class="lightbox" id="lightbox<?php echo $goal->id; ?>"> </div><!-- /lightbox -->
 
@@ -1574,7 +1614,7 @@ By winners, for winners.
 									<div class="cl">&nbsp;</div>
 								</div>
 								<div class="cl">&nbsp;</div>
-								<center><button type="submit" value="submit" onclick="modifyStrategy('', <?php echo $goal->id; ?>, 'create','todo')">submit</button></center>
+								<center><button type="submit" value="submit" <?php if($is_user){ ?> onclick="modifyStrategy('', <?php echo $goal->id; ?>, 'create','todo')" <?php } ?>>submit</button></center>
 							</div><!-- /lightbox-panel -->						
 							<div class="lightbox" id="lightbox<?php echo $goal->id; ?>"> </div><!-- /lightbox -->
 
@@ -1583,20 +1623,17 @@ By winners, for winners.
 							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->id; ?>,'kpi')">X</a>
 								<div class="newscore-row">
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->name);?> Measure / Milestone</div>
-									<div class="new_tactic">KPI Name: <input type="text" class="text_input" id="newKPIName<?php echo $goal->id;?>"  /></div>
-									<div class="new_tactic">KPI Description: </span><input type="text" class="text_input" id="newKPIDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</div>
+									<div class="new_tactic">Name: <input type="text" class="text_input" id="newKPIName<?php echo $goal->id;?>"  /></div>
+									<div class="new_tactic">Description: </span><input type="text" class="text_input" id="newKPIDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</div>
 									<div class="new_tactic">Test Name: <input type="text" class="text_input" id="newKPITestName<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</span></div>
 									<div class="new_tactic">Test Description: </span><input type="text" class="text_input" id="newKPITestDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</div>
 									<div class="new_tactic">Test Frequency: </span><input type="text" class="text_input" id="newKPITestFrequency<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</div>
 									<div class="cl">&nbsp;</div>
 								</div>
 								<div class="cl">&nbsp;</div>
-								<center><button type="submit" value="submit" onclick="modifyKPI(0, <?php echo $goal->id; ?>, 'create',0)">submit</button></center>
+								<center><button type="submit" value="submit" <?php if($is_user){ ?> onclick="modifyKPI(0, <?php echo $goal->id; ?>, 'create',0)" <?php } ?>>submit</button></center>
 							</div><!-- /lightbox-panel -->						
 							<div class="lightbox" id="lightbox<?php echo $goal->id; ?>"> </div><!-- /lightbox -->
-
-
-
 
 
 
@@ -1605,7 +1642,7 @@ By winners, for winners.
 						
 		<!-- Tactics start here -->	
 			<div class="user_page_items">
-				<span class="user_page_sub_title"> Tactics </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'tactic')" href="#">+</a><br/><div id="new_tactic_place<?php echo GPC::strToPrintable($goal->id);?>"></div>
+				<span class="user_page_sub_title"> Tactics </span><?php if($is_user){ ?><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'tactic')" href="#">+</a><?php } ?><br/><div id="new_tactic_place<?php echo GPC::strToPrintable($goal->id);?>"></div>
 		<?php if(!empty($dailytests)){?>
 						<ul style="list-style-type:square;">
 <?php				$isToDo = 0;
@@ -1620,10 +1657,10 @@ By winners, for winners.
 								<li>
 									<div style="display:none;" id="element<?php echo $dailytest->id;?>"> 
 										<input id="newStrategyName<?php echo $dailytest->id;?>" type="text" value="<?php echo GPC::strToPrintable($dailytest->name);?>" style="width:375px; font-size:13px; color:#666;"/>
-										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
+										<?php if($is_user){ ?><button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button><?php } ?>
 									</div> 
 									<span id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span><?php } ?>
 
 								</li>
 							</div>
@@ -1632,18 +1669,18 @@ By winners, for winners.
 					}
 					?></ul> <?php
 					if($isToDo == 0){
-						echo "<span class='no_tactic_elements' id='no_tactic_elements" . $goal->id . "'>  Adopt some Tactics here.</span>";
+						if($is_user){ echo "<span class='no_tactic_elements' id='no_tactic_elements" . $goal->id . "'>  Adopt some Tactics here.</span>";}
 					}
 					?>
 			<?php }else{
-					echo "<span class='no_tactic_elements' id='no_tactic_elements" . $goal->id . "'> Adopt some Tactics here.</span>";
+					if($is_user){ echo "<span class='no_tactic_elements' id='no_tactic_elements" . $goal->id . "'> Adopt some Tactics here.</span>";}
 			}?>
 			</div>		
 
 
 		<!-- TODOS start here -->
 		<div class="user_page_items">
-			<span class="user_page_sub_title"> ToDos </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'todo')" href="#">+</a><br/><div id="new_todo_place<?php echo GPC::strToPrintable($goal->id);?>"></div>
+			<span class="user_page_sub_title"> ToDos </span><?php if($is_user){ ?><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'todo')" href="#">+</a><?php } ?><br/><div id="new_todo_place<?php echo GPC::strToPrintable($goal->id);?>"></div>
 		<?php 				
 				if(!empty($dailytests)){?>
 <?php				$isToDo = 0;
@@ -1670,16 +1707,16 @@ By winners, for winners.
 										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
 									</div> 
 									<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span><?php } ?>
 							</div>
 							<div class="cl">&nbsp;</div>
 <?php					}
 					}
 					if($isToDo == 0){
-						echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->id . "'> Adopt some ToDos here.</span>";
+						if($is_user){ echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->id . "'> Adopt some ToDos here.</span>";}
 					}?>
 			<?php }else{
-					echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->id . "'> Adopt some ToDos here.</span>";
+					if($is_user){ echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->id . "'> Adopt some ToDos here.</span>";}
 			}?>			
 		</div>		
 
@@ -1687,7 +1724,7 @@ By winners, for winners.
 
 		<!-- KPIS start here -->
 					<div class="user_page_items">
-						<span class="user_page_sub_title"> Measurements and Milestones </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'kpi')" href="#">+</a><br/><div id="new_kpi_place<?php echo GPC::strToPrintable($goal->id);?>"></div>
+						<span class="user_page_sub_title"> Measurements and Milestones </span><?php if($is_user){ ?><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'kpi')" href="#">+</a><?php } ?><br/><div id="new_kpi_place<?php echo GPC::strToPrintable($goal->id);?>"></div>
 		<?php 
 			 $kpi_active = 0;
 			 if(!empty($kpis)){
@@ -1722,7 +1759,7 @@ By winners, for winners.
 					?>
 			<?php }
 			if($kpi_active == 0){
-						echo "<span class='no_kpi_elements' id='no_kpi_elements" . $goal->id . "'> Adopt some Measurements and Milestones here.</span>";
+						if($is_user){ echo "<span class='no_kpi_elements' id='no_kpi_elements" . $goal->id . "'> Adopt some Measurements and Milestones here.</span>"; }
 			}
 			?>
 					</div>		
@@ -1734,6 +1771,12 @@ By winners, for winners.
 			
 	public function printGoalPage($goalID) {
 		global $db, $user;
+		
+		$rs = $db->doQuery("SELECT * FROM goals_status WHERE user_id=%s AND is_active = 1", $user->id);
+		while($obj = mysql_fetch_object($rs)) {
+			$goalstatus = GoalStatus::getObjFromDBData($obj);
+		}
+		
 
 		$ajaxModifyGoal = PAGE_AJAX_MODIFY_GOAL;
 		$ajaxModifyKPI = PAGE_AJAX_MODIFY_KPI;
@@ -1743,35 +1786,24 @@ By winners, for winners.
 		$ajaxCreateStrategy = PAGE_AJAX_CREATE_STRATEGY;
 		$ajaxSetTracking = PAGE_AJAX_SET_TRACKING;
 		$ajaxAlterGoalDescription = PAGE_AJAX_ALTER_GOAL_DESCRIPTION;
+		$ajaxSaveDailytestPath = PAGE_AJAX_SAVEDAILYTEST;
+		$ajaxSaveEventPath = PAGE_AJAX_SAVEEVENT;
+
 
 		// get the ID & determine if user has the goal
 		$userHasGoal = GoalStatus::doesUserHaveGoal($user->id, $goalID);
 
 		$goal = Goal::getFullObjFromGoalID($goalID,$user->id);
+
 		$goal_name = $goal->goal->name;
 		$goal_description = $goal->goal->description;
-		
-		
-		// Show your description if in DB
-		if ($goal->sub_description == 'none'){ 
-		}else{ 
-		?><script>$(document).ready(function(){addDescription("<?php echo $goal->sub_description; ?>");});</script><?php
-		}
-		
-		// Show your display style if in DB
-		if ($goal->display_style == '1'){ 
-		 	$self_checked = "unchecked";
-		 	$adherence_checked = "checked";
-		}else{ 
-		 	$self_checked = "checked";
-			$adherence_checked = "unchecked" ;
-		}
 		
 		$mode = PAGEMODE_ACTIVITY;
 		
 		# Get all the KPIs and the strategies for the goal being viewed
-		$kpis = KPI::getListFromGoalID($goalID, $user->id);
-		$strategies = Dailytest::getListFromGoalID($goalID, $user->id);
+		$kpis = KPI::getListFromGoalID($goal->goal->id, $user->id);
+		$dailytests = Dailytest::getListFromUserIDGoalID($goal->goal->id, $user->id, 'user');
+		$adoptableStrategiesList = Dailytest::getListFromUserIDGoalID($goal->goal->id, $user->id, 'adoptable');
 		
 		
 		if(isset($_GET["t"])) {
@@ -1814,951 +1846,786 @@ By winners, for winners.
 					$average=0;
 				}
 
+				static $testID = 1;
+				$dayID = 1;
+				$noHabitStrategies = 0;		
+				if(	(count($dailytests) == 1) && ( $dailytests[0]->strategy_type != 'adherence')){		
+					$noHabitStrategies = 1;
+				}
+?>
+<script>
+		///////////////////////////////////////////////////////////////////////////////
+		// AJAX for modifying (adding/removing/readopting, not creating) a Strategy //
+		/////////////////////////////////////////////////////////////////////////////
 
-		?>
-		
-		<script>
-		
-		
-		//////////////////////////////////////////////////////////////////////////
-		// AJAX for modifying (adding/removing/readopting, not creating) a KPI //
-		////////////////////////////////////////////////////////////////////////
-		function modifyKPI(kpi_id, type){
-		    $.ajax({  
-		        type: "POST", 
-		        url: '<?php echo $ajaxModifyKPI; ?>', 
-		        data: "userID="+<?php echo $user->id; ?>+"&goalID="+<?php echo $goalID; ?>+"&kpiID="+ kpi_id+"&type="+ type,
-		        dataType: "html",
-		        complete: function(data){
-		            $("#ratingBox").html(data.responseText);  
-		        }  
-		    });  
-		}
-		
-		//////////////////////////////
-		// AJAX for creating a KPI //
-		////////////////////////////
-		
-		function createKPI(userID, goalID, kpiName, kpiDescription, kpiTestDescription, kpiTestName, kpiTestFrequency, adopt, newKPINum){
-		    $.ajax({  
-		        type: "POST", 
-		        url: '<?php echo $ajaxCreateKPI; ?>', 
-		        data: "userID="+<?php echo $user->id; ?>+"&goalID="+<?php echo $goalID; ?>+"&kpiName="+ kpiName+"&kpiDescription="+ kpiDescription+"&kpiTestDescription="+ kpiTestDescription+"&kpiTestName="+ kpiTestName+"&kpiTestFrequency="+ kpiTestFrequency+"&adopt="+ adopt,
-		        dataType: "html",
-		        complete: function(data){
-		        
-					var val = jQuery.parseJSON(data.responseText);       	
-		        	
-		        	// Get the new KPI id and set the value into the checkbox
-		        	$("#adopted_kpi_checkbox_" + newKPINum).attr("value",val[0]);
-		        	
-		        	// Get the new Test id and set the value into the checkbox
-		        	$("#adopted_test_checkbox_id_" + newKPINum + "_0").attr("value",val[1]);
-		
-					// Modify the onclick event for the checkbox to include the kpiID, testID, as well as the newKPINum (included on top) and testNUM (0)
-		        	$("#adopted_test_checkbox_id_" + newKPINum + "_0").attr("onclick","modifyTestStatus("+ val[0] + ","+val[1]+"," +newKPINum+ ",0);");
-		        	
-		            $("#ratingBox").html(val[0]);  
-		
-		        }  
-		    });  
-		}
-		
-		/////////////////////////////////////////////////////////////////////////////////////////////////
-		// AJAX for modifying a KPI Test (including creating it in certain cases if it doesn't exist) //
-		///////////////////////////////////////////////////////////////////////////////////////////////
-		
-		function modifyTestStatus(kpiID, testID, kpiNum, testNum){
-		
-			if ($("#adopted_test_checkbox_id_" + kpiNum + "_" + testNum).attr("checked") == 'checked' ){	
-				var newActiveStatus = '1';
+		function modifyDailyStrategy(user_id, strategy_id, div_id, date){
+			// Get the status of the particular div that is being called
+			var divID = "#testCheck" + div_id; 
+			if($(divID).prop('checked') == true){			
+				var result = 1;
 			}else{
-				var newActiveStatus = '0';	
+				var result = 0;
 			}
-		
+
 		    $.ajax({  
-		        type: "POST", 
-		        url: '<?php echo $ajaxModifyTestStatus; ?>', 
-		        data: "userID="+<?php echo $user->id; ?>+"&goalID="+<?php echo $goalID; ?>+"&kpiID="+ kpiID+"&testID="+ testID+"&newActiveStatus="+ newActiveStatus,
-		        dataType: "html",
-		        complete: function(data){
-		        	//$("#adopted_kpi_checkbox_" + newKPINum).attr("value",data.responseText);
-		            $("#ratingBox").html(data.responseText);  
-		        }  
-		    });	
-		
-		}
-		
-		
-		////////////////////////////////////
-		// AJAX for modifying a Strategy //
-		//////////////////////////////////
-		
-		function modifyStrategy(strategy_id, type){
-		    $.ajax({  
-		        type: "POST", 
-		        url: '<?php echo $ajaxModifyStrategy; ?>', 
-		        data: "userID="+<?php echo $user->id; ?>+"&goalID="+<?php echo $goalID; ?>+"&strategyID="+ strategy_id+"&type="+ type,
+		        type: "GET", 
+		        url: '<?php echo $ajaxSaveDailytestPath; ?>', 
+		        data: "userID="+user_id+"&dailytestID="+strategy_id+"&result="+ result+"&date="+ date,
 		        dataType: "html",
 		        complete: function(data){
 		            $("#ratingBox").html(data.responseText);  
 		        }  
 		    });  
+		    
 		}
-		
-		
-		//////////////////////////////////
-		// AJAX for creating a Strategy //
-		/////////////////////////////////
-		
-		function createStrategy(strategyName, strategyDescription, strategyType, newStrategyNum){
+			
+		//////////////////////////////////////////////////////////////////////////
+		//                         Other JS                                    //
+		////////////////////////////////////////////////////////////////////////
+			
+			
+		function modify_lightbox(display, element_id, type){
+
+			if(type == 'goal'){
+				if(display == 1){
+				     $("#lightbox-panel"+element_id).show();
+				}else{
+				     $("#lightbox-panel"+element_id).hide();
+				}
+			}else if(type == 'tactic'){
+				if(display == 1){
+				     $("#tactic-lightbox-panel"+element_id).show();
+				}else{
+				     $("#tactic-lightbox-panel"+element_id).hide();
+				}
+			}else if(type == 'todo'){
+				if(display == 1){
+				     $("#todo-lightbox-panel"+element_id).show();
+				}else{
+				     $("#todo-lightbox-panel"+element_id).hide();
+				}
+			}else if(type == 'kpi'){
+				if(display == 1){
+				     $("#kpi-lightbox-panel"+element_id).show();
+				}else{
+				     $("#kpi-lightbox-panel"+element_id).hide();
+				}
+			}else if(type == 'habit'){
+				if(display == 1){
+				     $("#habit-lightbox-panel"+element_id).show();
+				}else{
+				     $("#habit-lightbox-panel"+element_id).hide();
+				}
+			}
+		}
+
+		function issueGoalEvent(user_id, goal_id, old_level){
+			// Get the status of the particular div that is being called
+			
+			var new_level = $("#eventNewScore" + goal_id).attr("value");
+			var letter_grade = $("#eventLetterGrade" + goal_id).attr("value");
+			var why = $("#eventWhy" + goal_id).attr("value");
+
 		    $.ajax({  
-		        type: "POST", 
-		        url: '<?php echo $ajaxCreateStrategy; ?>', 
-		        data: "userID="+<?php echo $user->id; ?>+"&goalID="+<?php echo $goalID; ?>+"&strategyName="+ strategyName+"&strategyDescription="+ strategyDescription+"&strategyType="+ strategyType,
+		        type: "GET", 
+		        url: '<?php echo $ajaxSaveEventPath; ?>', 
+		        data: "userID="+user_id+"&goalID="+goal_id+"&newLevel="+ new_level+"&oldLevel="+ old_level+"&letterGrade="+ letter_grade+"&why="+ why,
 		        dataType: "html",
 		        complete: function(data){
-		
-					var val = data.responseText;       	
-		        	
-		        	// Get the new Strategy id and set the value into the checkbox
-		        	$("#adopted_strategy_checkbox_" + newStrategyNum).attr("value",val);
-		        	
-					// Modify the onclick event for the checkbox to include the kpiID, testID, as well as the newKPINum (included on top) and testNUM (0)
-		        	//$("#adopted_test_checkbox_id_" + newKPINum + "_0").attr("onclick","modifyTestStatus("+ val[0] + ","+val[1]+"," +newKPINum+ ",0);");
-		        	
-		            $("#ratingBox").html(val[0]);  
-		
+		            //$("#ratingBox").html(data.responseText);  
 		        }  
 		    });  
+
+			$("#eventNewScore" + goal_id).attr("value","");
+			$("#eventWhy" + goal_id).attr("value","");
+			$("#goalLevel" + goal_id).html(new_level);
+		    $("#lightbox-panel").fadeOut();
+		    
 		}
-		
-		
-		
-		/////////////////////////////////////////
-		// AJAX for adopting/removing a Goal //
-		///////////////////////////////////////
-		
-			function modifyGoal(type){
-		        $.ajax({  
-		            type: "POST", 
-		            url: '<?php echo $ajaxModifyGoal; ?>', 
-		            data: "userID="+<?php echo $user->id; ?>+"&goalID="+<?php echo $goalID; ?>+"&type="+type,
-		            dataType: "html",
-		            complete: function(data){
-		                $("#ratingBox").html(data.responseText);  
-		            }  
-		        });  
-		    }
-				
-		
-		////////////////////////////////////////
-		// AJAX for inserting Tracking Style //
-		//////////////////////////////////////
-		
-			function setTracking(displayStyle){
-				
-				if(displayStyle == '0'){
-					$("#self_reported").prop('checked', true);
-					$("#adherence_based").prop('checked', false);		
-				}else{
-					$("#self_reported").prop('checked', false);
-					$("#adherence_based").prop('checked', true);		
-				}
-				
-		        $.ajax({  
-		            type: "POST", 
-		            url: '<?php echo $ajaxSetTracking; ?>', 
-		            data: "userID="+<?php echo $user->id; ?>+"&goalID="+<?php echo $goalID; ?>+"&displayStyle="+ displayStyle,
-		            dataType: "html",
-		            complete: function(data){
-		                $("#ratingBox").html(data.responseText);  
-		            }  
-		        });  
-		    }
-		
-		
-		////////////////////////////////////////////
-		// AJAX for inserting a Goal description //
-		//////////////////////////////////////////
-		
-			function alterGoalDescription(description){
-		        $.ajax({  
-		            type: "POST", 
-		            url: '<?php echo $ajaxAlterGoalDescription; ?>', 
-		            data: "userID="+<?php echo $user->id; ?>+"&goalID="+<?php echo $goalID; ?>+"&description="+ description,
-		            dataType: "html",
-		            complete: function(data){
-		                $("#ratingBox").html(data.responseText);  
-		            }  
-		        });  
-		    }
-				
-		
-		// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   //
-		// %%%%%%%%%%%%%%%%%%%   END OF AJAX  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  //
-		// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
-		
-		
-		////////////////////////////////////////////
-		//   %%% Adding and removing KPIs %%%%   //
-		//////////////////////////////////////////
-		
-		
-		////////////////////////////////////////////////////////////////	
-		////// Adding a KPI to the Adopted column the first time //////
-		//////////////////////////////////////////////////////////////
-		
-			function change_kpi_tests(kpi_box_id){
-		
-				// DB Insert Variables
-				var kpi_db_id = $("#kpi_checkbox_" + kpi_box_id).attr("value");
-				
-				// *** DB ENTRY *** //
-				modifyKPI(kpi_db_id,'adopt');
-				
-				// DOM variables needed to move the data to the adopted list
-				var kpi_box = "#kpi_box_" + kpi_box_id;		
-				var kpi_checkbox_id = "#kpi_checkbox_" + kpi_box_id;
-				var kpi_tests_box = "#kpi_test_box_" + kpi_box_id;
-				var test_display_status = $(kpi_tests_box).css("display");
-				var adopted_kpi = ".kpi_results #adopted_kpi"; 
-		
-				// Displays the tests after the KPI has been chosen
-				if(test_display_status == 'none'){
-					$(kpi_tests_box).css("display", "");
-				} /*else{
-					$(kpi_tests_box).css("display", "none");
-				}*/
-		
-				// Hide the KPI in Suggested and make it appear in Adopted
-				$(kpi_box).fadeOut();
-				$(adopted_kpi).prepend($(kpi_box).html());
-		
-		
-				// Change the new div names under Adopted to have the "adopted" prefix
-				var temp_kpi_internals_all = ".kpi_results #kpi_internals_" + kpi_box_id;		
-				var adopted_internals = "adopted_internals_" + kpi_box_id;
-				var adopted_internals_id = "#adopted_internals_" + kpi_box_id;
-		
-				$(temp_kpi_internals_all).attr("name",adopted_internals);
-				$(temp_kpi_internals_all).attr("id",adopted_internals);
+
+		function clearWhy(goal_id){
+			$("#eventWhy" + goal_id).one("click", function(){
+				$("#eventWhy" + goal_id).css("color","black");
+				$("#eventWhy" + goal_id).attr("value","");
+			});
+		}
+
+
+			////////////////////////////////////
+			// AJAX for modifying a Strategy //
+			//////////////////////////////////
 			
-				// Rename checkbox names under Adopted to have the "adopted" prefix
-				var temp_kpi_checkbox = ".kpi_results #kpi_checkbox_" + kpi_box_id;
-				var adopted_kpi_checkbox = "adopted_kpi_checkbox_" + kpi_box_id;
-				
-				// Remove the KPI checkbox
-				$(temp_kpi_checkbox).attr("id",adopted_kpi_checkbox);
-				$(temp_kpi_checkbox).attr("name",adopted_kpi_checkbox);		
-				$("#" + adopted_kpi_checkbox).css("display","none");	
-					
-				// Rename Main Test Div and then Each Test Checkbox 
-				var test_count = $("#num_tests_" + kpi_box_id).attr("value");
-				var kpi_test_box = ".kpi_results #kpi_test_box_" + kpi_box_id;
-				var adopted_test_box = "adopted_test_box_" + kpi_box_id;
-				$(kpi_test_box).attr("name",adopted_test_box)
-				$(kpi_test_box).attr("id",adopted_test_box)
-		
-				for(i=0; i<test_count; i++) { 
-					var adopted_test_box_id = "adopted_test_checkbox_id_" + kpi_box_id + "_" + i;
-					var kpi_test_checkbox_id = ".kpi_results #kpi_test_checkbox_id_" + kpi_box_id + "_" + i;			
-					
-					$(kpi_test_checkbox_id).attr("id",adopted_test_box_id);	
-					$("#" + adopted_test_box_id).attr("name",adopted_test_box_id);	
-				}
-		
-				// Add new "remove" button
-				var new_remove = "<input id='removeKPIButton' type='button' value='X' onclick='removeKPI(" + kpi_box_id + ");' class='small-add-btn up-down'/>";
-				$(adopted_internals_id).append(new_remove);
-		
-				$(".kpi_start_prompt").hide();
-				
-			}
+			function modifyStrategy(strategy_id, goal_id, type, strategy_type){
 			
-		
-		/////////////////////////////////////////////////////
-		////// Removing a KPI from the Adopted column //////
-		///////////////////////////////////////////////////
-		
-			function removeKPI(adopted_box_id){
-				var kpi_db_id = $("#adopted_kpi_checkbox_" + adopted_box_id).attr("value");
-				var new_test_db_id = $("#adopted_test_checkbox_id_"+adopted_box_id+"_0").attr("value");
-			
-				var kpi_internals_id = "#kpi_box_" + adopted_box_id;
-				var adopted_internals_id = "#adopted_internals_" + adopted_box_id;
-				var kpi_internals_input = "#kpi_checkbox_" + adopted_box_id;
-				var new_checkbox = "<input type='checkbox' unchecked name='kpi_" + adopted_box_id + "' onclick='reAdoptKPI(" + adopted_box_id + ");' id='kpi_checkbox_" + adopted_box_id + "'  value='"+ kpi_db_id +"' />";
-				var newKPINum = adopted_box_id;
-				//var newTestID = $("#adopted_internals_" + adopted_box_id + " .kpi_tests").attr("id");
-				var kpiName = $("#adopted_internals_" + adopted_box_id + " .newKPIName").html();
-				var kpiDescription = $("#adopted_internals_" + adopted_box_id + " .newKPIDescription").html();
-				var kpiTestName = $("#adopted_internals_" + adopted_box_id + " .newTestName").html();
-				var kpiTestNameFrequency = $("#adopted_internals_" + adopted_box_id + " .newTestNameFrequency").html();
-				var kpiTestDescription = $("#adopted_internals_" + adopted_box_id + " .newTestDescription").html();
-					
-				if(kpiTestName){
-					var isNewTest = "<input type='hidden' value='1' name='num_tests_" +newKPINum+ "' id='num_tests_" +newKPINum+ "'><div id='" +newKPINum+ "' name='" +newKPINum+ "' style='' class='kpi_tests'>Test 1 <br><input type='checkbox' value='"+ new_test_db_id + "' name='kpi_test_checkbox_id_"+ newKPINum + "_0' onclick='modifyTestStatus(" +kpi_db_id+ ","+new_test_db_id+"," +newKPINum+ ",0);' id='kpi_test_checkbox_id_"+ newKPINum + "_0'> "+ kpiTestName + kpiTestNameFrequency + " <br><subtitle style='font-size:11px'>"+ kpiTestDescription +"</subtitle><br>";
-				}else{
-					var isNewTest = '';
+				if( type == 'edit' ) {
+					var new_strategy_name = $("#newStrategyName" + strategy_id).attr("value");
+										
+				}else if(type == 'remove'){
+					var cur_name = $("#curElementText" + strategy_id).html();
+				    var answer = confirm('Remove "' + cur_name + '"?');
+				    
+				    
+				}else if((type == 'create') && (strategy_type == 'todo')){
+					var new_strategy_name = $("#newToDoName" + goal_id).attr("value"); 
+					var new_strategy_description = $("#newToDoDescription" + goal_id).attr("value");
+				}else if((type == 'create') && (strategy_type == 'tactic')){
+					var new_strategy_name = $("#newTacticName" + goal_id).attr("value"); 
+					var new_strategy_description = $("#newTacticDescription" + goal_id).attr("value");
 				}
-								
-				var newKPI = "<div id='kpi_box_" +newKPINum+ "' class='kpi' style='display: block;'><div id='kpi_internals_" +newKPINum+ "' name='kpi_internals_" +newKPINum+ "' class='kpi_internals'><input type='checkbox' id='kpi_checkbox_" +newKPINum+ "' onclick='reAdoptKPI(" +newKPINum+ ");' name='kpi_" +newKPINum+ "' unchecked='' value='"+ kpi_db_id +"'>" + kpiName + "<br><subtitle style='font-size:11px'>"+ kpiDescription + "</subtitle><br>" + isNewTest + "</div></div></div>";
-				
-				
-				// Deactivate the KPI and its Tests
-				modifyKPI(kpi_db_id,'remove');
-				
-						
-				// This is only for KPIs that were not newly created
-				$(kpi_internals_input).replaceWith(new_checkbox);
-		
-				// Checks if the KPI is new or old, if new it inserts the new value into the PRE block
-				if (typeof $(kpi_internals_id).attr("class") === 'undefined'){					
-					$(".kpi_box").append(newKPI);
-					
-					// Hide the test checkboxes in the Suggested column -> They should not be used and can be removed down the line
-					   if(typeof $("#adopted_test_checkbox_id_" + adopted_box_id + "_0").attr("checked") === 'undefined'){
-					   		$("#kpi_test_checkbox_id_" + adopted_box_id + "_0").css("display","none");
-						}else{
-					   		$("#kpi_test_checkbox_id_" + adopted_box_id + "_0").css("display","none");
-						}
+			
+			
+			
+    			if ( ( answer ) || ( type == 'create') || (type == 'edit' ) || ( type == 'adopt' ) ) {				
+				    $.ajax({  
+				        type: "POST", 
+				        url: '<?php echo $ajaxModifyStrategy; ?>', 
+				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&newStrategyName="+ new_strategy_name+"&newStrategyDescription="+ new_strategy_description+"&type="+ type+"&strategyType="+ strategy_type+"&page="+ 0,
+				        dataType: "html",
+				        complete: function(data){				        
+							var val = data.responseText;       	
+							new_strategy_id = val;
+
+							if( (strategy_type == 'todo') && (type == 'create') ){
+								var newTodohtml = "<label for='testCheck"+new_strategy_id+"' style='float:left;'><input type='checkbox' value='Check' id='testCheck"+new_strategy_id+"' onclick='modifyStrategy("+new_strategy_id+","+goal_id+", &quot;completed&quot;, &quot;"+strategy_type+"&quot;)' /></label><div class='todo_label' id='strategyBox"+new_strategy_id+"'><div style='display:none;' id='element"+new_strategy_id+"'> <input id='newStrategyName"+new_strategy_id+"' type='text' value='"+new_strategy_name+"' style='width:375px; font-size:13px; color:#666;'/><button onclick='modifyStrategy("+new_strategy_id+","+goal_id+", &quot;edit&quot;, &quot;"+strategy_type+"&quot;)'>submit</button><button  onclick='editElement("+new_strategy_id+",0)'>cancel</button></div><span style='' id='curElementText"+new_strategy_id+"'>"+new_strategy_name+"</span><span class='editLink' id='editButton"+new_strategy_id+"' onclick='editElement("+new_strategy_id+",1)'> edit</span><span class='editLink' style='float:right;' id='removeButton"+new_strategy_id+"' onclick='modifyStrategy("+new_strategy_id+","+goal_id+", &quot;remove&quot;, &quot;"+strategy_type+"&quot;)'>x</span></div><div class='cl'>&nbsp;</div>";
+
+							 	$("#new_todo_place"+goal_id).prepend(newTodohtml);
+							 	$("#todo-lightbox-panel"+goal_id).hide();
+							 	$("#no_todo_elements"+goal_id).hide();							
+							}else if( (strategy_type == 'tactic') && (type == 'create') ){						
 							
-				}else{
-					$(kpi_internals_id).fadeIn();
-				
-					// Hide the test checkboxes in the Suggested column -> They should not be used and can be removed down the line
-					var test_count = $("#num_tests_" + adopted_box_id).attr("value");
-						// Create JS array including all of the checked test_ids and update Checked/Unchecked status of Suggested KPI tests
-						var test_id_array = [];
-						for(i=0; i<test_count; i++) { 
-						   test_id_array.push(i);
-						   if(typeof $("#adopted_test_checkbox_id_" + adopted_box_id + "_" + i).attr("checked") === 'undefined'){
-						   		$("#kpi_test_checkbox_id_" + adopted_box_id + "_" + i).css("display","none");
-							}else{
-						   		$("#kpi_test_checkbox_id_" + adopted_box_id + "_" + i).css("display","none");
-							}
-						}					
+								var newTactichtml = "<div class='tactic_label' id='strategyBox"+new_strategy_id+"'><li><div style='display:none;' id='element"+new_strategy_id+"'><input id='newStrategyName"+new_strategy_id+"' type='text' value='"+new_strategy_name+"' style='width:375px; font-size:13px; color:#666;'/><button onclick='modifyStrategy("+new_strategy_id+","+goal_id+", &quot;edit&quot;, &quot;"+strategy_type+"&quot;)'>submit</button><button  onclick='editElement("+new_strategy_id+",0)'>cancel</button></div><span id='curElementText"+new_strategy_id+"'>"+new_strategy_name+"</span><span class='editLink' id='editButton"+new_strategy_id+">' onclick='editElement("+new_strategy_id+",1)'> edit</span><span class='editLink' style='float:right;' id='removeButton"+new_strategy_id+"' onclick='modifyStrategy("+new_strategy_id+","+goal_id+", &quot;remove&quot;, &quot;"+strategy_type+"&quot;)'>x</span></li></div><div class='cl'>&nbsp;</div>";
+
+							 	$("#new_tactic_place"+goal_id).prepend(newTactichtml);
+							 	$("#tactic-lightbox-panel"+goal_id).hide();
+							 	$("#no_tactic_elements"+goal_id).hide();							
+				        	}  
+				       }  
+				    });
 				}
-				
-				$(adopted_internals_id).fadeOut();
-					
-			}
-		
-			
-		////////////////////////////////////////////////////////////////////////////////	
-		////// Adopting a KPI after it has already been adopted and removed once //////
-		//////////////////////////////////////////////////////////////////////////////
-		
-			function reAdoptKPI(kpi_id){
-				var kpi_db_id = $("#kpi_checkbox_" + kpi_id).attr("value");
-				var test_count = $("#num_tests_" + kpi_id).attr("value");
-		
-			    modifyKPI(kpi_db_id,'readopt');
-		
-		
-				var kpi_internals_id = "#kpi_box_" + kpi_id;
-				var adopted_internals_id = "#adopted_internals_" + kpi_id;
-			
-				$(kpi_internals_id).fadeOut();
-				$(adopted_internals_id).fadeIn();
-			}
-		
-		
-		///////////////////////////////////////////
-		////// Adopting a newly created KPI //////
-		/////////////////////////////////////////
-		
-			function addAndAdoptKPI(){
-		
-				var kpiName = $("#kpiName").attr("value");
-				var kpiDescription = $("#kpiDescription").attr("value");
-				var kpiTestName = $("#kpiTestName").attr("value");
-				var kpiTestDescription = $("#kpiTestDescription").attr("value");
-				var kpiTestFrequency = $("#kpiTestFrequency").attr("value");
-				var currentKPINum = $("#numkpis").attr("value");
-				var newKPINum = Number(currentKPINum) + 1;
-				var currentTestID = $("#numtests").attr("value");
-				//var newTestID = Number(currentTestID) +1;
-				var adopted_kpi = ".kpi_results #adopted_kpi";	
-				
-				if(kpiName != ''){
-					createKPI(<?php echo $user->id; ?>, <?php echo $goalID;?>, kpiName, kpiDescription, kpiTestDescription, kpiTestName, kpiTestFrequency, 'true', newKPINum);
-					
-					
-					if(kpiTestName != ''){
-						var newTest = "<input type='hidden' value='1' name='num_tests_" +newKPINum+ "' id='num_tests_" +newKPINum+ "'><div id='" +newKPINum+ " ' name='" +newKPINum+ " ' style='' class='kpi_tests'> Test 1 <br><input type='checkbox' checked='true' value='na' name='adopted_test_checkbox_id_"+ newKPINum + "_0'  onclick='modifyTestStatus(" +newKPINum+ ",'0');'  id='adopted_test_checkbox_id_"+ newKPINum + "_0''> <span class='newTestName'>"+ kpiTestName +"</span><span class='newTestNameFrequency'> (every " + kpiTestFrequency + " days)</span> <br><subtitle style='font-size:11px'><span class='newTestDescription'>"+ kpiTestDescription +"</span></subtitle><br>";
-					}else{
-						var newTest = '';
+							 
+				 if(type == 'edit'){
+					$("#element"+strategy_id).hide();	
+					$("#editButton"+strategy_id).show();
+					$("#curElementText"+strategy_id).html(new_strategy_name );	
+					$("#curElementText"+strategy_id).show();	
+				 }else if (type == 'completed'){
+				 	if($("#testCheck"+strategy_id).prop('checked') == true){
+				 		$("#curElementText"+strategy_id).css("text-decoration", "line-through");
+				 	}else{
+				 		$("#curElementText"+strategy_id).css("text-decoration", "");
+				 	}
+				 }else if (type == 'remove'){
+    				if (answer){
+    				
+				 		$("#strategyBox"+strategy_id).hide();
+				 		if(strategy_type == 'todo'){
+				 			$("#testCheck"+strategy_id).hide();
+						}
+						
+				 	}
+				 }else if (type == 'adopt'){
+					if(strategy_type == 'tactic'){			
+					 	$("#new_tactic_place"+goal_id).append($("#liAdopt"+strategy_id).html());
+					 	$("#new_tactic_place"+goal_id).append("<br/>");
+					  	$("#adoptStrategyBox"+ strategy_id +" #liAdopt"+strategy_id).remove();
+					 	$("#new_tactic_place" + goal_id + " #removeButton"+strategy_id).show();				 	
+					 	$("#new_tactic_place" + goal_id + " #editButton"+strategy_id).show();
+					 	$("#new_tactic_place" + goal_id + " #adoptButton"+strategy_id).hide();
+					}else if (strategy_type == 'todo'){
+					 	$("#new_todo_place"+goal_id).append($("#liAdopt"+strategy_id).html());
+					 	$("#new_todo_place"+goal_id).append("<br/>");
+					  	$("#adoptStrategyBox"+ strategy_id +" #liAdopt"+strategy_id).remove();
+					  	$("#testCheck"+ strategy_id).remove();
+					 	$("#new_todo_place" + goal_id + " #removeButton"+strategy_id).show();				 	
+					 	$("#new_todo_place" + goal_id + " #editButton"+strategy_id).show();
+					 	$("#new_todo_place" + goal_id + " #adoptButton"+strategy_id).hide();
+					}else if (strategy_type == 'habit'){
+					 	$("#new_habit_place"+goal_id).append($("#liAdopt"+strategy_id).html());
+					 	$("#new_habit_place"+goal_id).append("<br/><br/>");
+					  	$("#adoptStrategyBox"+ strategy_id +" #liAdopt"+strategy_id).remove();
+					  	$("#testCheck"+ strategy_id).remove();
+					 	$("#new_habit_place" + goal_id + " #removeButton"+strategy_id).show();				 	
+					 	$("#new_habit_place" + goal_id + " #editButton"+strategy_id).show();
+					 	$("#new_habit_place" + goal_id + " #adoptButton"+strategy_id).hide();
 					}
-					
-					var newKPI = "<div id='adopted_internals_"+ newKPINum + "' name='adopted_internals_0' class='kpi_internals'><input id='adopted_kpi_checkbox_"+ newKPINum +"' type='checkbox' value='a' name='kpi_"+ newKPINum +"' style='display: none;'><span class='newKPIName'>" + kpiName + "</span><br><subtitle style='font-size:11px'><span class='newKPIDescription'>"+ kpiDescription + " </span></subtitle><br>" + newTest +" </div><input type='button' class='small-add-btn up-down' onclick='removeKPI("+ newKPINum +");' value='X' id='removeKPIButton'></div>";
-			
-					$(adopted_kpi).prepend(newKPI);
-					$("#numkpis").attr("value", newKPINum);
-			
-					$("#if_kpi_input").fadeOut();
-					$("#remove_kpi_input").hide();
-					$("#show_kpi_input").fadeIn();
-					$(".kpi_start_prompt").hide();
+				 }
+				 
+				 
+				 
+				 
+				 
+				 
+				 
+				 
+			}
+
+			function editElement(element_id, status){
+				if(status == 1){
+					$("#editButton"+element_id).hide();	
+					$("#curElementText"+element_id).hide();
+					$("#element"+element_id).fadeIn();	
 				}else{
-					alert('Please enter a name for your Measurement');		
+					$("#element"+element_id).hide();	
+					$("#editButton"+element_id).show();	
+					$("#curElementText"+element_id).show();	
+				}
+			}
+						
+			function modifyKPI(kpi_id, goal_id, type, test_id){
+			
+				 if(type == 'edit'){
+					var new_kpi_name = $("#newKPIName" + kpi_id).attr("value");
+					var new_kpi_test_name = $("#newKPITestName" + kpi_id).attr("value");
+				}else if(type == 'remove'){
+					var cur_kpi_name = $("#curKPIElementText" + kpi_id).html();
+				    var answer = confirm('Remove "' + cur_kpi_name + '"?');
+				}else if(type == 'create'){
+					var new_kpi_name = $("#newKPIName" + goal_id).attr("value"); 
+					var new_kpi_description = $("#newKPIDescription" + goal_id).attr("value");
+					var new_kpi_test_name = $("#newKPITestName" + goal_id).attr("value");
+					var new_kpi_test_description = $("#newKPITestDescription" + goal_id).attr("value"); 
+					var new_kpi_test_frequency = $("#newKPITestFrequency" + goal_id).attr("value"); 
 				}
 
-				if( ( kpiTestName == '') && ( kpiName != '' ) ) {
-					alert('Please note you have not created a test for this Measurement. You can create one later on your profile page.');
+				if((( type == 'edit' ) && ( new_kpi_name != '' ))){
+					var go = true;
+				}else if(((type == 'remove') && (answer))){
+					var go = true;
+				}else if( ( type == 'create' ) || ( type == 'adopt' ) ) {
+					if(new_kpi_name != ''){
+						var go = true;
+					}else{
+						alert('Please enter a Measure/Milestone name');
+					}
 				}
-		
-			}
-		
-		
-		// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   //
-		// %%%%%%%%%%%%%%%%%%%   END OF KPIs  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  //
-		// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
-		
-		
-		//////////////////////////////////////////////////
-		//   %%% Adding and removing Strategies %%%%   //
-		////////////////////////////////////////////////
-		
-		
-			  //////////////////////////////////////////////////////////////////////////
-			 // Move contents of strategy_internals divs to Adopted/"results" column, /
-			//////////////////////////////////////////////////////////////////////////
-			
-			function adopt_strategy(strategy_num){
-				var strategy_id = $("#strategy_checkbox_" + strategy_num).attr("value");
-		
-				var strategy_internals = "#strategy_internals_" + strategy_num;		
-				var strategy_box = "#strategy_box_" + strategy_num;
-				var adopted_strategy = ".strategy_results #adopted_strategy"; 
-				var strategy_checkbox_id = "#adopted_strategy_checkbox_" + strategy_num;
-				var new_remove_strategy = "<input id='removeStrategyButton' type='button' value='X' onclick='removeStrategy(" + strategy_num + ");' class='small-add-btn up-down'/>";
-		
 				
-				modifyStrategy(strategy_id, 'adopt');
-		
-		
-				$(strategy_box).fadeOut();
-				$(adopted_strategy).prepend($(strategy_box).html());
-				
-				var strategy_internals_new = ".strategy_results " + strategy_internals;
-				var adopted_internal_strategies = "adopted_strategy_internals_" + strategy_num;		
-				var adopted_internal_strategies_id = "#" + adopted_internal_strategies;
-				var adopted_strategy_checkbox = "adopted_strategy_checkbox_" + strategy_num;
-				var temp_strategy_checkbox = ".strategy_results #strategy_checkbox_" + strategy_num;
-								
-				$(strategy_internals_new).attr("name",adopted_internal_strategies);
-				$(strategy_internals_new).attr("id",adopted_internal_strategies);
-		
-				$(temp_strategy_checkbox).attr("id", adopted_strategy_checkbox);
-				$(adopted_internal_strategies_id).append(new_remove_strategy);
-				$(adopted_internal_strategies_id + " "+strategy_checkbox_id ).hide();
-				$(".strategy_start_prompt").hide();
-					
-			}
-		
-			  ///////////////////////////////////////////////////
-			 // This removes a Strategy from the Adopted column/
-			///////////////////////////////////////////////////
-			
-			function removeStrategy(strategy_num){
-				var strategy_id = $("#adopted_strategy_checkbox_" + strategy_num).attr("value");
-				var strategyType = $("#newStrategyType_" + strategy_num).attr("value");;
-		
-		
-				var adopted_internal_strategies_id = "#adopted_strategy_internals_" + strategy_num;		
-				var strategy_box = "#strategy_box_" + strategy_num;
-				var strategy_internals_input = "#strategy_checkbox_" + strategy_num;
-				var new_checkbox = "<input type='checkbox' name='strategy_" + strategy_num + "' onclick='reAdoptStrategy(" + strategy_num + ");' id='strategy_checkbox_" + strategy_num + "' value='"+ strategy_id +"' />";
-				var strategyName = $("#adopted_strategy_internals_" + strategy_num + " .newStrategyName").html();
-				var strategyDescription = $("#adopted_strategy_internals_" + strategy_num + " .newStrategyDescription").html();
-				
-				var newStrategy = "<div id='strategy_box_"+ strategy_num +"' name='strategy_box_"+ strategy_num +"' class='strategy_boxes'><div id='strategy_internals_"+ strategy_num +"' name='strategy_internals_"+ strategy_num +"'><input type='checkbox' id='strategy_checkbox_"+ strategy_num +"' onclick='reAdoptStrategy("+ strategy_num +");' value='"+strategy_id+"' name='strategy_"+ strategy_num +"'> "+ strategyName +"<br><subtitle style='font-size:11px'> "+ strategyDescription +"</subtitle><br><span class='newStrategyType' value='"+strategyType+"' style='display:none;'></span></div></div>";
-		
-		
-				modifyStrategy(strategy_id, 'remove');
-		
-				// This is only for Strategies that were not newly created
-				$(strategy_internals_input).replaceWith(new_checkbox);
-						
-				// Checks if the KPI is new or old, if new it inserts the new value into the PRE block
-				if (typeof $(strategy_box).attr("class") === 'undefined'){
-					$(".strategies").append(newStrategy);		
-				}else{
-					$(strategy_box).fadeIn();
-				}		
-				
-				
-				$(adopted_internal_strategies_id).fadeOut();
-			}
-			
-			
-		     //////////////////////////////////////////////////////////////////////////
-			// Adopting a Strategy after it has already been adopted and removed once/
-		   //////////////////////////////////////////////////////////////////////////
-		   
-			function reAdoptStrategy(strategy_num){
-				var strategy_id = $("#strategy_checkbox_" + strategy_num).attr("value");
-			
-				var strategy_internals_id = "#strategy_box_" + strategy_num;
-				var adopted_internals_id = "#adopted_strategy_internals_" + strategy_num;
-			
-				modifyStrategy(strategy_id, 'readopt');
-			
-				$(strategy_internals_id + " input").attr("checked",false);
-				$(strategy_internals_id).fadeOut();
-				$(adopted_internals_id).fadeIn();
-			}
-		
-		
-			 //////////////////////////////////////////////////////////////
-			// Creating and Adopting a new Strategy that you just created/
-		   //////////////////////////////////////////////////////////////
-		   
-			function addAndAdoptStrategy(){
-		
-				var strategyName = $("#strategyName").attr("value");
-				var strategyDescription = $("#strategyDescription").attr("value");
-				var strategyType = $("#strategyType").attr("value");
-				var currentStrategyNum = $("#numstrategies").attr("value");
-				var newStrategyNum = Number(currentStrategyNum) + 1;
-				var adopted_strategy = ".strategy_results #adopted_strategy";
-				
-				
-				if(strategyName != ''){
-					createStrategy(strategyName, strategyDescription, strategyType, newStrategyNum);
-					
-					var newStrategy = "<div id='adopted_strategy_internals_"+newStrategyNum+"' name='adopted_strategy_internals_"+newStrategyNum+"'><input id='adopted_strategy_checkbox_"+newStrategyNum+"' type='checkbox' onclick='adopt_strategy("+newStrategyNum + ");' value='na' name='strategy_"+newStrategyNum+"' style='display: none;'><span class='newStrategyName'>"+ strategyName +"</span><br><subtitle style='font-size:11px'><span class='newStrategyDescription'>"+ strategyDescription +"</span></subtitle><br><span class='newStrategyType' id='newStrategyType_"+ newStrategyNum +"'  value='"+strategyType+"' style='display:none;'></span><input type='button' class='small-add-btn up-down' onclick='removeStrategy("+newStrategyNum+");' value='X' id='removeStrategyButton'></div>";
-			
-			
-					$(adopted_strategy).prepend(newStrategy);
-					$("#numstrategies").attr("value", newStrategyNum);
-			
-					$("#if_strategy_input").fadeOut();
-					$("#remove_strategy_input").hide();
-					$("#show_strategy_input").fadeIn();
-					$(".strategy_start_prompt").hide();
-				}else{
-					alert('Please enter a name for your ' + strategyType);		
-				}				
-		
-			}
-		
-		
-		// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%   //
-		// %%%%%%%%%%%%%%%%%%%   END OF Strategies  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%  //
-		// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% //
-		
-		
-		//////////////////////////////////////////////////////////
-		//   %%% Adding and removing custom Description %%%%   //
-		////////////////////////////////////////////////////////
-		
-			function addDescription(existing_desc){
-		
-				if(existing_desc == "none"){
-					var new_desc = $("#goal_desc").attr("value");		
-				}else{
-					var new_desc = existing_desc;
+				if(go){
+				    $.ajax({  
+				        type: "POST", 
+				        url: '<?php echo $ajaxModifyKPI; ?>', 
+				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&kpiID="+ kpi_id+"&newKPIName="+ new_kpi_name+"&type="+ type+"&newKPITestName="+ new_kpi_test_name+"&newKPIDescription="+ new_kpi_description+"&newKPITestDescription="+ new_kpi_test_description+"&newKPITestFrequency="+ new_kpi_test_frequency+"&testID="+ test_id,
+				        dataType: "html",
+				        complete: function(data){
+							var val = jQuery.parseJSON(data.responseText);  
+
+				        	// Get the new KPI id
+				        	var kpi_id = val[0];
+				        	// Get the new Test id
+				        	var kpi_test_id = val[1];
+				        	
+						 	if(new_kpi_test_name != ''){
+						 		var display = '';
+						 		var name_text = " (" + new_kpi_test_name + ")";
+						 	}else{
+						 		var display = 'none';
+						 	}
+						 	
+						 	// create the html for the new KPI and insert it into the html 
+							var newKPIhtml = "<label for='testKPICheck"+kpi_id+"' style='float:left;'><input onclick='modifyKPI("+kpi_id+","+goal_id+", &quot;completed&quot;,&quot;&quot;)' type='checkbox' value='Check' id='testKPICheck"+kpi_id+"' onclick='' /></label><div class='kpi_label' id='kpiBox"+kpi_id+"'><div style='display:none;' id='KPIElement"+kpi_id+"'> Name: <input id='newKPIName"+kpi_id+"' type='text' value='"+new_kpi_name+"' style='width:275px; font-size:13px; color:#666;'/> Test: <input id='newKPITestName"+kpi_id+"' type='text' value='"+new_kpi_test_name+"' style='width:145px; font-size:13px; color:#666;'/><button onclick='modifyKPI("+kpi_id+","+goal_id+", 'edit', "+ kpi_test_id +")'>submit</button><button  onclick='editKPIElement("+kpi_id+",0)'>cancel</button></div> <span style='' id='curKPIElementText"+kpi_id+"'>"+new_kpi_name+"</span><span style='display:'"+display+"' id='curKPITestText"+kpi_id+"'>"+name_text+"</span><span class='editLink' id='editKPIButton"+kpi_id+"' onclick='editKPIElement("+kpi_id+",1)'> edit</span><span class='editLink' style='float:right;' id='removeKPIButton"+kpi_id+"' onclick='modifyKPI("+kpi_id+","+goal_id+", &quot;remove&quot;,&quot;&quot;)'>x</span></div><div class='cl'>&nbsp;</div>";
+						 	
+						 	$("#new_kpi_place"+goal_id).prepend(newKPIhtml);
+						 	$("#kpi-lightbox-panel"+goal_id).hide();
+						 	$("#no_kpi_elements"+goal_id).hide();
+				        }  
+				    });
+			 	}
+
+				 if(type == 'edit'){
+					$("#KPIElement"+kpi_id).hide();	
+					$("#editKPIButton"+kpi_id).show();
+					if(new_kpi_name != ''){				
+						$("#curKPIElementText"+kpi_id).html(new_kpi_name);
+						$("#curKPITestText"+kpi_id).html(new_kpi_test_name);	
+					}
+					$("#curKPIElementText"+kpi_id).show();	
+					$("#curKPITestText"+kpi_id).show();	
+
+				 }else if(type == 'completed'){
+				 
+				 	if($("#testKPICheck"+kpi_id).prop('checked') == true){
+				 		$("#curKPIElementText"+kpi_id).css("text-decoration", "line-through");
+				 		$("#curKPITestText"+kpi_id).css("text-decoration", "line-through");
+				 	}else{
+				 		$("#curKPIElementText"+kpi_id).css("text-decoration", "");
+				 		$("#curKPITestText"+kpi_id).css("text-decoration", "");
+				 	}
+				 }else if (type == 'remove'){
+    				if (answer){
+				 		$("#testKPICheck"+kpi_id).hide();
+				 		$("#kpiBox"+kpi_id).hide();
+				 	}
+				 }else if (type == 'adopt'){
+					 	$("#new_kpi_place"+goal_id).append($("#liKPIAdopt"+kpi_id).html());
+					 	$("#new_kpi_place"+goal_id).append("<br/>");
+					  	$("#adoptKPIBox"+ kpi_id +" #liKPIAdopt"+kpi_id).remove();
+					  	$("#testCheck"+ kpi_id).remove();
+					 	$("#new_kpi_place" + goal_id + " #removeKPIButton"+kpi_id).show();				 	
+					 	$("#new_kpi_place" + goal_id + " #editKPIButton"+kpi_id).show();
+					 	$("#new_kpi_place" + goal_id + " #adoptKPIButton"+kpi_id).hide();
 				}
-		
-				$(".enter_desc_prompt").hide();
-				$(".adopted_desc p").html(new_desc);
-				$("#removeDescButton").fadeIn();
-				alterGoalDescription(new_desc);		
+				 
+				 
+				 
+				 		 
 			}
-			function removeDescription(){
-				var new_desc = "";
-				$(".enter_desc_prompt").fadeIn();
-				$(".adopted_desc p").html("").fadeIn();
-				$("#removeDescButton").hide();
-				alterGoalDescription(new_desc);		
-			}
-		
-		//////////////////////////////////////////////////////////////////
-		// Transition to edit mode when somebody elects to Adopt a goal	/
-		////////////////////////////////////////////////////////////////
 			
-			function removeShowAdopt(){				
-					$("#if_adopt").show();
-					$("#suggested_goal_params").show();
-					$(".pre_adopt").hide();
-					$("#who_else_adopted").hide();
-					$(".reporting_select").show();
-					modifyGoal('insert');	
+			function editKPIElement(element_id, status){
+				if(status == 1){
+					$("#editKPIButton"+element_id).hide();	
+					$("#curKPIElementText"+element_id).hide();
+					$("#curKPITestText"+element_id).hide();
+					$("#KPIElement"+element_id).fadeIn();	
+				}else{
+					$("#KPIElement"+element_id).hide();	
+					$("#editKPIButton"+element_id).show();	
+					$("#curKPIElementText"+element_id).show();
+					$("#curKPITestText"+element_id).show();
+				}
 			}
-		
-			function removeGoal(){
-					$(".pre_adopt").show();
-					$(".pre_adopt").css("margin-top","305px");
-					modifyGoal('remove');	
-					$("#if_adopt").css("display","none");
-			}
-		
-		
-			function onEdit(){
-					$("#if_adopt").show();
-					$(".pre_adopt").hide();
-					$("#suggested_goal_params").show();
-					$("#who_else_adopted").hide();
-					$(".reporting_select").show();
-			}
-		
-		
-			$(document).ready(function(){ 
-		
-				 /////////////////////////////////////////////////////////////////////
-				// Grey text that disappears onclick in the goal description field //
-			   /////////////////////////////////////////////////////////////////////
-				$("#goal_desc").one("click", function(){
-					$("#goal_desc").css("color","black");
-					$("#goal_desc").attr("value","");
-				});
-				
-				 ////////////////////////////////////////////////////////
-				// Exposing the input fields for creating your own KPI//
-			   ////////////////////////////////////////////////////////
-				$("#show_kpi_input").click(function(){
-					$("#if_kpi_input #kpiName").attr("value", '');
-					$("#if_kpi_input #kpiDescription").attr("value", '');
-					$("#if_kpi_input #kpiTestName").attr("value", '');
-					$("#if_kpi_input #kpiTestDescription").attr("value", '');
-					$("#if_kpi_input #kpiTestFrequency").attr("value", '');
-					$("#if_kpi_input").show();
-					$("#show_kpi_input").hide();
-					$("#remove_kpi_input").fadeIn();
-				});	
-		
-			     /////////////////////////////////////////////////////////////
-				// Exposing the input fields for creating your own Strategy//
-			   /////////////////////////////////////////////////////////////	
-				$("#show_strategy_input").click(function(){
-					$("#if_strategy_input #strategyName").attr("value", '');
-					$("#if_strategy_input #strategyDescription").attr("value", '');
-					$("#if_strategy_input").show();
-					$("#show_strategy_input").hide();
-					$("#remove_strategy_input").fadeIn();
-				});	
-		
-				 ////////////////////////////////////////////////////////
-				// Removing the input fields for creating your own KPI//
-			   ////////////////////////////////////////////////////////
-				$("#remove_kpi_input").click(function(){
-					$("#if_kpi_input").fadeOut();
-					$("#show_kpi_input").fadeIn();
-					$("#remove_kpi_input").hide();
-				});	
-		
-			     /////////////////////////////////////////////////////////////
-				// Removing the input fields for creating your own Strategy//
-			   /////////////////////////////////////////////////////////////	
-				$("#remove_strategy_input").click(function(){
-					$("#if_strategy_input").fadeOut();
-					$("#show_strategy_input").fadeIn();
-					$("#remove_strategy_input").hide();			
-				});	
-		
-		
-			});  											
-		
-		</script>
-		
-		
-		
-		<!-- AJAX TESTING GROUNDS -->		
-		<div name="ratingBox" id="ratingBox" style="display:none;"></div>
-		
-		<!-- Case -->
-		<div class="case">
-		
-			<!-- Score -->
 			
+
+
 			
-			<div class="score">
-				<div class="text">
-		<?php if(!$userHasGoal){?>
-				<div class="pre_adopt">
-					<p id="suggested_description"><strong> Description:</strong> <?php echo GPC::strToPrintable($goal_description); ?></p>
-					<button class="adopt-goal-btn" id="show_adopt_options" onclick="removeShowAdopt();">Adopt this goal</button>
-				</div>
-		<?php } ?>
-					<div id="if_adopt" name="if_adopt" style="display:none;">
-					<div class="edit_goal_params" id="suggested_goal_params"> Edit Goal Parameters </div>
-		
-						<!-- START REPORTING STYLE -->
-						<div class="reporting_select">
-							<label class='small-label' style="font-weight:bold"> Your Progress Indicator: </label>
-							<input type="radio" id="self_reported" name="self_reported" <?php echo GPC::strToPrintable($self_checked); ?> value="0" onclick="setTracking('0')" /> Self Reported
-							<input type="radio" id="adherence_based" name="adherence_based" <?php echo GPC::strToPrintable($adherence_checked); ?> value="1" onclick="setTracking('1')" /> Habit Based
-						</div>
-						
-						<!-- START YOUR DESCRIPTION --> 
-						<div class="goal_desc_box" id="goal_desc_box" name="goal_desc_box">
-							<label class='small-label' style="font-weight:bold;">Your own description (optional):</label><br/>	
-							<div class="enter_desc_prompt" id="enter_desc_prompt" name="enter_desc_prompt">
-								<input type="text" name="goal_desc" id="goal_desc" value="feel free to enter your own description" style="color:#999; width:280px; margin: 10px 10px 0px 0px; float:left;" />	
-								<input type="button" value="Add" onclick="addDescription('none');" class="small-add-btn up-down"/>
-							</div>									
-			
-							<div class="adopted_desc">
-								<p></p>
-								<input id="removeDescButton" type="button" value="X" onclick="removeDescription();" class="small-add-btn up-down" style="display:none;"/>
-							</div>
-						</div>
-						
-						<!-- START KPIS -->
-						<div class="kpi_headings">
-							<div class="chosen_kpis" id="show_adopted_kpis"> My KPIs </div>
-							<div class="choose_kpi_heading"> 
-								Choose KPIs:
-								<a class="show_kpi_input" id="show_kpi_input" name="show_kpi_input" style="color:white; float:right;">
-									Add Your Own
-								</a>
-								<a class="remove_kpi_input" id="remove_kpi_input" name="remove_kpi_input" style="color:white; float:right; display:none;">
-									Close KPI Creator
-								</a>
-		
-							</div>
-						</div>
-						<div style="clear:both;"/>
-		
-		
-						<div class="all_kpis">
-							<div class="kpi_results">
-								<div class="adopted_kpi" id="adopted_kpi" name="adopted_kpi">
-								
-									<!-- ADOPTED KPIs GO HERE -->
-									<?php 
-									$active_kpis = 0;
-									for($i=0; $i<count($kpis);$i++){
-										$test_count = count($kpis[$i]->kpi_tests);
-										if($kpis[$i]->kpi_active == 1){
-											$active_kpis++;
-									?>
-											<div class="kpi_internals" name="<?php echo "adopted_internals" . "_" . $i ;?>" id="<?php echo "adopted_internals" . "_" . $i ;?>">									
-											<input type="checkbox" value="<?php echo GPC::strToPrintable($kpis[$i]->id);?>" onclick="change_kpi_tests('<?php echo $i;?>');" id="<?php echo "adopted_kpi_checkbox_" . $i ;?>" style="display:none;" />
-		
-													<?php echo GPC::strToPrintable($kpis[$i]->kpi_name);?><br/>
-													<subtitle style="font-size:11px"><?php echo GPC::strToPrintable($kpis[$i]->kpi_desc);?></subtitle>
-													<br/>
-											
-												<input type="hidden" name="<?php echo "num_tests_" . $i?>" id="<?php echo "num_tests_" . $i?>" value="<?php echo GPC::strToPrintable($test_count); ?>" />
-												<div class="kpi_tests" name="<?php echo "adopted_test_box_" . $i;?>" id="<?php echo "adopted_test_box_" .  $i;?>">
-									<?php
-																	for($k=0; $k<$test_count;$k++){
-																		if ($kpis[$i]->kpi_tests[$k]->active == '1'){ 
-																		 	$test_checked = "checked";
-																		}else{ 
-																		 	$test_checked = "unchecked";
-																		}
-																?>
-																		KPI Test <?php echo $k+1; ?> <br/>
-					
-																		<input type="checkbox" name="<?php echo "adopted_test_checkbox_id_". $i ."_". $k;?>" id="<?php echo "adopted_test_checkbox_id_". $i ."_". $k;?>" value="<?php echo GPC::strToPrintable($kpis[$i]->kpi_tests[$k]->id);?>" <?php echo $test_checked;?> onclick="modifyTestStatus(<?php echo GPC::strToPrintable($kpis[$i]->id);?>, <?php echo GPC::strToPrintable($kpis[$i]->kpi_tests[$k]->id);?>, <?php echo $i;?>, <?php echo $k;?> );"  /> <?php echo GPC::strToPrintable($kpis[$i]->kpi_tests[$k]->test_name);?> (every <?php echo GPC::strToPrintable($kpis[$i]->kpi_tests[$k]->test_frequency);?> days) <br />
-																		<subtitle style="font-size:11px"><?php echo GPC::strToPrintable($kpis[$i]->kpi_tests[$k]->test_description);?></subtitle>
-																		<br/>
-														<?php  }?>
-												</div>
-												<input id='removeKPIButton' type='button' value='X' onclick='removeKPI(<?php echo $i; ?>);' class='small-add-btn up-down'/>
-											</div>
-								<?php	}
-								}  
-								if($active_kpis == 0){
-									echo "<div class='kpi_start_prompt'>Choose some KPIs to get started ----></div>";
-								}
-		
-								
-								?>
-		
+</script>
+						<!-- Box -->
+						<div class="box">
+							<!-- GOAL TITLE & LEVEL -->
+							<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->goal->id;?>"  onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')"> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')" href="#">+</a>--></div>
+
+							<!-- %%%%%%%%%%%% LIGHTBOXES FOR ELEMENT CREATION %%%%%%%%%%%% -->
+							
+							<!-- Lightbox for creating Goal Events -->
+							<div class="lightbox-panel" id="lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
+							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'goal')">X</a>
+								<div class="newscore-row">
+									<span class="new_level" style="font-weight:bold;"><?php echo GPC::strToPrintable($goal->goal->name);?> </span><br/>
+									<span class="new_level">New Level:</span><input type="text" class="field" id="eventNewScore<?php echo $goal->goal->id;?>"  />
+									<div class="cl">&nbsp;</div>
 								</div>
-							</div>
-		
-							<div class="kpi_box">
-								<div id="if_kpi_input" style="margin-top:10px; display:none; color:white;"><br/>
-									<label class='small-label'>  KPI: </label>
-									<input type='text' class='small-field' name='kpiName' id='kpiName' /><br/><br/>
-									<label class='small-label'> Description: </label>
-									<input type='text' class='small-field' name='kpiDescription' id='kpiDescription' /><br/><br/>
-									<label class='small-label'>  Test Name: </label>
-									<input type='text' class='small-field' name='kpiTestName' id='kpiTestName' /><br/><br/>
-									<label class='small-label'>  Test Description: </label>
-									<input type='text' class='small-field' name='kpiTestDescription' id='kpiTestDescription' /><br/><br/>
-									<label class='small-label'>  Test Freq. (days): </label>
-									<input type='text' class='small-field' name='kpiTestFrequency' id='kpiTestFrequency' />
-									<div class='cl'></div>
-									<br/>					
-									<center><input type="button" value="Add KPI" onclick="addAndAdoptKPI();" class="small-add-btn up-down"/></center>
-								</div>
-								<?php 
-								for($i=0; $i<count($kpis);$i++){
-									$test_count = count($kpis[$i]->kpi_tests);
-									if($kpis[$i]->kpi_active == 0){
-									$show_kpi = "display:'';";
-									}else{
-									$show_kpi = "display:none;";
-									}
-								?>
-								<div class="kpi" id="<?php echo "kpi_box_" . $i;?>" style="<?php echo GPC::strToPrintable($show_kpi); ?>">
-									<div class="kpi_internals" name="<?php echo "kpi_internals" . "_" . $i ;?>" id="<?php echo "kpi_internals" . "_" . $i ;?>">
-											<input type="checkbox" value="<?php echo GPC::strToPrintable($kpis[$i]->id);?>" onclick="change_kpi_tests('<?php echo $i;?>');" id="<?php echo "kpi_checkbox_" . $i ;?>" /> <?php echo GPC::strToPrintable($kpis[$i]->kpi_name);?><br/>
-											<subtitle style="font-size:11px"><?php echo GPC::strToPrintable($kpis[$i]->kpi_desc);?></subtitle>
-											<br/>
-									
-										<input type="hidden" name="<?php echo "num_tests_" . $i?>" id="<?php echo "num_tests_" . $i?>" value="<?php echo $test_count; ?>" />
-										<div class="kpi_tests" style="display:none;" name="<?php echo "kpi_test_box_" . $i;?>" id="<?php echo "kpi_test_box_" .  $i;?>">
-							<?php
-															for($k=0; $k<$test_count;$k++){
-														?>
-																KPI Test <?php echo $k+1; ?> <br/>
-			
-																<input type="checkbox" name="<?php echo "kpi_test_checkbox_id_". $i ."_". $k;?>" id="<?php echo "kpi_test_checkbox_id_". $i ."_". $k;?>" value="<?php echo GPC::strToPrintable($kpis[$i]->kpi_tests[$k]->id);?>"  onclick="modifyTestStatus(<?php echo GPC::strToPrintable($kpis[$i]->id);?>, <?php echo GPC::strToPrintable($kpis[$i]->kpi_tests[$k]->id);?>, <?php echo $i;?>, <?php echo $k;?> );"  /> <?php echo GPC::strToPrintable($kpis[$i]->kpi_tests[$k]->test_name);?> (every <?php echo GPC::strToPrintable($kpis[$i]->kpi_tests[$k]->test_frequency);?> days) <br />
-																<subtitle style="font-size:11px"><?php echo GPC::strToPrintable($kpis[$i]->kpi_tests[$k]->test_description);?></subtitle>
-																<br/>
-												<?php  }?>
-										</div>
-									</div>
-								</div>			
-								<input type="hidden" name="numtests" id="numtests" value="<?php echo count($kpis[$i]->kpi_tests); ?> " />
-								<input type="hidden" name="numkpis" id="numkpis" value="<?php echo count($kpis); ?> " />
-					
-							<?php
-								}  
-								?>
-							</div>
-						</div>
-						<div style="clear:both;"/>
-		
-		
-						<!-- START STRATEGIES -->
-						<div class="strategy_headings">
-							<div class="chosen_strategies" id="show_adopted_strategies"> My Strategies </div>
-							<div class="choose_strategy_heading"> 
-								Choose Strategies:
-								<a class="show_strategy_input" id="show_strategy_input" name="show_strategy_input" style="color:white; float:right;">
-									Add Your Own
-								</a>
-								<a class="remove_strategy_input" id="remove_strategy_input" name="remove_strategy_input" style="color:white; float:right; display:none;">
-									Close Strategy Creator
-								</a>
-							</div>
-						</div>
-						
-						<div style="clear:both;"/>
-						<div class="all_strategies">
-							<div class="strategy_results">
-								<div class="adopted_strategy" id="adopted_strategy" name="adopted_strategy">
-								
-									<!-- ADOPTED Strategies GO HERE -->
-								
-									<?php 
-									$active_strategies = 0;
-									for($j=0; $j<count($strategies);$j++){
-										if($strategies[$j]->strategy_active == 1){
-											$active_strategies++;
-									?>
-										<div class="strategy_boxes" name="<?php echo "adopted_strategy_box_" . $j ; ?>" id="<?php echo "adopted_strategy_box_" . $j ; ?>">				
-											<div name="<?php echo "adopted_strategy_internals_" . $j ;?>" id="<?php echo "adopted_strategy_internals" . "_" . $j ;?>">
-											<!-- Strategy <?php echo $j; ?> <br/> -->
-												<input type="checkbox" name="<?php echo "adopted_strategy" . "_" . $j ;?>" value="<?php echo GPC::strToPrintable($strategies[$j]->id);?>" onclick="adopt_strategy('<?php echo $j;?>');" id="<?php echo "adopted_strategy_checkbox_" . $j ;?>" style="display:none;"/> <?php echo GPC::strToPrintable($strategies[$j]->name);?><br/>
-												<subtitle style="font-size:11px"><?php echo GPC::strToPrintable($strategies[$j]->description);?></subtitle><span><?php echo GPC::strToPrintable($strategies[$j]->strategy_type);?></span>
-												<br/>
-											<input id='removeStrategyButton' type='button' value='X' onclick='removeStrategy(<?php echo $j; ?>);' class='small-add-btn up-down'/>
-											</div>
-										</div>
-								<?php }
-									}
-									if($active_strategies == 0){
-										echo "<div class='strategy_start_prompt'>Choose some Strategies to get started ----></div>";
-									}
-								?>
-								
-								</div>
-							</div>
-												
-							<div class="strategies" >						
-								<div id="if_strategy_input" style="margin-top:10px; display:none; color:white;"><br/>
-									<label class='small-label'> Strategy: </label>
-									<input type='text' class='small-field' name='strategyName' id='strategyName'/>
-									<br/><br/>
-									<label class='small-label'> Description: </label>
-									<input type='text' class='small-field' name='strategyDescription' id='strategyDescription'/>
-									<br/><br/>
-									<label class='small-label'> Type: </label>
-									<select name='strategyType' id='strategyType'>
-										<option value='adherence'>Habit</option>
-										<option value='todo'>ToDo</option>
-										<option value='tactic'>Tactic</option>
+								<div class="grade-row">
+									<span class="new_level">Letter grade:</span>
+									<select name="grade" id="eventLetterGrade<?php echo $goal->goal->id;?>" size="1">
+										<option value="A" >A</option>
+										<option value="B" >B</option>
+										<option value="C" >C</option>
+										<option value="D" >D</option>
+										<option value="F" >F</option>
 									</select>
-									<div class='cl'> </div>					
-									<center><input type="button" value="Add Strategy" onclick="addAndAdoptStrategy();" class="small-add-btn up-down" style="margin-bottom:14px;padding:3px;"/></center>
 								</div>
-							<?php 
-							for($j=0; $j<count($strategies);$j++){
-								if($strategies[$j]->strategy_active == 0){
-									$show_strategy = "display:'';";
-									}else{
-									$show_strategy = "display:none;";
-								}
-								
-							?>
-								<div class="strategy_boxes" name="<?php echo "strategy_box_" . $j ; ?>" id="<?php echo "strategy_box_" . $j;?>" style="<?php echo $show_strategy; ?>" >				
-									<div name="<?php echo "strategy_internals_" . $j ;?>" id="<?php echo "strategy_internals" . "_" . $j ;?>">
-									<!-- Strategy <?php echo $j; ?> <br/> -->
-										<input type="checkbox" name="<?php echo "strategy" . "_" . $j ;?>" value="<?php echo GPC::strToPrintable($strategies[$j]->id);?>" onclick="adopt_strategy('<?php echo $j;?>');" id="<?php echo "strategy_checkbox_" . $j ;?>" /> <?php echo GPC::strToPrintable($strategies[$j]->name);?><br/>
-										<subtitle style="font-size:11px"><?php echo GPC::strToPrintable($strategies[$j]->description);?></subtitle><span><?php echo GPC::strToPrintable($strategies[$j]->strategy_type);?></span>
-										<br/>
-									</div>
+								<div class="cl">&nbsp;</div>
+								<textarea name="textarea" style="color:#999; margin-top:5px;" onclick="clearWhy(<?php echo $goal->goal->id;?>)" id="eventWhy<?php echo $goal->goal->id;?>" class="field" rows="4" cols="40">Why?</textarea>
+								<button type="submit" value="submit"  onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->goal->id; ?>, <?php echo $goalstatus->level; ?>)" >submit</button>
+							</div><!-- /lightbox-panel -->						
+							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
+
+
+							<!-- Lightbox for creating Tactics -->
+							<div class="lightbox-panel" id="tactic-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
+							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'tactic')">X</a>
+								<div class="newscore-row">
+									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Tactic</div>
+									<div class="new_tactic">Tactic Name: <input type="text" class="text_input" id="newTacticName<?php echo $goal->goal->id;?>"  /></div>
+									<div class="new_tactic">Tactic Description: <input type="text" class="text_input" id="newTacticDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</span></div><br/>
+									<div class="cl">&nbsp;</div>
 								</div>
-						<?php
-							}
-						?>
-			
-								<div id="dailytests" style="margin-top:10px;"></div>
-								<input type="hidden" name="numstrategies" id="numstrategies" value="<?php echo count($strategies); ?>" />
-							</div>
-						</div>		
-						<input type="hidden" name="num_strategies" value="<?php echo count($strategies);?>"/>
-						<input type="hidden" name="num_kpis" value="<?php echo count($kpis);?>"/>
-						<input type="hidden" name="goal_id" value="<?php echo $goalID;?>"/>
-					</div>
-									
-					<!-- END EDIT GOAL PARAMETERS -->
-					<div class="cl">&nbsp;</div>
-				</div>
-		
-				<!-- START DISPLAY TO USERS WHO HAVE NOT ADDED GOAL YET -->		
-				<div class="results">
-					<div id="who_else_adopted">		
-						<ul>
-						    <li><p class="res-box"><span><?php echo $numAdopters; ?></span></p><p class="label">People have this goal</p></li>
-						    <li class="last"><p class="res-box"><span><?php echo sprintf("%1.1f",$average); ?></span></p><p class="label">Average level</p></li>
-						</ul>
+								<div class="cl">&nbsp;</div>
+								<center><button type="submit" value="submit"  onclick="modifyStrategy('', <?php echo $goal->goal->id; ?>, 'create','tactic')" >submit</button></center>
+							</div><!-- /lightbox-panel -->						
+							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
+
+
+							<!-- Lightbox for creating Todos -->
+							<div class="lightbox-panel" id="todo-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
+							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'todo')">X</a>
+								<div class="newscore-row">
+									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> ToDo</div>
+									<div class="new_tactic">Todo Name: <input type="text" class="text_input" id="newToDoName<?php echo $goal->goal->id;?>"  /></div>
+									<div class="new_tactic">Todo Description: </span><input type="text" class="text_input" id="newToDoDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
+									<div class="cl">&nbsp;</div>
+								</div>
+								<div class="cl">&nbsp;</div>
+								<center><button type="submit" value="submit"  onclick="modifyStrategy('', <?php echo $goal->goal->id; ?>, 'create','todo')" >submit</button></center>
+							</div><!-- /lightbox-panel -->						
+							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
+
+							<!-- Lightbox for creating Measuerments and Milestones -->
+							<div class="lightbox-panel" id="kpi-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
+							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'kpi')">X</a>
+								<div class="newscore-row">
+									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Measure / Milestone</div>
+									<div class="new_tactic">Name: <input type="text" class="text_input" id="newKPIName<?php echo $goal->goal->id;?>"  /></div>
+									<div class="new_tactic">Description: </span><input type="text" class="text_input" id="newKPIDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
+									<div class="new_tactic">Test Name: <input type="text" class="text_input" id="newKPITestName<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</span></div>
+									<div class="new_tactic">Test Description: </span><input type="text" class="text_input" id="newKPITestDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
+									<div class="new_tactic">Test Frequency: </span><input type="text" class="text_input" id="newKPITestFrequency<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
+									<div class="cl">&nbsp;</div>
+								</div>
+								<div class="cl">&nbsp;</div>
+								<center><button type="submit" value="submit"  onclick="modifyKPI(0, <?php echo $goal->goal->id; ?>, 'create',0)" >submit</button></center>
+							</div><!-- /lightbox-panel -->						
+							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
+
+
 						
-						<div class="five_friends"> 
-							<!-- Insert 5 images of people who are have this goal here prioritizing friends -->
-						</div>
-					</div>
-				</div>
-				<div class="cl">&nbsp;</div> 
-				<!-- END DISPLAY TO USERS WHO HAVE NOT ADDED GOAL YET -->		
-		
-			</div>
+						
+						
+						
+		<!-- Tactics start here -->	
+			<div class="user_page_items">
+				<span class="user_page_sub_title"> Tactics </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->goal->id);?>,'tactic')" href="#">+</a><br/><div class="adopted_strategies" id="new_tactic_place<?php echo GPC::strToPrintable($goal->goal->id);?>"></div>
+		<?php if(!empty($dailytests)){?>
+						<ul style="list-style-type:square;">
+<?php				$isToDo = 0;
+					foreach($dailytests as $dailytest) {
+					
+						if($dailytest->strategy_type == 'tactic'){
+							$isToDo = 1;
+							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, date("Y-m-d"))?"checked":"";
+	?>
+	
+							<div class="tactic_label" id="strategyBox<?php echo $dailytest->id;?>">
+								<li>
+									<div style="display:none;" id="element<?php echo $dailytest->id;?>"> 
+										<input id="newStrategyName<?php echo $dailytest->id;?>" type="text" value="<?php echo GPC::strToPrintable($dailytest->name);?>" style="width:375px; font-size:13px; color:#666;"/>
+										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
+									</div> 
+									<span id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
+									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+
+								</li>
+							</div>
+							<div class="cl">&nbsp;</div>
+<?php					}
+					}
+					?></ul> <?php
+					if($isToDo == 0){
+					 echo "<span class='no_tactic_elements' id='no_tactic_elements" . $goal->goal->id . "'>  Adopt some Tactics here.</span>";
+					}
+					?>
+			<?php }else{
+					 echo "<span class='no_tactic_elements' id='no_tactic_elements" . $goal->goal->id . "'> Adopt some Tactics here.</span>";
+			}?>
 			
-			<div class="remove_goal">
-					<button class="remove-goal-btn" id="remove_goal" onclick="removeGoal();">Deactivate goal</button>
-			</div>
 			
-			
-			<div style="min-height:100px; min-width:700px;"></div>
-			<!-- End Score -->	
+				<div style="clear:both; margin-top:15px;"/>
+				<div class="adoptable_strategies">
+				<span class="user_page_sub_title"> Adoptable Tactics </span><br/>
+		<?php if(!empty($adoptableStrategiesList)){?>
+						<ul style="list-style-type:square;">
+<?php				$isToDo = 0;
+					foreach($adoptableStrategiesList as $adoptableStrategiesItem) {
+					
+						if($adoptableStrategiesItem->strategy_type == 'tactic'){
+							$isToDo = 1;
+							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $adoptableStrategiesItem->id, date("Y-m-d"))?"checked":"";
+	?>
+	
+							<div class="tactic_label" id="adoptStrategyBox<?php echo $adoptableStrategiesItem->id;?>">
+								<li id="liAdopt<?php echo $adoptableStrategiesItem->id;?>">
+									<div style="display:none;" id="element<?php echo $adoptableStrategiesItem->id;?>"> 
+										<input id="newStrategyName<?php echo $adoptableStrategiesItem->id;?>" type="text" value="<?php echo GPC::strToPrintable($adoptableStrategiesItem->name);?>" style="width:375px; font-size:13px; color:#666;"/>
+										<button onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'edit', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $adoptableStrategiesItem->id;?>,0)">cancel</button>
+									</div>
+									
+									<div id="strategyBox<?php echo $adoptableStrategiesItem->id;?>">
+										<span id="curElementText<?php echo $adoptableStrategiesItem->id;?>"><?php echo GPC::strToPrintable($adoptableStrategiesItem->name);?></span>
+										
+										<span class="editLink" id="adoptButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id; ?>, 'adopt', 'tactic')">adopt</span>
+										<span class="editLink" style="display:none;" id="editButton<?php echo $adoptableStrategiesItem->id;?>" onclick="editElement(<?php echo $adoptableStrategiesItem->id;?>,1)">edit</span>
+										<span class="editLink"  style="float:right; display:none;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
+									</div>
+								</li>
+							</div>
+							<div class="cl">&nbsp;</div>
+<?php					}
+					}
+					?></ul> <?php
+					if($isToDo == 0){
+					 echo "<span class='no_tactic_elements' id='no_tactic_elements" . $goal->goal->id . "'>  Adopt some Tactics here.</span>";
+					}
+					?>
+			<?php }else{
+					 echo "<span class='no_tactic_elements' id='no_tactic_elements" . $goal->goal->id . "'> Adopt some Tactics here.</span>";
+			}?>
+				</div>	
+				</div>		
+			</div>		
+
+
+		<!-- TODOS start here -->
+		<div class="user_page_items">
+			<span class="user_page_sub_title"> ToDos </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->goal->id);?>,'todo')" href="#">+</a><br/><div class="adopted_strategies" id="new_todo_place<?php echo GPC::strToPrintable($goal->goal->id);?>"></div>
+		<?php 				
+				if(!empty($dailytests)){?>
+<?php				$isToDo = 0;
+					foreach($dailytests as $dailytest) {
+					
+						if($dailytest->strategy_type == 'todo'){
+							$isToDo = 1;
+							$checkedVal = Dailytest::getCompletedStatus($user->id, $dailytest->id)?"checked":"";
+							if($checkedVal == "checked"){
+								$strikethrough = "text-decoration: line-through;";
+							}else{
+								$strikethrough = "";
+							}
+				?>
+									<label for="testCheck<?php echo $dailytest->id;?>" style="float:left;">
+										<input type="checkbox" value="Check" id="testCheck<?php echo $dailytest->id;?>" <?php echo $checkedVal; ?> onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'completed', '<?php echo $dailytest->strategy_type;?>')" />
+									</label>
+
+							<div class="todo_label" id="strategyBox<?php echo $dailytest->id;?>">
+									<div style="display:none;" id="element<?php echo $dailytest->id;?>"> 
+										<input id="newStrategyName<?php echo $dailytest->id;?>" type="text" value="<?php echo GPC::strToPrintable($dailytest->name);?>" style="width:375px; font-size:13px; color:#666;"/>
+										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
+									</div> 
+									<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
+									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+							</div>
+							<div class="cl">&nbsp;</div>
+<?php					}
+					}
+					if($isToDo == 0){
+						 echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some ToDos here.</span>";
+					}?>
+			<?php }else{
+					     echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some ToDos here.</span>";
+			}?>			
+
+				<div style="clear:both;"/>
+				
+			<div class="adoptable_strategies">
+			<span class="user_page_sub_title"> Adoptable ToDos </span><br/><div id="new_todo_place<?php echo GPC::strToPrintable($goal->goal->id);?>"></div>
+		<?php 				
+				if(!empty($adoptableStrategiesList)){?>
+<?php				$isToDo = 0;
+					foreach($adoptableStrategiesList as $adoptableStrategiesItem) {
+					
+						if($adoptableStrategiesItem->strategy_type == 'todo'){
+							$isToDo = 1;
+							$checkedVal = Dailytest::getCompletedStatus($user->id, $adoptableStrategiesItem->id)?"checked":"";
+							if($checkedVal == "checked"){
+								$strikethrough = "text-decoration: line-through;";
+							}else{
+								$strikethrough = "";
+							}
+				?>
+									<label for="testCheck<?php echo $adoptableStrategiesItem->id;?>" style="float:left;">
+										<input type="checkbox" value="Check" id="testCheck<?php echo $adoptableStrategiesItem->id;?>" <?php echo $checkedVal; ?> onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'completed', '<?php echo $adoptableStrategiesItem->strategy_type;?>')" />
+									</label>
+
+							<div class="adopt_todo_label" id="adoptStrategyBox<?php echo $adoptableStrategiesItem->id;?>">
+								<div id="liAdopt<?php echo $adoptableStrategiesItem->id;?>">
+									<div style="display:none;" id="element<?php echo $adoptableStrategiesItem->id;?>"> 
+										<input id="newStrategyName<?php echo $adoptableStrategiesItem->id;?>" type="text" value="<?php echo GPC::strToPrintable($adoptableStrategiesItem->name);?>" style="width:375px; font-size:13px; color:#666;"/>
+										<button onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'edit', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $adoptableStrategiesItem->id;?>,0)">cancel</button>
+									</div> 
+									
+									<div id="strategyBox<?php echo $adoptableStrategiesItem->id;?>">
+										<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $adoptableStrategiesItem->id;?>"><?php echo GPC::strToPrintable($adoptableStrategiesItem->name);?></span>
+										<span class="editLink" id="adoptButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id; ?>, 'adopt', 'todo')">adopt</span>
+										<span class="editLink" style="display:none;" id="editButton<?php echo $adoptableStrategiesItem->id;?>" onclick="editElement(<?php echo $adoptableStrategiesItem->id;?>,1)">edit</span>
+										<span class="editLink"  style="float:right; display:none;" style="float:right;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
+								</div>
+							</div>
+							</div>
+							<div class="cl">&nbsp;</div>
+<?php					}
+					}
+					if($isToDo == 0){
+						 echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some ToDos here.</span>";
+					}?>
+			<?php }else{
+					     echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some ToDos here.</span>";
+			}?>			
+		</div>		
 		</div>
-		<?php if($userHasGoal){?>
-		<script> onEdit(); </script>			
-		<?php } ?>
-		
-		<!-- End Case -->
-		
+		</div>
+
+
+		<!-- Habits start here -->
+		<div class="user_page_items">
+			<span class="user_page_sub_title"> Habits </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->goal->id);?>,'todo')" href="#">+</a><br/><div class="adopted_strategies"  id="new_habit_place<?php echo GPC::strToPrintable($goal->goal->id);?>"></div>
+		<?php 				
+				if(!empty($dailytests)){?>
+<?php				$isToDo = 0;
+					foreach($dailytests as $dailytest) {
+					
+						if($dailytest->strategy_type == 'adherence'){
+							$isToDo = 1;
+							$checkedVal = Dailytest::getCompletedStatus($user->id, $dailytest->id)?"checked":"";
+							if($checkedVal == "checked"){
+								$strikethrough = "text-decoration: line-through;";
+							}else{
+								$strikethrough = "";
+							}
+				?>
+							<div class="todo_label" id="strategyBox<?php echo $dailytest->id;?>">
+									<div style="display:none;" id="element<?php echo $dailytest->id;?>"> 
+										<input id="newStrategyName<?php echo $dailytest->id;?>" type="text" value="<?php echo GPC::strToPrintable($dailytest->name);?>" style="width:375px; font-size:13px; color:#666;"/>
+										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
+									</div> 
+									<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
+									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+							</div>
+							<div class="cl">&nbsp;</div>
+<?php					}
+					}
+					if($isToDo == 0){
+						 echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some ToDos here.</span>";
+					}?>
+			<?php }else{
+					     echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some ToDos here.</span>";
+			}?>			
+
+				<div style="clear:both;"/>
+				
+				
+				
+				
+			<div class="adoptable_strategies">
+			<span class="user_page_sub_title"> Adoptable Habits </span><br/>
+		<?php 				
+				if(!empty($adoptableStrategiesList)){?>
+<?php				$isToDo = 0;
+					foreach($adoptableStrategiesList as $adoptableStrategiesItem) {
+					
+						if($adoptableStrategiesItem->strategy_type == 'adherence'){
+							$isToDo = 1;
+							$checkedVal = Dailytest::getCompletedStatus($user->id, $adoptableStrategiesItem->id)?"checked":"";
+							if($checkedVal == "checked"){
+								$strikethrough = "text-decoration: line-through;";
+							}else{
+								$strikethrough = "";
+							}
+				?>
+							<div class="adopt_todo_label" id="adoptStrategyBox<?php echo $adoptableStrategiesItem->id;?>">
+								<div id="liAdopt<?php echo $adoptableStrategiesItem->id;?>">
+									<div style="display:none;" id="element<?php echo $adoptableStrategiesItem->id;?>"> 
+										<input id="newStrategyName<?php echo $adoptableStrategiesItem->id;?>" type="text" value="<?php echo GPC::strToPrintable($adoptableStrategiesItem->name);?>" style="width:375px; font-size:13px; color:#666;"/>
+										<button onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'edit', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $adoptableStrategiesItem->id;?>,0)">cancel</button>
+									</div> 
+									
+								<div id="strategyBox<?php echo $adoptableStrategiesItem->id;?>">
+									<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $adoptableStrategiesItem->id;?>"><?php echo GPC::strToPrintable($adoptableStrategiesItem->name);?></span>
+									<span class="editLink" id="adoptButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id; ?>, 'adopt', 'habit')">adopt</span>
+									<span class="editLink" style="display:none;" id="editButton<?php echo $adoptableStrategiesItem->id;?>" onclick="editElement(<?php echo $adoptableStrategiesItem->id;?>,1)">edit</span>
+									<span class="editLink" style="display:none; float:right;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
+							</div>
+							</div>
+							</div>
+							<div class="cl">&nbsp;</div>
+<?php					}
+					}
+					if($isToDo == 0){
+						 echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some ToDos here.</span>";
+					}?>
+			<?php }else{
+					     echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some ToDos here.</span>";
+			}?>			
+		</div>		
+		</div>
+		</div>
+
+
+
+		<!-- KPIS start here -->
+					<div class="user_page_items">
+						<span class="user_page_sub_title"> Measurements and Milestones </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->goal->id);?>,'kpi')" href="#">+</a><br/><div class="adopted_strategies" id="new_kpi_place<?php echo GPC::strToPrintable($goal->goal->id);?>"></div>
+		<?php 
+			 $kpi_active = 0;
+			 if(!empty($kpis)){
+					foreach($kpis as $kpi) {	
+						if($kpi->kpi_active == 1){
+							$kpi_active = 1;						
+							?>
+									<label for="testKPICheck<?php echo $kpi->id;?>" style="float:left;">
+										<input onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'completed','')" type="checkbox" value="Check" id="testKPICheck<?php echo $kpi->id;?>" <?php echo $checkedVal; ?> onclick="" />
+									</label>
+						
+							<div class="kpi_label" id="kpiBox<?php echo $kpi->id;?>">
+									<div style="display:none;" id="KPIElement<?php echo $kpi->id;?>"> 
+										Name: <input id="newKPIName<?php echo $kpi->id;?>" type="text" value="<?php echo GPC::strToPrintable($kpi->kpi_name);?>" style="width:275px; font-size:13px; color:#666;"/> Test: <input id="newKPITestName<?php echo $kpi->id;?>" type="text" value="<?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo $kpi->kpi_tests[0]->test_name;}?>" style="width:145px; font-size:13px; color:#666;"/>
+										<button onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'edit', <?php if(!empty($kpi->kpi_tests[0]->id)){ echo $kpi->kpi_tests[0]->id; }else{ echo '';} ?>)">submit</button><button  onclick="editKPIElement(<?php echo $kpi->id;?>,0)">cancel</button>
+									</div> 
+									<span style="<?php echo $strikethrough; ?>" id="curKPIElementText<?php echo $kpi->id;?>"><?php echo GPC::strToPrintable($kpi->kpi_name);?></span>
+									
+									<?php if(!empty($kpi->kpi_tests[0]->test_name)){
+										$isTest = "";
+									}else{ 
+										$isTest = "none"; 
+									}
+
+									?><span style='display:'<?php echo $isTest;?>' id='curKPITestText<?php echo $kpi->id;?>'><?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo "("; echo $kpi->kpi_tests[0]->test_name; echo ")"; } ?></span>
+									<span class="editLink" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'remove','')">x</span>
+							</div>
+							<div class="cl">&nbsp;</div>
+<?php					
+					}
+					?>
+			<?php }
+			if($kpi_active == 0){
+						 echo "<span class='no_kpi_elements' id='no_kpi_elements" . $goal->goal->id . "'> Adopt some Measurements and Milestones here.</span>"; 
+			}
+			
+			}
+			?>
+					</div>		
+				
+				
+					<div class="user_page_items">
+						<span class="user_page_sub_title"> Adoptable Measurements and Milestones </span><br/><div id="new_kpi_place<?php echo GPC::strToPrintable($goal->goal->id);?>"></div>
+		<?php 
+			 $kpi_active = 0;
+			 if(!empty($kpis)){
+					foreach($kpis as $kpi) {	
+						if($kpi->kpi_active == 0){
+							$kpi_active = 1;						
+							?>
+						
+							<div class="kpi_label" id="adoptKPIBox<?php echo $kpi->id;?>">
+								<div id="liKPIAdopt<?php echo $kpi->id;?>">
+									<div style="display:none;" id="KPIElement<?php echo $kpi->id;?>"> 
+										Name: <input id="newKPIName<?php echo $kpi->id;?>" type="text" value="<?php echo GPC::strToPrintable($kpi->kpi_name);?>" style="width:275px; font-size:13px; color:#666;"/> Test: <input id="newKPITestName<?php echo $kpi->id;?>" type="text" value="<?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo $kpi->kpi_tests[0]->test_name;}?>" style="width:145px; font-size:13px; color:#666;"/>
+										<button onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'edit', <?php if(!empty($kpi->kpi_tests[0]->id)){ echo $kpi->kpi_tests[0]->id; }else{ echo '';} ?>)">submit</button><button  onclick="editKPIElement(<?php echo $kpi->id;?>,0)">cancel</button>
+									</div> 
+									
+									<div id="kpiBox<?php echo $kpi->id;?>">
+										<span style="<?php echo $strikethrough; ?>" id="curKPIElementText<?php echo $kpi->id;?>"><?php echo GPC::strToPrintable($kpi->kpi_name);?></span>									
+										<?php if(!empty($kpi->kpi_tests[0]->test_name)){
+											$isTest = "";
+										}else{ 
+											$isTest = "none"; 
+										}
+	
+										?>
+										<span style='display:'<?php echo $isTest;?>' id='curKPITestText<?php echo $kpi->id;?>'><?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo "("; echo $kpi->kpi_tests[0]->test_name; echo ")"; } ?></span>
+										
+										<span class="editLink" id="adoptKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'adopt','')">adopt</span>
+										<span class="editLink" style="display:none;" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span>
+										<span class="editLink" style="display:none; float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'remove','')">x</span>
+									</div>
+							</div>
+
+
+							</div>
+							<div class="cl">&nbsp;</div>
+<?php					
+					}
+					?>
+			<?php }
+			if($kpi_active == 0){
+						 echo "<span class='no_kpi_elements' id='no_kpi_elements" . $goal->goal->id . "'> Adopt some Measurements and Milestones here.</span>"; 
+			}
+			
+			}
+			?>
+					</div>
+					</div>
+				
+				
+				
+				
+		<!-- End Box -->		
 		<?php
 				break;
 				

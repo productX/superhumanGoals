@@ -8,7 +8,7 @@ $type = $_POST['type'];
 $newStrategyName = $_POST['newStrategyName'];
 $strategyType  = $_POST['strategyType'];
 $newStrategyDescription  = $_POST['newStrategyDescription'];
-
+$page = $_POST['page'];
 
 if($type == 'adopt'){
 	Dailytest::adoptStrategy($userID, $strategyID, $goalID);
@@ -28,10 +28,10 @@ if($type == 'adopt'){
 }elseif($type == 'create'){
 	$strategyID = Dailytest::createNew($goalID, $newStrategyName, $newStrategyDescription, $strategyType, $userID);
 	Dailytest::adoptStrategy($userID, $strategyID, $goalID);
-
+	if($page == 1 ){
+	    header ("location: ../user.php?id=$userID&t=habits#.php");
+	}
 	echo $strategyID;
 }
-
-
 
 ?>
