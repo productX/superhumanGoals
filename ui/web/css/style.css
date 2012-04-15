@@ -143,8 +143,8 @@ h1#logo a:hover { background-position: 0 bottom; }
 .score .text a.btn { -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; -webkit-box-shadow: inset -2px -2px 4px 1px #106504; -moz-box-shadow: inset -2px -2px 4px 1px #106504; box-shadow: inset -2px -2px 4px 1px #106504; }
 .score .text a.btn:hover { text-decoration: none; background: #23e509; }
 .score .text a.btn:active { text-decoration: none; -webkit-box-shadow: inset 2px 2px 4px 1px #106504; -moz-box-shadow: inset 2px 2px 4px 1px #106504; box-shadow: inset 2px 2px 4px 1px #106504; }
-.score .results { width: 380px; float: left; display: inline; padding: 0px 0 0 0; }
-.score .results ul li { float: left; display: inline; padding: 0 20px 0 0; width: 180px; text-align: center;  }
+.score .results { width:600px; display: block; padding: 0px 0 0 0; }
+.score .results ul li { float: left; display: inline; padding: 0 20px 0 0; width: 250px; text-align: center;  }
 .score .results ul li.last { padding: 0; }
 .score .results p.res-box span { font-size: 60px; line-height: 72px; color: #000000; background: #f3f3f3; border: solid 1px #868686; padding: 0 20px; }
 .score .results p.res-box span { box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
