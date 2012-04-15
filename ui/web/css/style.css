@@ -113,21 +113,21 @@ h1#logo a:hover { background-position: 0 bottom; }
 
 .scrollarea { width: 100%; height: 165px; overflow: auto; position: relative; z-index: 20; }
 
-.case { padding: 3px 15px 35px 21px; }
+.case { padding: 3px 15px 15px 21px; }
 .case a { color: #214390; }
 .goals { padding-left: 51px; }
 .boxes { padding: 23px 11px 35px 14px; }
 
 .post .user-name { margin-right: 10px; margin-bottom: 0; }
-.post .cnt { float: left; display: inline; width: 442px;  }
-.post .post-title { padding: 0 0 15px 0; }
-.post .quote-image-good { float: left; display: inline; padding: 0 16px; font-size: 60px; line-height: 72px; color: #fff; border: solid 1px #1c9900; background: #4abf30; margin-right: 13px; }
+.post .cnt { float: left; display: inline; width: 642px;  }
+.post .post-title { padding: 0 0 3px 0; font-size:16px}
+.post .quote-image-good { float: left; display: inline; padding: 0 10px; font-size: 30px; line-height: 40px; color: #fff; border: solid 1px #1c9900; background: #4abf30; margin-right: 13px; }
 .post .quote-image-good { box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
-.post .quote-image-bad { float: left; display: inline; padding: 0 16px; font-size: 60px; line-height: 72px; color: #fff; border: solid 1px #990000; background: #bf3030; margin-right: 13px; }
+.post .quote-image-bad { float: left; display: inline; padding: 0 10px; font-size: 30px; line-height: 40px; color: #fff; border: solid 1px #990000; background: #bf3030; margin-right: 13px; }
 .post .quote-image-bad { box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
-.post .quote { float: left; display: inline; width: 316px; padding: 5px 0 0 33px; background: url(images/quote-top.png) no-repeat 0 8px; color: #4c4c4c; }
-.post .quote p { padding: 0 38px 0 0; background: url(images/quote-bottom.png) no-repeat right bottom; margin-bottom: 20px; }
-.post .time { display: block; text-align: right; font-size: 14px; }
+.post .quote { float: left; display: inline; width: 516px; padding: 5px 0 0 33px; background: url(images/quote-top.png) no-repeat 0 8px; color: #4c4c4c; }
+.post .quote p { padding: 0 38px 0 0; background: url(images/quote-bottom.png) no-repeat right bottom; margin-bottom: 10px; font-size:14px;}
+.post .time { display: block; text-align: right; font-size: 12px; line-height:18px}
 
 .post .result-image-good { float: left; display: inline; padding: 0 16px; font-size: 48px; line-height: 72px; color: #fff; border: solid 1px #1c9900; background: #4abf30; margin-right: 16px; }
 .post .result-image-good { box-shadow: #222222 2px 2px 3px; -webkit-box-shadow: #222222 2px 2px 3px; -moz-box-shadow: #222222 2px 2px 3px; }
