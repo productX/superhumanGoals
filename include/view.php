@@ -627,7 +627,7 @@ class WebView extends BaseView {
 	<?php
 		if(!$justOuterChrome) {
 	?>
-					<p class="nav"><a href="<?php echo PAGE_ABOUT; ?>">About</a><span>|</span><a href="<?php echo PAGE_HELP; ?>">Help</a></p>
+					<p class="nav"><a href="<?php echo PAGE_HELP; ?>">About</a><span>|</span><a href="<?php echo PAGE_HELP; ?>">Help</a></p>
 	<?php
 		}
 		if(isset($appAuth) && $appAuth->isLoggedIn() && !$user->hasMadeDailyEntry()) {
@@ -792,7 +792,7 @@ class WebView extends BaseView {
 					$numAdopters = $goal->getNumAdopters();					
 					
 					?>
-					<div class="goal_list" id="goalEntry<?php echo $k; ?>"><a href=<?php echo $pagePath;?>><?php echo htmlspecialchars($goal->name); ?></a> (<span id="numAdopters<?php echo $k;?>"><?php echo $numAdopters;?></span>)
+					<div class="goal_list" id="goalEntry<?php echo $k; ?>"><a href="<?php echo $pagePath;?>&t=edit"><?php echo htmlspecialchars($goal->name); ?></a> (<span id="numAdopters<?php echo $k;?>"><?php echo $numAdopters;?></span>)
 					<?php 		
 					if($userHasGoal){?>
 					<a style="color: #999; text-decoration:none;" class="deactivate" id="deactivate<?php echo $k;?>" onclick="modifySpecificGoal('remove', <?php echo $goal->id; ?>, <?php echo $numAdopters; ?>, <?php echo $k; ?>, '<?php echo $goal->name; ?>')">remove</a>
@@ -830,7 +830,7 @@ class WebView extends BaseView {
 					$numAdopters = $goal->getNumAdopters();					
 					
 					?>
-					<div class="goal_list" id="goalEntry<?php echo $k; ?>"><a href=<?php echo $pagePath;?>><?php echo htmlspecialchars($goal->name); ?></a> (<span id="numAdopters<?php echo $k;?>"><?php echo $numAdopters;?></span>)
+					<div class="goal_list" id="goalEntry<?php echo $k; ?>"><a href="<?php echo $pagePath;?>&t=edit"><?php echo htmlspecialchars($goal->name); ?></a> (<span id="numAdopters<?php echo $k;?>"><?php echo $numAdopters;?></span>)
 					
 					<a style="color: #999; text-decoration:none;" class="deactivate" id="deactivate<?php echo $k;?>" onclick="modifySpecificGoal('remove', <?php echo $goal->id; ?>, <?php echo $numAdopters; ?>, <?php echo $k; ?>, '<?php echo $goal->name; ?>')">remove</a>
 					<?php
@@ -881,7 +881,7 @@ class WebView extends BaseView {
 											
 											function addDailytest(postedTo) {
 												document.goalForm.numDailytests=++numDailytests;
-												var newStrategy = "<label class='small-label'>Strategy "+numDailytests+":</label><input type='text' class='small-field' name='dailytestName"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='dailytestDescription"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Type:</label><select name='dailytestType"+numDailytests+"'><option value='adherence'>Adherence</option><option value='todo'>ToDo</option><option value='tactic'>Tactic</option></select><div class='cl'>&nbsp;</div>";
+												var newStrategy = "<label class='small-label'>Strategy "+numDailytests+":</label><input type='text' class='small-field' name='dailytestName"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Description:</label><input type='text' class='small-field' name='dailytestDescription"+numDailytests+"' /><label class='small-label'>&nbsp;&nbsp;Type:</label><select name='dailytestType"+numDailytests+"'><option value='adherence'>Habit</option><option value='todo'>ToDo</option><option value='tactic'>Tactic</option></select><div class='cl'>&nbsp;</div>";
 
 												$("#dailytests").append(newStrategy);
 												$("#numDailytests").attr('value',numDailytests);
@@ -919,7 +919,18 @@ By winners, for winners.
 		$this->printHeader(NAVNAME_NONE, array(new ChromeTitleElementHeader("Help")));
 ?>
 <div style="padding:10px 0 0 10px;">
-Is it really that hard to figure out? :P
+	<p style="margin-bottom:10px;">Welcome to Superhuman - it's great to have you here!</p>
+	<p style="margin-bottom:10px;">Superhuman is a tool to track your personal goals, with community built right in.</p>
+	<p style="margin-bottom:5px;">How to use Superhuman:</p>
+	<font style="font-size:14px">
+	1. Visit the <a href="activity.php">Activity page</a> to get a feel for the community. Maybe click on a few users to see their Goals.<br/>
+	2. Visit the <a href="goals.php">Goals page</a> and adopt some Goals. A Goal is a discipline you'd like to master that's more specific than "Vehicle Operation", but more general than "Street Racing w/ a 2005 Acura". Examples: Energy, Productivity, Entrepreneurship, Fashion, Leadership, Nutrition, Chinese Language.<br/>
+	3. Visit the <a href="user.php">My Goals</a> page to see your Goals.<br/>
+	4. Click on a Goal to learn more about it. Click Edit to set up your Goal. You can choose KPI's (quantitative milestones you'd like to hit) and Strategies (Habits, Todos, and Tactics that can help you achieve the Goal).<br/>
+	5. Do this for all of your Goals.<br/>
+	6. Start visiting the My Goals page daily to track your progress. Visit the Activity page to learn from others.<br/>
+	7. Become Superhuman!<br/>
+	</font>
 </div>
 <?php
 		$this->printFooter(NAVNAME_NONE);
@@ -1040,6 +1051,7 @@ Is it really that hard to figure out? :P
 
 		switch($mode) {
 			case PAGEMODE_ACTIVITY:
+				echo "<div style='height:30px'>&nbsp;</div>";
 				$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE AND user_id=%s ORDER BY entered_at DESC LIMIT 100", $viewUserID);
 				$this->storyPrintListForRS($rs);
 				break;
@@ -1748,18 +1760,7 @@ Is it really that hard to figure out? :P
 <?php
 		}
 	}
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
+			
 	public function printGoalPage($goalID) {
 		global $db, $user;
 
@@ -1797,7 +1798,7 @@ Is it really that hard to figure out? :P
 			$adherence_checked = "unchecked" ;
 		}
 		
-		$mode = PAGEMODE_EDIT;
+		$mode = PAGEMODE_ACTIVITY;
 		
 		# Get all the KPIs and the strategies for the goal being viewed
 		$kpis = KPI::getListFromGoalID($goalID, $user->id);
@@ -2520,7 +2521,7 @@ Is it really that hard to figure out? :P
 						<div class="reporting_select">
 							<label class='small-label' style="font-weight:bold"> Your Progress Indicator: </label>
 							<input type="radio" id="self_reported" name="self_reported" <?php echo GPC::strToPrintable($self_checked); ?> value="0" onclick="setTracking('0')" /> Self Reported
-							<input type="radio" id="adherence_based" name="adherence_based" <?php echo GPC::strToPrintable($adherence_checked); ?> value="1" onclick="setTracking('1')" /> Adherence Based
+							<input type="radio" id="adherence_based" name="adherence_based" <?php echo GPC::strToPrintable($adherence_checked); ?> value="1" onclick="setTracking('1')" /> Habit Based
 						</div>
 						
 						<!-- START YOUR DESCRIPTION --> 
@@ -2716,12 +2717,12 @@ Is it really that hard to figure out? :P
 									<br/><br/>
 									<label class='small-label'> Type: </label>
 									<select name='strategyType' id='strategyType'>
-										<option value='adherence'>Adherence</option>
+										<option value='adherence'>Habit</option>
 										<option value='todo'>ToDo</option>
 										<option value='tactic'>Tactic</option>
 									</select>
 									<div class='cl'> </div>					
-									<center><input type="button" value="Add Strategy" onclick="addAndAdoptStrategy();" class="small-add-btn up-down" style="margin-bottom:14px;"/></center>
+									<center><input type="button" value="Add Strategy" onclick="addAndAdoptStrategy();" class="small-add-btn up-down" style="margin-bottom:14px;padding:3px;"/></center>
 								</div>
 							<?php 
 							for($j=0; $j<count($strategies);$j++){
@@ -2930,6 +2931,8 @@ class MobileView extends BaseView {
 	<meta name="viewport" content="width=640px"/>  
 	<!-- JQ -->
 	<script src="<?php echo BASEPATH_UI;?>/mobile/js/jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
+	<!-- JQ SPARKLINE -->
+	<script src="<?php echo BASEPATH_UI;?>/jquery.sparkline.min.js" type="text/javascript" charset="utf-8"></script>
 	<!-- JQ TRANSFORM -->
 	<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/mobile/css/jqtransform.css" type="text/css" media="all" />
 	<script src="<?php echo BASEPATH_UI;?>/mobile/js/jquery.jqtransform.js" type="text/javascript" charset="utf-8"></script>
@@ -3169,8 +3172,8 @@ class MobileView extends BaseView {
 <?php
 		// build list of links for each letter in right-aligned letter map
 		$links = null;
+		$baseASCIIVal = 65;
 		if(count($uniqueLastNameLetters)) {
-			$baseASCIIVal = 65;
 			$lnOrds = array();
 			foreach($uniqueLastNameLetters as $val) {
 				$lnOrds[] = ord($val)-$baseASCIIVal;
@@ -3438,11 +3441,26 @@ class MobileView extends BaseView {
 ?>
 			<div class="goal-detail-page">
 				<p class="num <?php echo $goalNumColor;?>"><?php echo $level;?></p>
-				<div class="place">
-					<img src="<?php echo "template/createGraphLevelHistory.php?userID=$goalstatus->userID&goalID=$goalstatus->goalID&big";?>" alt="Level History" style="padding:20px 0 0 0;" />
+				<div class="place" style="padding:20px 0 0 0;">
+					<script type="text/javascript">
+						$.ajax({  
+							type: "GET", 
+							url: '<?php echo "template/createGraphLevelHistory.php?userID=$goalstatus->userID&goalID=$goalstatus->goalID&big";?>', 
+							dataType: "html",
+							complete: function(data){
+								$(".place").html(data.responseText);  
+							}  
+						});  						
+					</script>
 				</div>
 				<div class="cl">&nbsp;</div>
-				<p class="description" ><strong>Current KPI:</strong> Raise blah to blah by blah date by blah date by blah date </p>
+<?php
+			if($goal->description!="") {
+?>
+				<p class="description" ><strong>Description:</strong> <?php echo $goal->description; ?></p>
+<?php
+			}
+?>
 				
 				<h4>Tactics:</h4>
 				<ul>

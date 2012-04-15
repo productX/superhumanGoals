@@ -22,7 +22,7 @@ $rs = $db->doQuery("SELECT id,name FROM goals WHERE name LIKE %s", new SQLArgLik
 // create result objects for any goals that were returned
 $obj = null;
 while($obj = mysql_fetch_object($rs)) {
-	$results[] = array("type"=>"Goals", "name"=>$obj->name, "link"=>Goal::getObjFromGoalID($obj->goal_id)->getPagePath());
+	$results[] = array("type"=>"Goals", "name"=>$obj->name, "link"=>Goal::getObjFromGoalID($obj->id)->getPagePath());
 }
 
 // pull every user with a name similar to the search input
@@ -31,7 +31,7 @@ $rs = $db->doQuery("SELECT id,full_name FROM users WHERE full_name LIKE %s", new
 // create result objects for any users that were returned
 $obj = null;
 while($obj = mysql_fetch_object($rs)) {
-	$results[] = array("type"=>"People", "name"=>$obj->full_name, "link"=>User::getObjFromUserID($obj->user_id)->getPagePath());
+	$results[] = array("type"=>"People", "name"=>$obj->full_name, "link"=>User::getObjFromUserID($obj->id)->getPagePath());
 }
 
 // output XML for every result object
