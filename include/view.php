@@ -122,7 +122,7 @@ abstract class BaseView {
 				$eventDivDefaultDisplay = "block";
 			}
 		}
-		static $numDaysBack = 11;
+		static $numDaysBack = 9;
 		
 		//&&&&&& Get all the strategies from the DB
 		$dailytests = Dailytest::getListFromUserIDGoalID($goalstatus->goalID,$goalstatus->userID, 'user');
