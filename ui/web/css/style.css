@@ -190,7 +190,7 @@ h1#logo a:hover { background-position: 0 bottom; }
 .box .fitness .number .add { position: absolute; right: -8px; bottom: -1px; width: 17px; height: 17px; display: block; background: url(images/add-btn.png) no-repeat 0 0; font-size: 0; line-height: 0; text-indent: -4000px; }
 .box .tests { float: left; display: inline; padding: 0 0px 0 4px; }
 .box .tests .row { padding: 4px 0; }
-.box .tests .row input { display: none; }
+.box .tests .row .dailies { display:none; }
 .box .tests .row label { background: #fff; width: 42px; height: 42px; border: solid 1px #868686; float: left; display: inline; margin-right: 7px; cursor: pointer; }
 .box .tests .row label.checked { 
 
@@ -254,7 +254,7 @@ background: url(images/check.png) no-repeat 0 0; }
 .choose_kpi_heading {font-weight:bold; color:white; padding:10px; float: left; height: 26px; width: 325px; background: #826D8C; margin-left:5px;}
 .chosen_kpis {background:green; color: white; height:26px; padding:10px; font-weight:bold; float:left; width:300px; margin-left:10px;}
 .score .kpi_results { font-size:14px; min-width: 310px; max-width: 310px;  margin-left:10px; float:left; min-height:1px; margin-right:10px;}
-.habit_label {color:#222; line-height:18px; width:244px; float:left; font-size:14px; margin-right: 5px; border: 1px dotted #B2A100; background: none repeat scroll 0 0 #FFF8DD; padding:2px 4px 11px 8px; max-height:28px; min-height:28px;}
+.habit_label {color:#222; line-height:18px; width:244px; float:left; font-size:14px; margin-right: 5px; border: 1px dotted #B2A100; background: none repeat scroll 0 0 #FFF8DD; padding:2px 4px 11px 8px; min-height:28px;}
 .tactic_label {color:#444; line-height:15px; float:left; font-size:12px; margin-right: 5px; padding:0px 2px 4px 5px; max-heigh:31px; min-height:31px; margin-left:10px; min-width:740px;}
 .kpi_label {color:#444; line-height:15px; float:left; font-size:12px; margin-right: 5px; padding:0px 2px 4px 5px; max-heigh:31px; min-height:31px; min-width:735px;}
 .todo_label {color:#444; line-height:15px; float:left; font-size:12px; margin-right: 5px; padding:0px 2px 4px 5px; max-heigh:31px; min-height:31px; min-width:735px;}
@@ -266,7 +266,7 @@ background: url(images/check.png) no-repeat 0 0; }
 .editLink { font-size:11px; color: #999;}
 .goals_section { border: 1px solid #999; min-height:200px; margin-bottom: 25px; margin-left:30px; max-width:750px; margin-top: 25px; box-shadow: 2px 2px 2px #888; background: #f6f6f6;}
 .other_goals_section { border: 1px solid #fff; min-height:200px; margin-bottom: 10px; margin-left:30px; max-width:750px; margin-top: 10px; background: #fff;}
-
+.add_habit { color:#888 !important; font-size:12px; text-decoration: none !important; margin-left:5px; }
 .goal_list { margin-left:20px; margin-right: 5px; float:left; min-width:195px; min-width:225px; max-width:225px; font-size:15px;}
 
 .all_strategies { background: #FAFAFA; float:left; overflow:auto; max-height:400px; width: 678px; margin-bottom:30px; border: 1px solid #E8E8E8; padding: 5px;}
@@ -280,6 +280,7 @@ background: url(images/check.png) no-repeat 0 0; }
 .close_window { -webkit-border-radius: 99px; -moz-border-radius: 99px; border-radius: 99px; behavior: url(PIE.htc); width: 12px; height: 22px; padding: 0px 5px 0px 6px; background: #B94141; border: 1px solid #999; color: white !important; text-decoration: none !important; text-align: center; font: 18px Arial, sans-serif; float: right;}
 .new_level { float:left; margin-right:10px; position:relative; bottom:3px; font-size:16px; color:#444;}
 .new_tactic { float:left; margin-right:10px; position:relative; bottom:3px; font-size:16px; color:#444; margin-bottom:10px;}
+.new_habit { float:left; margin-right:10px; position:relative; bottom:3px; font-size:16px; color:#444; margin-bottom:10px;}
 .optional_input { color: #888; font-size: 14px; margin-left:5px; }
 
 .add_goal_comment { float:right; behavior: url(PIE.htc); width: 15px; height: 14px; padding: 1px 1px 1px 1px; background: #e3e3e3; border: 1px #999 dotted; color: #777 !important; font-weight:bold; text-align: center; font: 23px Arial,sans-serif; position:relative; top:5px; line-height:13px; margin-left:2px; display:inline-block; text-decoration:none !important;}

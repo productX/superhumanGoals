@@ -28,10 +28,7 @@ if($type == 'adopt'){
 }elseif($type == 'create'){
 	$strategyID = Dailytest::createNew($goalID, $newStrategyName, $newStrategyDescription, $strategyType, $userID);
 	Dailytest::adoptStrategy($userID, $strategyID, $goalID);
-
-	echo $strategyID;
+    header ("location: ../user.php?id=$userID&t=habits#.php");
 }
-
-
 
 ?>
