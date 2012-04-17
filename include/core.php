@@ -639,19 +639,20 @@ class Dailytest {
 	public static function createNew($goalID, $name, $description, $type, $userID) {
 		global $db;
 
-		if(empty($description)){ $description = ''; }		
-		$db->doQuery("INSERT INTO strategies (goal_id, name, description, strategy_type, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW())", $goalID, $name, $description, $type, $userID);
-		
+		if(empty($description)){ $description = ''; }
+			if(!empty($name)){	
+				$db->doQuery("INSERT INTO strategies (goal_id, name, description, strategy_type, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW()) ON DUPLICATE KEY UPDATE goal_id = goal_id", $goalID, $name, $description, $type, $userID);
+			}	
 		$newID = mysql_insert_id();
 		
 		return $newID;
 	}
 
 
-	public static function adoptStrategy($userID, $strategyID, $goalID) {
+	public static function adoptStrategy($userID, $strategyID, $goalID, $is_public) {
 		global $db;
 		
-		$db->doQuery("INSERT INTO user_strategies (user_id, strategy_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active =1, date_created = NOW()", $userID, $strategyID, $goalID);
+		$db->doQuery("INSERT INTO user_strategies (user_id, strategy_id, goal_id, is_active, is_public, date_created) VALUES (%s, %s, %s, 1, %s, NOW()) ON DUPLICATE KEY UPDATE is_active =1, is_public = %s, date_created = NOW()", $userID, $strategyID, $goalID, $is_public, $is_public);
 				
 	}	
 
@@ -842,17 +843,17 @@ class KPI {
 		return $info;
 	}	
 
-	public static function adoptTest($userID, $kpiID, $goalID, $testID) {
+	public static function adoptTest($userID, $kpiID, $goalID, $testID, $is_public) {
 		global $db;
 
-		$db->doQuery("INSERT INTO user_tests (user_id, goal_id, kpi_id, test_id, is_active, date_created) VALUES (%s, %s, %s, %s, 1, NOW())", $userID, $goalID, $kpiID, $testID);
+		$db->doQuery("INSERT INTO user_tests (user_id, goal_id, kpi_id, test_id, is_active, is_public, date_created) VALUES (%s, %s, %s, %s, 1, %s, NOW()) ON DUPLICATE KEY UPDATE is_public = %s", $userID, $goalID, $kpiID, $testID, $is_public, $is_public);
 		
 	}	
 
-	public static function adoptKPI($userID, $kpiID, $goalID) {
+	public static function adoptKPI($userID, $kpiID, $goalID, $is_public) {
 		global $db;
-				
-		$db->doQuery("INSERT INTO user_kpis (user_id, kpi_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active = %s, date_created = NOW()", $userID, $kpiID, $goalID, 1);
+
+		$db->doQuery("INSERT INTO user_kpis (user_id, kpi_id, goal_id, is_active, is_public, date_created) VALUES (%s, %s, %s, 1, %s, NOW()) ON DUPLICATE KEY UPDATE is_active = 1, is_public = %s, date_created = NOW()", $userID, $kpiID, $goalID, $is_public, $is_public);
 				
 	}	
 
@@ -959,6 +960,7 @@ class KPI {
 			# for each kpi_id, get the kpi_name and description
 			$tests = array();
 			$kpi_id = $obj->kpi_id;
+			
 			
 			$res = $db->doQuery("SELECT * FROM kpis WHERE id=%s", $obj->kpi_id);
 					while($obj_two = mysql_fetch_object($res)) {
@@ -1092,7 +1094,7 @@ class GoalStatus {
 		return $db->doQueryOne("SELECT AVG(level) FROM goals_status WHERE goal_id=%s", $goalID);
 	}
 	
-	public static function userAdoptGoalSimple($userID, $goalID) {
+	public static function userAdoptGoalSimple($userID, $goalID, $is_public) {
 		global $db;
 		
 		$nextIndex = $db->doQueryOne("SELECT MAX(position_index)+1 FROM goals_status WHERE goal_id=%s AND user_id=%s", $goalID, $userID);
@@ -1103,8 +1105,9 @@ class GoalStatus {
 		// by default all goals are public until we put up goal adoption page
 		$reportingStyle = 0;
 		$goalDesc = '';
-
-		$db->doQuery("INSERT INTO goals_status (goal_id, user_id, level, description, is_active, is_public, position_index, display_style, date_created, latest_change) VALUES (%s, %s, 5, %s, TRUE, TRUE, %s, %s, NOW(), NOW()) ON DUPLICATE KEY UPDATE is_active = 1, latest_change = NOW()", $goalID, $userID, $goalDesc, $nextIndex, $reportingStyle);
+		
+		echo "INSERT INTO goals_status (goal_id, user_id, level, is_active, is_public, position_index, display_style, date_created, latest_change) VALUES ($goalID, $userID, 5, TRUE, $is_public, $nextIndex, $reportingStyle, NOW(), NOW()) ON DUPLICATE KEY UPDATE is_active = 1, is_public = $is_public, latest_change = NOW()";
+		$db->doQuery("INSERT INTO goals_status (goal_id, user_id, level, is_active, is_public, position_index, display_style, date_created, latest_change) VALUES (%s, %s, 5, TRUE, %s, %s, %s, NOW(), NOW()) ON DUPLICATE KEY UPDATE is_active = 1, is_public = %s, latest_change = NOW()", $goalID, $userID, $is_public, $nextIndex, $reportingStyle, $is_public);
 	}
 	
 	public static function userRemoveGoal($userID, $goalID) {

@@ -11,9 +11,14 @@ $newKPIDescription = $_POST['newKPIDescription'];
 $newKPITestName = $_POST['newKPITestName'];
 $newKPITestDescription = $_POST['newKPITestDescription'];
 $newKPITestFrequency = $_POST['newKPITestFrequency'];
+if(isset($_POST['isPublic'])){
+	$is_public = $_POST['isPublic'];
+}else{
+	$is_public = 0;
+}
 
 if($type == 'adopt'){
-	KPI::adoptKPI($userID, $kpiID, $goalID);
+	KPI::adoptKPI($userID, $kpiID, $goalID, $is_public);
 	//echo "KPI Adopted!";
 }elseif($type == 'remove'){
 	KPI::removeKPI($userID,$kpiID,$goalID);
@@ -25,12 +30,14 @@ if($type == 'adopt'){
 	KPI::editKPI($userID,$kpiID,$goalID,$newKPIName,$newKPITestName, $testID);
 	echo "KPI Edited!";
 }elseif($type == 'create'){
-	$kpiInfo = KPI::createNew($goalID, $newKPIName, $newKPIDescription, $newKPITestDescription, $newKPITestName, $newKPITestFrequency,$userID);
+	$kpiInfo = KPI::createNew($goalID, $newKPIName, $newKPIDescription, $newKPITestDescription, $newKPITestName, $newKPITestFrequency, $userID);
 	$kpiID = $kpiInfo[0];
-	$testID = $kpiInfo[1];
-	KPI::adoptKPI($userID, $kpiID, $goalID);
+	if(!empty($kpiInfo[1])){
+		$testID = $kpiInfo[1];
+	}
+	KPI::adoptKPI($userID, $kpiID, $goalID, $is_public);
 	if($newKPITestName != ''){
-		KPI::adoptTest($userID, $kpiID, $goalID, $testID);
+		KPI::adoptTest($userID, $kpiID, $goalID, $testID, $is_public);
 	}
 	
 	echo json_encode($kpiInfo);

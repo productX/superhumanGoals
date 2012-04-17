@@ -9,9 +9,14 @@ $newStrategyName = $_POST['newStrategyName'];
 $strategyType  = $_POST['strategyType'];
 $newStrategyDescription  = $_POST['newStrategyDescription'];
 $page = $_POST['page'];
+if(isset($_POST['isPublic'])){
+	$is_public = $_POST['isPublic'];
+}else{
+	$is_public = 0;
+}
 
 if($type == 'adopt'){
-	Dailytest::adoptStrategy($userID, $strategyID, $goalID);
+	Dailytest::adoptStrategy($userID, $strategyID, $goalID, $is_public);
 	//echo "Strategy Adopted!";
 }elseif($type == 'remove'){
 	Dailytest::removeStrategy($userID,$strategyID,$goalID);
@@ -26,11 +31,21 @@ if($type == 'adopt'){
 	Dailytest::editTodo($userID,$strategyID,$goalID);
 	//echo "Strategy Edited!";
 }elseif($type == 'create'){
-	$strategyID = Dailytest::createNew($goalID, $newStrategyName, $newStrategyDescription, $strategyType, $userID);
-	Dailytest::adoptStrategy($userID, $strategyID, $goalID);
-	if($page == 1 ){
-	    header ("location: ../user.php?id=$userID&t=habits#.php");
+
+echo "<pre>";
+print_r($_POST);
+echo "</pre>";
+echo $is_public;
+
+	if($is_public > -1){
+		$strategyID = Dailytest::createNew($goalID, $newStrategyName, $newStrategyDescription, $strategyType, $userID);
+		if($strategyID > 0){
+			Dailytest::adoptStrategy($userID, $strategyID, $goalID, $is_public);
+		}
 	}
+		if($page == 1 ){
+		    header ("location: ../user.php?id=$userID&t=habits#.php");
+		}
 	echo $strategyID;
 }
 
