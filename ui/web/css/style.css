@@ -272,7 +272,7 @@ background: url(images/check.png) no-repeat 0 0; }
 .adopted_strategies { margin-top:2px; margin-bottom:2px;  color:#444; line-height:15px; float:left; font-size:12px; margin-right: 5px; padding:0px 2px 4px 5px; margin-left:10px; min-width:740px; }
 .adopted_strategies span { display:inline-block; }
 .adoptable_strategies { background:none repeat scroll 0 0 #FFFFFF; border:1px dotted #777777; margin:25px; padding: 20px; }
-
+.strategy_dropdown { -webkit-appearance: button; -webkit-border-radius: 2px;  -webkit-box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);  -webkit-padding-end: 20px;  -webkit-padding-start: 2px; -webkit-user-select: none; background-image: url(../images/select-arrow.png), -webkit-linear-gradient(#FAFAFA, #F4F4F4 40%, #E5E5E5);  background-position: center right;  background-repeat: no-repeat; border: 1px solid #AAA; color: #555;  font-size: inherit;  margin: 0;  overflow: hidden;  padding-top: 2px;  padding-bottom: 2px;  text-overflow: ellipsis;  white-space: nowrap; position:relative; bottom: 18px; }
 
 .all_strategies { background: #FAFAFA; float:left; overflow:auto; max-height:400px; width: 678px; margin-bottom:30px; border: 1px solid #E8E8E8; padding: 5px;}
 .strategy_headings { float:left;}
@@ -285,6 +285,8 @@ background: url(images/check.png) no-repeat 0 0; }
 .close_window { -webkit-border-radius: 99px; -moz-border-radius: 99px; border-radius: 99px; behavior: url(PIE.htc); width: 12px; height: 22px; padding: 0px 5px 0px 6px; background: #B94141; border: 1px solid #999; color: white !important; text-decoration: none !important; text-align: center; font: 18px Arial, sans-serif; float: right;}
 .new_level { float:left; margin-right:10px; position:relative; bottom:3px; font-size:16px; color:#444;}
 .new_tactic { float:left; margin-right:10px; position:relative; bottom:3px; font-size:16px; color:#444; margin-bottom:10px;}
+.new_tactic_privacy { clear:both; margin-right:10px; position:relative; bottom:3px; font-size:16px; color:#444; margin-bottom:10px;}
+.new_tactic_privacy span { font-size:12px; font-weight:bold;  }
 .new_habit { float:left; margin-right:10px; position:relative; bottom:3px; font-size:16px; color:#444; margin-bottom:10px;}
 .optional_input { color: #888; font-size: 14px; margin-left:5px; }
 
