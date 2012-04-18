@@ -4072,7 +4072,7 @@ class MobileView extends BaseView {
 			}
 			
 			//&&&&&& Get all the strategies from the DB
-			$strategies = Dailytest::getListFromGoalID($goal->id, $user->id);
+			$strategies = Dailytest::getListFromUserIDGoalID($goal->id, $user->id, 'user');
 
 			$this->PrintStrategyList($strategies, $user->id);
 ?>
@@ -4113,7 +4113,7 @@ class MobileView extends BaseView {
 			}
 			foreach($tactics as $tactic) {	
 ?>
-					<li>
+					<li style="overflow:hidden;">
 						<div class="inner">
 							<p><?php echo $tactic; ?></p>
 						</div>
