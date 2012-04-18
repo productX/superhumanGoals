@@ -3373,7 +3373,7 @@ class MobileView extends BaseView {
 			}
 			foreach($tactics as $tactic) {	
 ?>
-					<li>
+					<li style="overflow:hidden;">
 						<div class="inner">
 							<p><?php echo $tactic; ?></p>
 						</div>
