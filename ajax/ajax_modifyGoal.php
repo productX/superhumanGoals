@@ -20,6 +20,9 @@ if($type == 'insert'){
 }elseif($type == 'delete'){
 	GoalStatus::userDeleteGoal($userID, $goalID);
 	echo '';
+}elseif($type == 'privacy'){
+	GoalStatus::editPrivacy($userID, $goalID, $is_public);
+	echo '';
 }
 
 

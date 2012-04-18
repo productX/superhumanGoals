@@ -267,6 +267,7 @@ background: url(images/check.png) no-repeat 0 0; }
 .editLink { font-size:11px; color: #999;}
 .editLinkRemove {  -webkit-border-radius: 99px; -moz-border-radius: 99px; border-radius: 99px; behavior: url(PIE.htc); width: 9px; height: 19px; padding: 0px 5px 0px 6px; background: #f6f6f6; border: 1px solid #c3c3c3; color: #c3c3c3; text-align: center; font: 15px Arial, sans-serif; }
 .small_lock_goal_page { float:right; margin-right:5px;} 
+.large_lock_goal_page { margin-right:5px; position: relative; top: 4px;} 
 
 .goals_section { border: 1px solid #999; min-height:200px; margin-bottom: 25px; margin-left:30px; max-width:750px; margin-top: 25px; box-shadow: 2px 2px 2px #888; background: #f6f6f6;}
 .other_goals_section { border: 1px solid #fff; min-height:200px; margin-bottom: 10px; margin-left:30px; max-width:750px; margin-top: 10px; background: #fff;}

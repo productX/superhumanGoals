@@ -289,7 +289,7 @@ class StatusMessages {
 class Goal {
 
 	// public
-	public $id, $name, $description, $userID, $created_by, $date_created;
+	public $id, $name, $description, $userID, $created_by, $date_created, $is_public;
 	
 	// protected
 	
@@ -318,15 +318,14 @@ class Goal {
 
 		$goal_display_style = 0;
 		while($obj = mysql_fetch_object($rs)) {
-			
-			$goal_status_rs = $db->doQuery("SELECT display_style, description FROM goals_status WHERE user_id=%s AND goal_id = %s", $userID, $goalID);
+
+			$goal_status_rs = $db->doQuery("SELECT display_style, description, is_public FROM goals_status WHERE user_id=%s AND goal_id = %s", $userID, $goalID);
 			$goal = new Goal($obj);
 
 			while($obj_two = mysql_fetch_object($goal_status_rs)) {
-
 				$goal_display_style = $obj_two->display_style;
 				$goal_desc = $obj_two->description;
-
+				$is_public = $obj_two->is_public;
 			}
 
 			if($goal_display_style == 1){
@@ -345,7 +344,7 @@ class Goal {
 			$goal_obj->goal = $goal;
 			$goal_obj->display_style = $display_style;
 			$goal_obj->sub_description = $sub_description;
-
+			$goal_obj->is_public = $is_public;
 		}
 				
 		
@@ -748,32 +747,36 @@ class Dailytest {
 		
 		$list = array();
 		$obj = null;
-		
+
+
+
 		while($obj = mysql_fetch_object($rs)) {
+			$strategy_active = '0';						
+			$is_public = '0';
 
-				$strategy_is_active = $db->doQuery("SELECT is_active, is_public FROM user_strategies WHERE user_id=%s AND strategy_id = %s AND goal_id = %s", $userID, $obj->id, $goalID);
-				while($user_strategy_obj = mysql_fetch_object($strategy_is_active)) {
+			$strategy_is_active = $db->doQuery("SELECT is_active, is_public FROM user_strategies WHERE user_id=%s AND strategy_id = %s AND goal_id = %s", $userID, $obj->id, $goalID);
+			while($user_strategy_obj = mysql_fetch_object($strategy_is_active)) {
 
-					if($user_strategy_obj->is_active == 1){
-						$strategy_active = '1';
-					}elseif($user_strategy_obj->is_active == 0){
-						$strategy_active = '1';					
-					}else{
-						$strategy_active = '0';						
-					}
-
-					if($user_strategy_obj->is_public == 1){
-						$is_public = '1';
-					}elseif($user_strategy_obj->is_public == 0){
-						$is_public = '0';					
-					}else{
-						$is_public = '0';						
-					}
-
+				if($user_strategy_obj->is_active == 1){
+					$strategy_active = '1';
+				}elseif($user_strategy_obj->is_active == 0){
+					$strategy_active = '1';					
+				}else{
+					$strategy_active = '0';						
 				}
-				
-				$obj->strategy_active = $strategy_active;
-				$obj->is_public = $is_public;
+
+				if($user_strategy_obj->is_public == 1){
+					$is_public = '1';
+				}elseif($user_strategy_obj->is_public == 0){
+					$is_public = '0';					
+				}else{
+					$is_public = '0';						
+				}
+
+			}
+			
+			$obj->strategy_active = $strategy_active;
+			$obj->is_public = $is_public;
 
 
 			$list[] = new Dailytest($obj);
@@ -994,7 +997,10 @@ class KPI {
 			# for each kpi_id, get the kpi_name and description
 			$tests = array();
 			$kpi_id = $obj->kpi_id;
-			
+
+			$kpi_public = '0';
+			$kpi_active = '0';
+
 			
 			$res = $db->doQuery("SELECT * FROM kpis WHERE id=%s", $obj->kpi_id);
 					while($obj_two = mysql_fetch_object($res)) {
@@ -1016,9 +1022,6 @@ class KPI {
 							}else{
 								$kpi_public = '0';
 							}
-
-
-							
 						}
 						
 						
@@ -1136,9 +1139,14 @@ class GoalStatus {
 	}
 	public static function setUserGoalLevel($userID, $goalID, $newLevel) {
 		global $db;
-		
 		$db->doQuery("UPDATE goals_status SET level=%s, latest_change = NOW() WHERE user_id=%s AND goal_id=%s", $newLevel, $userID, $goalID);
 	}
+	
+	public static function editPrivacy($userID, $goalID, $is_public) {
+		global $db;
+		$db->doQuery("UPDATE goals_status SET is_public=%s, latest_change = NOW() WHERE user_id=%s AND goal_id=%s", $is_public, $userID, $goalID);
+	}
+	
 	public static function getAverageGoalScore($goalID) {
 		global $db;
 		

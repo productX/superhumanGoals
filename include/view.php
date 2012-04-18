@@ -1101,7 +1101,10 @@ By winners, for winners.
 	// &&&&&&
 	protected function goalstatusPrintGoalstatusPrint($goal, $rowID, $goalstatus, $plusButtonDefaultDisplay, $eventDivDefaultDisplay, $dailytests, $letterGradeVal, $newLevelVal, $whyVal, $isEditable, $type) {
 		global $user;
+		global $viewUser;
 		static $testID = 1;
+		$viewUserID = $viewUser->id;
+		$viewingSelf = ($viewUserID == $user->id);
 		$dayID = 1;
 		
 		$ajaxSaveDailytestPath = PAGE_AJAX_SAVEDAILYTEST;
@@ -1499,14 +1502,33 @@ By winners, for winners.
 			
 </script>
 <?php 
+				$goal_pub = Goal::getFullObjFromGoalID($goal->id, $viewUserID);
+
 				if( ( $type == 'habits') && ( !empty($dailytests)) && ($noHabitStrategies != 1) ) {
 				
+				
+				// Check if there are any habits that are not private. If none or if the goal is private show nothing
+					$show_goal = 0;
+					foreach($dailytests as $dailytest) {
+						if($dailytest->strategy_type == 'adherence'){
+						 	if( $dailytest->is_public == 1 ){
+						 		$show_goal = 1;
+						 	}
+						}
+					}
+					
+					if($goal->is_public == 0){
+						$show_goal == 0;
+					}
+					
+					if( empty($is_user) && ($show_goal == 0)){}else{
+					
 ?>						
 				<!-- Box -->
 				<div class="box">
 					<!-- GOAL TITLE & CATEGORY(?) -->
 					<div class="habit_box" >
-						<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" <?php if($is_user){ ?> onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" <?php } ?>> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" href="#">+</a>--></div>
+						<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" <?php if($is_user){ ?> onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" <?php } ?>> <?php echo $goalstatus->level; ?></span><a <?php if($is_user){ ?> href="<?php echo $goal->getPagePath();?>" <?php }else{ echo 'style="text-decoration:none !important;"'; }  ?>  class="title"><?php echo GPC::strToPrintable($goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" href="#">+</a>--></div>
 						
 					<!-- Lightbox for issuing Goal Events -->
 					<div class="lightbox-panel" id="lightbox-panel<?php echo $goal->id; ?>" style="display:none;">
@@ -1586,6 +1608,12 @@ By winners, for winners.
 						if($dailytest->strategy_type == 'adherence'){
 							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, date("Y-m-d"))?"checked":"";
 							
+							 	if( empty($is_user) && ( $dailytest->is_public == 0 ) ){}else{
+	/*
+							echo "<pre>";
+							print_r($dailytests);
+							echo "</pre>";
+	*/						
 	?>
 							<div class="row">
 									
@@ -1625,7 +1653,8 @@ By winners, for winners.
 								
 								<div class="cl">&nbsp;</div>
 							</div>
-<?php					}
+<?php					  }
+						}
 					}?>
 					<?php if($is_user){ ?> <a class="add_habit" id="show-panel" <?php if($is_user){ ?>  onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'habit')" <?php } ?> href="#">create a new habit</a> <?php } ?>
 					</div>
@@ -1634,14 +1663,27 @@ By winners, for winners.
 				</div>
 				<!-- End Box -->
 <?php
-		}elseif($type == 'goals'){
+			
 
-			$kpis = KPI::getListFromGoalID($goal->id, $user->id);
+			}
+		}elseif($type == 'goals'){
+			
+			if($is_user){
+				$user_id = $user->id;
+			}else{
+				$user_id = $viewUserID;
+			}
+			
+			$kpis = KPI::getListFromGoalID($goal->id, $user_id);
+
+
+
+
 		?>
 						<!-- Box -->
 						<div class="box">
 							<!-- GOAL TITLE & LEVEL -->
-							<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" <?php if($is_user){ ?> onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')"<?php } ?>> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" href="#">+</a>--></div>
+							<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" <?php if($is_user){ ?> onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')"<?php } ?>> <?php echo $goalstatus->level; ?></span><a <?php if($is_user){ ?> href="<?php echo $goal->getPagePath();?>" <?php }else{ echo 'style="text-decoration:none !important;"'; } ?> class="title"><?php echo GPC::strToPrintable($goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" href="#">+</a>--></div>
 							
 							<!-- %%%%%%%%%%%% LIGHTBOXES FOR ELEMENT CREATION %%%%%%%%%%%% -->
 							
@@ -1859,7 +1901,8 @@ By winners, for winners.
 									}
 
 									?><span style='display:'<?php echo $isTest;?>' id='curKPITestText<?php echo $kpi->id;?>'><?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo "("; echo $kpi->kpi_tests[0]->test_name; echo ")"; } ?></span>
-									<span class="editLink" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->id;?>, 'remove','')">x</span>
+									<?php if($is_user){ ?><span class="editLink" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span>
+									<span class="editLink" style="float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->id;?>, 'remove','')">x</span><?php } ?> 
 							</div>
 							<div class="cl">&nbsp;</div>
 <?php					
@@ -2022,7 +2065,6 @@ By winners, for winners.
 				            }  
 				        });  
 				        
-				        alert("private");
 							$("#if_adopt").show();
 							$(".pre_adopt").hide();
 				      }
@@ -2041,7 +2083,6 @@ By winners, for winners.
 				                $("#ratingBox").html(data.responseText);  
 				            }  
 				        });  
-				        alert("public");
 						if(type == 'insert'){			
 							$("#if_adopt").show();
 							$(".pre_adopt").hide();
@@ -2634,6 +2675,71 @@ By winners, for winners.
 					}
 			}
 
+
+			function changeStrategyPrivacy(goal_id, strategy_id, status){
+				if(status == 'locked'){
+					$("#strategyUnlocked"+goal_id+strategy_id).show();
+					$("#strategyLocked"+goal_id+strategy_id).hide();
+					is_public = 1;
+				}else{
+					$("#strategyUnlocked"+goal_id+strategy_id).hide();
+					$("#strategyLocked"+goal_id+strategy_id).show();
+					is_public = 0;
+				}	
+
+			    $.ajax({  
+			        type: "POST", 
+			        url: '<?php echo $ajaxModifyStrategy; ?>', 
+			        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&type=privacy"+"&isPublic="+ is_public,
+			        dataType: "html",
+			        complete: function(data){				        
+						var val = data.responseText;       	
+			       }  
+			    });
+			}
+		
+			function changeKPIPrivacy(goal_id, kpi_id, status){
+				if(status == 'locked'){
+					$("#kpiUnlocked"+goal_id+kpi_id).show();
+					$("#kpiLocked"+goal_id+kpi_id).hide();
+					is_public = 1;
+				}else{
+					$("#kpiUnlocked"+goal_id+kpi_id).hide();
+					$("#kpiLocked"+goal_id+kpi_id).show();
+					is_public = 0;
+				}								
+
+			    $.ajax({  
+			        type: "POST", 
+			        url: '<?php echo $ajaxModifyKPI; ?>', 
+			        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&kpiID="+ kpi_id+"&type=privacy"+"&isPublic="+ is_public,
+			        dataType: "html",
+			        complete: function(data){
+			       }  
+			    });
+			}
+
+			function changeGoalPrivacy(goal_id, status){
+				if(status == 'locked'){
+					$("#goalUnlocked"+goal_id).show();
+					$("#goalLocked"+goal_id).hide();
+					is_public = 1;
+				}else{
+					$("#goalUnlocked"+goal_id).hide();
+					$("#goalLocked"+goal_id).show();
+					is_public = 0;
+				}								
+
+			    $.ajax({  
+			        type: "POST", 
+			        url: '<?php echo $ajaxModifyGoal; ?>', 
+			        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&type=privacy"+"&isPublic="+ is_public,
+			        dataType: "html",
+			        complete: function(data){
+			       }  
+			    });
+			}
+
 </script>
 
 <div id="dialog-confirm" title="Public or Private?" style="display:none;">
@@ -2652,13 +2758,26 @@ By winners, for winners.
 				$display = 'block';
 			} 
 			
+			if($goal->is_public == '1'){
+				$locked_status = 'none';
+				$unlocked_status = '';
+			}else{
+				$locked_status = '';
+				$unlocked_status = 'none';							
+			}
+			
 			?>
 
 					<div id="if_adopt" name="if_adopt" style="display:<?php echo $display; ?>;">
 						<!-- Box -->
 						<div class="box">
 							<!-- GOAL TITLE & LEVEL -->
-							<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->goal->id;?>"  onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')"> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')" href="#">+</a>--></div>
+							<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->goal->id;?>"  onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')"> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->goal->name);?></a>
+									<span>
+										<img id="goalLocked<?php echo $goal->goal->id;?>" class="large_lock_goal_page" class="small_lock_goal_page" onclick="changeGoalPrivacy(<?php echo $goal->goal->id;?>,'locked');" style="display:<?php echo $locked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock_small.png"/>
+										<img id="goalUnlocked<?php echo $goal->goal->id;?>" class="large_lock_goal_page" onclick="changeGoalPrivacy(<?php echo $goal->goal->id;?>, 'unlocked');" style="display:<?php echo $unlocked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock_small.png"/>
+									</span>
+							<!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')" href="#">+</a>--></div>
 
 							<!-- %%%%%%%%%%%% LIGHTBOXES FOR ELEMENT CREATION %%%%%%%%%%%% -->
 							
@@ -2788,58 +2907,7 @@ By winners, for winners.
 								<div class="cl">&nbsp;</div>
 								<center><button type="submit" value="submit"  onclick="modifyKPI(0, <?php echo $goal->goal->id; ?>, 'create',0)" >submit</button></center>
 							</div><!-- /lightbox-panel -->						
-							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
-
-
-						
-						<script>
-						
-						
-							function changeStrategyPrivacy(goal_id, strategy_id, status){
-								if(status == 'locked'){
-									$("#strategyUnlocked"+goal_id+strategy_id).show();
-									$("#strategyLocked"+goal_id+strategy_id).hide();
-									is_public = 1;
-								}else{
-									$("#strategyUnlocked"+goal_id+strategy_id).hide();
-									$("#strategyLocked"+goal_id+strategy_id).show();
-									is_public = 0;
-								}	
-
-							    $.ajax({  
-							        type: "POST", 
-							        url: '<?php echo $ajaxModifyStrategy; ?>', 
-							        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&type=privacy"+"&isPublic="+ is_public,
-							        dataType: "html",
-							        complete: function(data){				        
-										var val = data.responseText;       	
-							       }  
-							    });
-							}
-						
-							function changeKPIPrivacy(goal_id, kpi_id, status){
-								if(status == 'locked'){
-									$("#kpiUnlocked"+goal_id+kpi_id).show();
-									$("#kpiLocked"+goal_id+kpi_id).hide();
-									is_public = 1;
-								}else{
-									$("#kpiUnlocked"+goal_id+kpi_id).hide();
-									$("#kpiLocked"+goal_id+kpi_id).show();
-									is_public = 0;
-								}								
-
-							    $.ajax({  
-							        type: "POST", 
-							        url: '<?php echo $ajaxModifyKPI; ?>', 
-							        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&kpiID="+ kpi_id+"&type=privacy"+"&isPublic="+ is_public,
-							        dataType: "html",
-							        complete: function(data){
-							       }  
-							    });
-							}
-						
-						</script>
-						
+							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->						
 						
 						
 		<!-- Tactics start here -->	
