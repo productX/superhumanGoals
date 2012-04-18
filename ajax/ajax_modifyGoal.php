@@ -25,9 +25,6 @@ if($type == 'insert'){
 	echo '';
 }
 
-
-
-
 //echo "Goal Adopted!";
 
 ?>

@@ -1177,9 +1177,9 @@ By winners, for winners.
 
 			if(type == 'goal'){
 				if(display == 1){
-				     $("#lightbox-panel"+element_id).show();
+				     $("#goal-lightbox-panel"+element_id).show();
 				}else{
-				     $("#lightbox-panel"+element_id).hide();
+				     $("#goal-lightbox-panel"+element_id).hide();
 				}
 			}else if(type == 'tactic'){
 				if(display == 1){
@@ -1229,7 +1229,7 @@ By winners, for winners.
 			$("#eventNewScore" + goal_id).attr("value","");
 			$("#eventWhy" + goal_id).attr("value","");
 			$("#goalLevel" + goal_id).html(new_level);
-		    $("#lightbox-panel").fadeOut();
+		    $("#goal-lightbox-panel"+goal_id).fadeOut();
 		    
 		}
 
@@ -1531,7 +1531,7 @@ By winners, for winners.
 						<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" <?php if($is_user){ ?> onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" <?php } ?>> <?php echo $goalstatus->level; ?></span><a <?php if($is_user){ ?> href="<?php echo $goal->getPagePath();?>" <?php }else{ echo 'style="text-decoration:none !important;"'; }  ?>  class="title"><?php echo GPC::strToPrintable($goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" href="#">+</a>--></div>
 						
 					<!-- Lightbox for issuing Goal Events -->
-					<div class="lightbox-panel" id="lightbox-panel<?php echo $goal->id; ?>" style="display:none;">
+					<div class="lightbox-panel" id="goal-lightbox-panel<?php echo $goal->id; ?>" style="display:none;">
 						<a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->id; ?>,'goal')">X</a>
 						<div class="newscore-row">
 									<span class="new_level" style="font-weight:bold;"><?php echo GPC::strToPrintable($goal->name);?> </span><br/>
@@ -1688,7 +1688,7 @@ By winners, for winners.
 							<!-- %%%%%%%%%%%% LIGHTBOXES FOR ELEMENT CREATION %%%%%%%%%%%% -->
 							
 							<!-- Lightbox for creating Goal Events -->
-							<div class="lightbox-panel" id="lightbox-panel<?php echo $goal->id; ?>" style="display:none;">
+							<div class="lightbox-panel" id="goal-lightbox-panel<?php echo $goal->id; ?>" style="display:none;">
 							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->id; ?>,'goal')">X</a>
 								<div class="newscore-row">
 									<span class="new_level" style="font-weight:bold;"><?php echo GPC::strToPrintable($goal->name);?> </span><br/>
