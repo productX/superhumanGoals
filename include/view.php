@@ -423,13 +423,16 @@ class WebView extends BaseView {
 		<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/web/css/style.css" type="text/css" media="all" />
 		<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/web/css/enhanced.css" type="text/css" media="screen" />
 		<link rel="stylesheet" href="<?php echo BASEPATH_UI;?>/web/css/jquery.jscrollpane.css" type="text/css" media="all" />
-
+		<link type="text/css" href="<?php echo BASEPATH_UI;?>/web/js/css/ui-lightness/jquery-ui-1.8.19.custom.css" rel="Stylesheet" />	
 
 		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery-1.7.1.min.js" type="text/javascript"></script>
 		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery.jscrollpane.min.js" type="text/javascript"></script>
 		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery.mousewheel.js" type="text/javascript"></script>
 		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery.fileinput.js" type="text/javascript"></script>
 		<script src="<?php echo BASEPATH_UI;?>/web/js/functions.js" type="text/javascript"></script>
+		<script type="text/javascript" src="<?php echo BASEPATH_UI;?>/web/js/jquery-ui-1.8.19.custom.min.js"></script>		
+		
+		
 		<script type="text/javascript">
 			$(document).ready(function() { autoHeightContainer(); })
 		</script>
@@ -737,13 +740,7 @@ class WebView extends BaseView {
 			$colContents[$i][] = $goal;
 			++$i;
 		}
-		
-	/*	echo "<pre>";
-		print_r($colContents);
-		echo "</pre>";
-		die;
-	*/	
-		
+				
 		/////////////////////////////////////////
 		// AJAX for adopting/removing a Goal //
 		///////////////////////////////////////
@@ -1104,7 +1101,10 @@ By winners, for winners.
 	// &&&&&&
 	protected function goalstatusPrintGoalstatusPrint($goal, $rowID, $goalstatus, $plusButtonDefaultDisplay, $eventDivDefaultDisplay, $dailytests, $letterGradeVal, $newLevelVal, $whyVal, $isEditable, $type) {
 		global $user;
+		global $viewUser;
 		static $testID = 1;
+		$viewUserID = $viewUser->id;
+		$viewingSelf = ($viewUserID == $user->id);
 		$dayID = 1;
 		
 		$ajaxSaveDailytestPath = PAGE_AJAX_SAVEDAILYTEST;
@@ -1114,8 +1114,22 @@ By winners, for winners.
 		
 		$noHabitStrategies = 0;
 
+		//print_r($dailytests);	
+
+		if(empty($dailytests)){
+			$noHabitStrategies = 1;
+		}
+
 		if(	(count($dailytests) == 1) && ( $dailytests[0]->strategy_type != 'adherence')){		
 			$noHabitStrategies = 1;
+		}
+		
+		foreach($dailytests as $dailytest) {
+			if($dailytest->strategy_type == 'adherence'){
+				$noHabitStrategies = 0;
+			}else{
+				$noHabitStrategies = 1;
+			}
 		}
 		
 		if( empty($_GET['id']) ){
@@ -1232,29 +1246,48 @@ By winners, for winners.
 			//////////////////////////////////
 			
 			function modifyStrategy(strategy_id, goal_id, type, strategy_type){
-			
+				
+				var go = false;
+				
 				if( type == 'edit' ) {
 					var new_strategy_name = $("#newStrategyName" + strategy_id).attr("value");
 										
 				}else if(type == 'remove'){
 					var cur_name = $("#curElementText" + strategy_id).html();
 				    var answer = confirm('Remove "' + cur_name + '"?');
-				    
-				    
 				}else if((type == 'create') && (strategy_type == 'todo')){
 					var new_strategy_name = $("#newToDoName" + goal_id).attr("value"); 
 					var new_strategy_description = $("#newToDoDescription" + goal_id).attr("value");
+					var is_public = $("#newToDoIsPublic" + goal_id + " option:selected").text();
 				}else if((type == 'create') && (strategy_type == 'tactic')){
 					var new_strategy_name = $("#newTacticName" + goal_id).attr("value"); 
 					var new_strategy_description = $("#newTacticDescription" + goal_id).attr("value");
+					var is_public = $("#newTacticIsPublic" + goal_id + " option:selected").text();
+				}    			
+
+				if(is_public == "Public"){
+					is_public = 1;
+				}else if(is_public == "Private"){
+					is_public = 0;
 				}
 
-				// May need to remove 'completed' option
-    			if ( ( answer ) || ( type == 'create') || ( type == 'completed') || (type == 'edit' ) ) {				
+    			if ( ( answer ) || ( type == 'create') || ( type == 'completed') || (type == 'edit' ) || (type == 'remove' ) ) {
+    				var go = true;
+    			}
+				if( ( is_public == 'None') && (type == 'create') ) {
+					go = false;
+					alert("Please choose a privacy setting");										
+				}
+				if( ( type == 'create' ) && ( !new_strategy_name ) ){
+					go = false;
+					alert("Please enter a name");
+				}
+
+    			if(  go == true ){	
 				    $.ajax({  
 				        type: "POST", 
 				        url: '<?php echo $ajaxModifyStrategy; ?>', 
-				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&newStrategyName="+ new_strategy_name+"&newStrategyDescription="+ new_strategy_description+"&type="+ type+"&strategyType="+ strategy_type+"&page="+ 0,
+				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&newStrategyName="+ new_strategy_name+"&newStrategyDescription="+ new_strategy_description+"&type="+ type+"&strategyType="+ strategy_type+"&page="+ 0+"&isPublic="+ is_public,
 				        dataType: "html",
 				        complete: function(data){				        
 							var val = data.responseText;       	
@@ -1318,7 +1351,9 @@ By winners, for winners.
 					
 						
 			function modifyKPI(kpi_id, goal_id, type, test_id){
-			
+				 
+				 var go = false;
+				 
 				 if(type == 'edit'){
 					var new_kpi_name = $("#newKPIName" + kpi_id).attr("value");
 					var new_kpi_test_name = $("#newKPITestName" + kpi_id).attr("value");
@@ -1330,14 +1365,22 @@ By winners, for winners.
 					var new_kpi_description = $("#newKPIDescription" + goal_id).attr("value");
 					var new_kpi_test_name = $("#newKPITestName" + goal_id).attr("value");
 					var new_kpi_test_description = $("#newKPITestDescription" + goal_id).attr("value"); 
-					var new_kpi_test_frequency = $("#newKPITestFrequency" + goal_id).attr("value"); 
+					var new_kpi_test_frequency = $("#newKPITestFrequency" + goal_id).attr("value");
+					var is_public = $("#newKPIIsPublic" + goal_id + " option:selected").text();
+				}
+
+
+				if(is_public == "Public"){
+					is_public = 1;
+				}else if(is_public == "Private"){
+					is_public = 0;
 				}
 
 				if((( type == 'edit' ) && ( new_kpi_name != '' ))){
 					var go = true;
 				}else if(((type == 'remove') && (answer))){
 					var go = true;
-				}else if(type == 'create') {
+				}else if( type == 'create' ) {
 					if(new_kpi_name != ''){
 						var go = true;
 					}else{
@@ -1345,11 +1388,17 @@ By winners, for winners.
 					}
 				}
 				
-				if(go){
+				if( ( is_public == 'None') && (type == 'create') ) {
+					go = false;
+					alert("Please choose a privacy setting");										
+				}				
+				
+				
+				if(go == true){
 				    $.ajax({  
 				        type: "POST", 
 				        url: '<?php echo $ajaxModifyKPI; ?>', 
-				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&kpiID="+ kpi_id+"&newKPIName="+ new_kpi_name+"&type="+ type+"&newKPITestName="+ new_kpi_test_name+"&newKPIDescription="+ new_kpi_description+"&newKPITestDescription="+ new_kpi_test_description+"&newKPITestFrequency="+ new_kpi_test_frequency+"&testID="+ test_id,
+				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&kpiID="+ kpi_id+"&newKPIName="+ new_kpi_name+"&type="+ type+"&newKPITestName="+ new_kpi_test_name+"&newKPIDescription="+ new_kpi_description+"&newKPITestDescription="+ new_kpi_test_description+"&newKPITestFrequency="+ new_kpi_test_frequency+"&testID="+ test_id+"&isPublic="+ is_public,
 				        dataType: "html",
 				        complete: function(data){
 							var val = jQuery.parseJSON(data.responseText);  
@@ -1359,13 +1408,22 @@ By winners, for winners.
 				        	// Get the new Test id
 				        	var kpi_test_id = val[1];
 				        	
-						 	if(new_kpi_test_name != ''){
+				        	if(typeof kpi_test_id == 'undefined'){
+				        		var kpi_test_id = '';
+				        	}
+				        	
+				        	if (typeof new_kpi_test_name == 'undefined'){
+								name_text = '';
+				        	}
+				        	
+						 	if( new_kpi_test_name != '') {
 						 		var display = '';
 						 		var name_text = " (" + new_kpi_test_name + ")";
 						 	}else{
 						 		var display = 'none';
+						 		var name_text = '';
 						 	}
-						 	
+						 							 	
 						 	// create the html for the new KPI and insert it into the html 
 							var newKPIhtml = "<label for='testKPICheck"+kpi_id+"' style='float:left;'><input onclick='modifyKPI("+kpi_id+","+goal_id+", &quot;completed&quot;,&quot;&quot;)' type='checkbox' value='Check' id='testKPICheck"+kpi_id+"' onclick='' /></label><div class='kpi_label' id='kpiBox"+kpi_id+"'><div style='display:none;' id='KPIElement"+kpi_id+"'> Name: <input id='newKPIName"+kpi_id+"' type='text' value='"+new_kpi_name+"' style='width:275px; font-size:13px; color:#666;'/> Test: <input id='newKPITestName"+kpi_id+"' type='text' value='"+new_kpi_test_name+"' style='width:145px; font-size:13px; color:#666;'/><button onclick='modifyKPI("+kpi_id+","+goal_id+", 'edit', "+ kpi_test_id +")'>submit</button><button  onclick='editKPIElement("+kpi_id+",0)'>cancel</button></div> <span style='' id='curKPIElementText"+kpi_id+"'>"+new_kpi_name+"</span><span style='display:'"+display+"' id='curKPITestText"+kpi_id+"'>"+name_text+"</span><span class='editLink' id='editKPIButton"+kpi_id+"' onclick='editKPIElement("+kpi_id+",1)'> edit</span><span class='editLink' style='float:right;' id='removeKPIButton"+kpi_id+"' onclick='modifyKPI("+kpi_id+","+goal_id+", &quot;remove&quot;,&quot;&quot;)'>x</span></div><div class='cl'>&nbsp;</div>";
 						 	
@@ -1420,19 +1478,57 @@ By winners, for winners.
 				}
 			}
 			
-
-
+			function change_lock(goal_id, type){
+		
+					if(type == 'todo'){
+						var is_public = $("#newToDoIsPublic" + goal_id + " option:selected").text();
+					}else if(type == 'tactic'){
+						var is_public = $("#newTacticIsPublic" + goal_id + " option:selected").text();
+					}else if(type == 'habit'){
+						var is_public = $("#isPublic option:selected").text();
+					}else if(type == 'kpi'){
+						var is_public = $("#newKPIIsPublic" + goal_id + " option:selected").text();
+					}
+			
+					if(is_public == "Public"){		
+						$("#"+ type +"Unlocked"+goal_id).show();
+						$("#"+ type +"Locked"+goal_id).hide();
+					}else if(is_public == "Private"){
+						$("#"+ type +"Unlocked"+goal_id).hide();
+						$("#"+ type +"Locked"+goal_id).show();
+					}
+			}
+			
 			
 </script>
 <?php 
+				$goal_pub = Goal::getFullObjFromGoalID($goal->id, $viewUserID);
+
 				if( ( $type == 'habits') && ( !empty($dailytests)) && ($noHabitStrategies != 1) ) {
 				
+				
+				// Check if there are any habits that are not private. If none or if the goal is private show nothing
+					$show_goal = 0;
+					foreach($dailytests as $dailytest) {
+						if($dailytest->strategy_type == 'adherence'){
+						 	if( $dailytest->is_public == 1 ){
+						 		$show_goal = 1;
+						 	}
+						}
+					}
+					
+					if($goal->is_public == 0){
+						$show_goal == 0;
+					}
+					
+					if( empty($is_user) && ($show_goal == 0)){}else{
+					
 ?>						
 				<!-- Box -->
 				<div class="box">
 					<!-- GOAL TITLE & CATEGORY(?) -->
 					<div class="habit_box" >
-						<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" <?php if($is_user){ ?> onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" <?php } ?>> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" href="#">+</a>--></div>
+						<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" <?php if($is_user){ ?> onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" <?php } ?>> <?php echo $goalstatus->level; ?></span><a <?php if($is_user){ ?> href="<?php echo $goal->getPagePath();?>" <?php }else{ echo 'style="text-decoration:none !important;"'; }  ?>  class="title"><?php echo GPC::strToPrintable($goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" href="#">+</a>--></div>
 						
 					<!-- Lightbox for issuing Goal Events -->
 					<div class="lightbox-panel" id="lightbox-panel<?php echo $goal->id; ?>" style="display:none;">
@@ -1466,6 +1562,14 @@ By winners, for winners.
 
     						<div class="newscore-row">
     							<div class="new_habit" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->name);?> Habit</div>
+									<div class="new_tactic_privacy">
+											<img id="habitLocked<?php echo $goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="habitUnlocked<?php echo $goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
+											<select onclick="change_lock(<?php echo $goal->id;?>, 'habit')" class="strategy_dropdown" name="isPublic" id="isPublic" >
+										  <option >Public</option>
+										  <option >Private</option>
+										</select>
+									</div>    							
     							<div class="new_habit">Habit Name: <input type="text" class="text_input" name="newStrategyName" id="newStrategyName<?php echo $goal->id;?>"  /></div>
     							<div class="new_habit">Habit Description: </span><input type="text" class="text_input" name="newStrategyDescription" id="newStrategyDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</div>
                                 <input type="hidden" value="<?php echo $user->id; ?>" name="userID"/>
@@ -1498,11 +1602,18 @@ By winners, for winners.
 						}
 						?><?php
 
+
 					foreach($dailytests as $dailytest) {
 					
 						if($dailytest->strategy_type == 'adherence'){
 							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, date("Y-m-d"))?"checked":"";
 							
+							 	if( empty($is_user) && ( $dailytest->is_public == 0 ) ){}else{
+	/*
+							echo "<pre>";
+							print_r($dailytests);
+							echo "</pre>";
+	*/						
 	?>
 							<div class="row">
 									
@@ -1542,7 +1653,8 @@ By winners, for winners.
 								
 								<div class="cl">&nbsp;</div>
 							</div>
-<?php					}
+<?php					  }
+						}
 					}?>
 					<?php if($is_user){ ?> <a class="add_habit" id="show-panel" <?php if($is_user){ ?>  onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'habit')" <?php } ?> href="#">create a new habit</a> <?php } ?>
 					</div>
@@ -1551,14 +1663,27 @@ By winners, for winners.
 				</div>
 				<!-- End Box -->
 <?php
-		}elseif($type == 'goals'){
+			
 
-			$kpis = KPI::getListFromGoalID($goal->id, $user->id);
+			}
+		}elseif($type == 'goals'){
+			
+			if($is_user){
+				$user_id = $user->id;
+			}else{
+				$user_id = $viewUserID;
+			}
+			
+			$kpis = KPI::getListFromGoalID($goal->id, $user_id);
+
+
+
+
 		?>
 						<!-- Box -->
 						<div class="box">
 							<!-- GOAL TITLE & LEVEL -->
-							<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" <?php if($is_user){ ?> onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')"<?php } ?>> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" href="#">+</a>--></div>
+							<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->id;?>" <?php if($is_user){ ?> onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')"<?php } ?>> <?php echo $goalstatus->level; ?></span><a <?php if($is_user){ ?> href="<?php echo $goal->getPagePath();?>" <?php }else{ echo 'style="text-decoration:none !important;"'; } ?> class="title"><?php echo GPC::strToPrintable($goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->id; ?>,'goal')" href="#">+</a>--></div>
 							
 							<!-- %%%%%%%%%%%% LIGHTBOXES FOR ELEMENT CREATION %%%%%%%%%%%% -->
 							
@@ -1592,6 +1717,16 @@ By winners, for winners.
 							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->id; ?>,'tactic')">X</a>
 								<div class="newscore-row">
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->name);?> Tactic</div>
+									<div class="new_tactic_privacy">
+										<form>
+											<img id="tacticLocked<?php echo $goal->id;?>" style="display:none;"  style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="tacticUnlocked<?php echo $goal->id;?>" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
+											<select onclick="change_lock(<?php echo $goal->id;?>, 'tactic', 'strategy')" class="strategy_dropdown" name="newTacticIsPublic<?php echo $goal->id;?>" id="newTacticIsPublic<?php echo $goal->id;?>" >
+											  <option >Public</option>
+											  <option >Private</option>
+											</select>
+										</form>																				
+									</div>
 									<div class="new_tactic">Tactic Name: <input type="text" class="text_input" id="newTacticName<?php echo $goal->id;?>"  /></div>
 									<div class="new_tactic">Tactic Description: <input type="text" class="text_input" id="newTacticDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</span></div><br/>
 									<div class="cl">&nbsp;</div>
@@ -1607,6 +1742,16 @@ By winners, for winners.
 							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->id; ?>,'todo')">X</a>
 								<div class="newscore-row">
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->name);?> ToDo</div>
+									<div class="new_tactic_privacy">
+										<form>
+											<img id="todoLocked<?php echo $goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="todoUnlocked<?php echo $goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
+											<select onclick="change_lock(<?php echo $goal->id;?>, 'todo')" class="strategy_dropdown" name="newToDoIsPublic<?php echo $goal->id;?>" id="newToDoIsPublic<?php echo $goal->id;?>" >
+											  <option >Public</option>
+											  <option >Private</option>
+											</select>
+										</form>																				
+									</div>
 									<div class="new_tactic">Todo Name: <input type="text" class="text_input" id="newToDoName<?php echo $goal->id;?>"  /></div>
 									<div class="new_tactic">Todo Description: </span><input type="text" class="text_input" id="newToDoDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</div>
 									<div class="cl">&nbsp;</div>
@@ -1621,6 +1766,14 @@ By winners, for winners.
 							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->id; ?>,'kpi')">X</a>
 								<div class="newscore-row">
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->name);?> Measure / Milestone</div>
+									<div class="new_tactic_privacy">
+										<img id="kpiLocked<?php echo $goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+										<img id="kpiUnlocked<?php echo $goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
+										<select onclick="change_lock(<?php echo $goal->id;?>, 'kpi')" class="strategy_dropdown" name="newKPIIsPublic<?php echo $goal->id;?>" id="newKPIIsPublic<?php echo $goal->id;?>" >
+										  <option >Public</option>
+										  <option >Private</option>
+										</select>																				
+									</div>
 									<div class="new_tactic">Name: <input type="text" class="text_input" id="newKPIName<?php echo $goal->id;?>"  /></div>
 									<div class="new_tactic">Description: </span><input type="text" class="text_input" id="newKPIDescription<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</div>
 									<div class="new_tactic">Test Name: <input type="text" class="text_input" id="newKPITestName<?php echo $goal->id;?>"  /><span class="optional_input">(optional)</span></div>
@@ -1658,7 +1811,7 @@ By winners, for winners.
 										<?php if($is_user){ ?><button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button><?php } ?>
 									</div> 
 									<span id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span><?php } ?>
+									<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span><?php } ?>
 
 								</li>
 							</div>
@@ -1705,7 +1858,7 @@ By winners, for winners.
 										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
 									</div> 
 									<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span><?php } ?>
+									<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span><?php } ?>
 							</div>
 							<div class="cl">&nbsp;</div>
 <?php					}
@@ -1748,7 +1901,8 @@ By winners, for winners.
 									}
 
 									?><span style='display:'<?php echo $isTest;?>' id='curKPITestText<?php echo $kpi->id;?>'><?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo "("; echo $kpi->kpi_tests[0]->test_name; echo ")"; } ?></span>
-									<span class="editLink" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->id;?>, 'remove','')">x</span>
+									<?php if($is_user){ ?><span class="editLink" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span>
+									<span class="editLink" style="float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->id;?>, 'remove','')">x</span><?php } ?> 
 							</div>
 							<div class="cl">&nbsp;</div>
 <?php					
@@ -1824,9 +1978,6 @@ By winners, for winners.
 				assert(false);
 				break;
 		}
-		if(!$userHasGoal && ($mode==PAGEMODE_EDIT)) {
-			$mode = PAGEMODE_FACTS;
-		}
 				
 		$this->printHeader(NAVNAME_GOALS, array(
 							new ChromeTitleElementHeader("Goal: $goal_name"),
@@ -1848,12 +1999,113 @@ By winners, for winners.
 
 				static $testID = 1;
 				$dayID = 1;
-				$noHabitStrategies = 0;		
+				$noHabitStrategies = 0;	
+				
+					
 				if(	(count($dailytests) == 1) && ( $dailytests[0]->strategy_type != 'adherence')){		
 					$noHabitStrategies = 1;
 				}
+				
+				
+				
 ?>
 <script>
+
+		//////////////////////////////////////////////////////////////////
+		// Transition to edit mode when somebody elects to Adopt a goal	/
+		////////////////////////////////////////////////////////////////
+			
+			function removeShowAdopt(){				
+					modifyGoal('insert');
+			}
+		
+			function removeGoal(){
+				modifyGoal('remove');	
+				$(".pre_adopt").show();
+				$(".pre_adopt").css("margin-top","305px");
+				$("#if_adopt").css("display","none");
+
+			}
+		
+		
+			function onEdit(){
+					$("#if_adopt").show();
+					$(".pre_adopt").hide();
+			}
+
+		/////////////////////////////////////////
+		// AJAX for adopting/removing a Goal //
+		///////////////////////////////////////
+		
+			function modifyGoal(type){
+
+				var status = 'active';
+				
+				
+				if (type == 'insert') {
+					$('#dialog-confirm').show();
+					
+					$('#dialog-confirm').dialog({
+					    resizable: true,
+					    height: 220
+					});		
+							
+				    $('#dialog-confirm').dialog('option', 'buttons', [
+				    {
+				        text: 'Private',
+				        click: function() { 
+				        $(this).dialog('close'); 
+				        $.ajax({  
+				            type: "POST", 
+				            url: '<?php echo $ajaxModifyGoal; ?>', 
+				            data: "userID="+<?php echo $user->id; ?>+"&goalID="+<?php echo $goalID; ?>+"&type="+type+"&isPublic=0",
+				            dataType: "html",
+				            complete: function(data){
+				                $("#ratingBox").html(data.responseText);  
+				            }  
+				        });  
+				        
+							$("#if_adopt").show();
+							$(".pre_adopt").hide();
+				      }
+				    },
+				    
+				    {
+				        text: 'Public',
+				        click: function() { 
+				        $(this).dialog('close'); 
+						$.ajax({  
+				            type: "POST", 
+				            url: '<?php echo $ajaxModifyGoal; ?>', 
+				            data: "userID="+<?php echo $user->id; ?>+"&goalID="+<?php echo $goalID; ?>+"&type="+type+"&isPublic=1",
+				            dataType: "html",
+				            complete: function(data){
+				                $("#ratingBox").html(data.responseText);  
+				            }  
+				        });  
+						if(type == 'insert'){			
+							$("#if_adopt").show();
+							$(".pre_adopt").hide();
+						}
+				    }
+				    
+				    }]);
+				}else{
+				        $.ajax({  
+				            type: "POST", 
+				            url: '<?php echo $ajaxModifyGoal; ?>', 
+				            data: "userID="+<?php echo $user->id; ?>+"&goalID="+<?php echo $goalID; ?>+"&type="+type+"&isPublic=is_public",
+				            dataType: "html",
+				            complete: function(data){
+				                $("#ratingBox").html(data.responseText);  
+				            }  
+				        });  
+				}
+		    }
+
+
+
+
 		///////////////////////////////////////////////////////////////////////////////
 		// AJAX for modifying (adding/removing/readopting, not creating) a Strategy //
 		/////////////////////////////////////////////////////////////////////////////
@@ -1957,29 +2209,154 @@ By winners, for winners.
 			
 			function modifyStrategy(strategy_id, goal_id, type, strategy_type){
 			
+				var go = false;
 				if( type == 'edit' ) {
 					var new_strategy_name = $("#newStrategyName" + strategy_id).attr("value");
-										
 				}else if(type == 'remove'){
 					var cur_name = $("#curElementText" + strategy_id).html();
 				    var answer = confirm('Remove "' + cur_name + '"?');
-				    
-				    
 				}else if((type == 'create') && (strategy_type == 'todo')){
 					var new_strategy_name = $("#newToDoName" + goal_id).attr("value"); 
 					var new_strategy_description = $("#newToDoDescription" + goal_id).attr("value");
+					var is_public = $("#newToDoIsPublic" + goal_id + " option:selected").text();
+				/*	alert(is_public)
+					var is_public_habit = $("#newHabitIsPublic" + goal_id + " option:selected").text();
+					var is_public_tactic = $("#newTacticIsPublic" + goal_id + " option:selected").text();
+					var is_public_todo = $("#newToDoIsPublic" + goal_id + " option:selected").text();
+					alert("habit: "  + is_public_habit);
+					alert("todo: "  +is_public_todo);					
+					alert("tactic: "  +is_public_tactic);
+				*/
 				}else if((type == 'create') && (strategy_type == 'tactic')){
 					var new_strategy_name = $("#newTacticName" + goal_id).attr("value"); 
 					var new_strategy_description = $("#newTacticDescription" + goal_id).attr("value");
+					var is_public = $("#newTacticIsPublic" + goal_id + " option:selected").text();
+				}else if((type == 'create') && (strategy_type == 'habit')){
+					var new_strategy_name = $("#newHabitName" + goal_id).attr("value"); 
+					var new_strategy_description = $("#newHabitDescription" + goal_id).attr("value");
+					var is_public = $("#newHabitIsPublic" + goal_id + " option:selected").text();
 				}
-			
-			
-			
-    			if ( ( answer ) || ( type == 'create') || (type == 'edit' ) || ( type == 'adopt' ) ) {				
+				
+				if(is_public == "Public"){
+					is_public = 1;
+				}else if(is_public == "Private"){
+					is_public = 0;
+				}
+
+    			if ( ( answer ) || ( type == 'create') || ( type == 'completed') || (type == 'edit' ) || (type == 'remove' ) || (type == 'adopt') ) {
+    				var go = true;
+    			}
+				if( ( is_public == 'None') && (type == 'create') ) {
+					go = false;
+					alert("Please choose a privacy setting");										
+				}
+				if( ( type == 'create' ) && ( !new_strategy_name ) ){
+					go = false;
+					alert("Please enter a name");
+				}
+    			
+    			if(  go == true ){	
+    							
+					if (type == 'adopt') {
+						$('#dialog-confirm').show();
+						$('#dialog-confirm').dialog({
+						    resizable: true,
+						    height: 220
+						});		
+								
+					    $('#dialog-confirm').dialog('option', 'buttons', [
+					    {
+					        text: 'Private',
+					        click: function() { 
+					        $(this).dialog('close'); 
+					        $.ajax({  				                
+						        type: "POST", 
+						        url: '<?php echo $ajaxModifyStrategy; ?>', 
+						        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&newStrategyName="+ new_strategy_name+"&newStrategyDescription="+ new_strategy_description+"&type="+ type+"&strategyType="+ strategy_type+"&page="+ 0+"&isPublic=0",
+						        dataType: "html",
+						        complete: function(data){				        
+									var val = data.responseText;       	
+									new_strategy_id = val;				                				                
+					            }  
+					        });  
+					        
+							if(strategy_type == 'tactic'){			
+							 	$("#new_tactic_place"+goal_id).append($("#liAdopt"+strategy_id).html());
+							 	$("#new_tactic_place"+goal_id).append("<br/>");
+							  	$("#adoptStrategyBox"+ strategy_id +" #liAdopt"+strategy_id).remove();
+							 	$("#new_tactic_place" + goal_id + " #removeButton"+strategy_id).show();				 	
+							 	$("#new_tactic_place" + goal_id + " #editButton"+strategy_id).show();
+							 	$("#new_tactic_place" + goal_id + " #adoptButton"+strategy_id).hide();
+							}else if (strategy_type == 'todo'){
+							 	$("#new_todo_place"+goal_id).append($("#liAdopt"+strategy_id).html());
+							 	$("#new_todo_place"+goal_id).append("<br/>");
+							  	$("#adoptStrategyBox"+ strategy_id +" #liAdopt"+strategy_id).remove();
+							  	$("#testCheck"+ strategy_id).remove();
+							 	$("#new_todo_place" + goal_id + " #removeButton"+strategy_id).show();				 	
+							 	$("#new_todo_place" + goal_id + " #editButton"+strategy_id).show();
+							 	$("#new_todo_place" + goal_id + " #adoptButton"+strategy_id).hide();
+							}else if (strategy_type == 'habit'){
+							 	$("#new_habit_place"+goal_id).append($("#liAdopt"+strategy_id).html());
+							 	$("#new_habit_place"+goal_id).append("<br/><br/>");
+							  	$("#adoptStrategyBox"+ strategy_id +" #liAdopt"+strategy_id).remove();
+							  	$("#testCheck"+ strategy_id).remove();
+							 	$("#new_habit_place" + goal_id + " #removeButton"+strategy_id).show();				 	
+							 	$("#new_habit_place" + goal_id + " #editButton"+strategy_id).show();
+							 	$("#new_habit_place" + goal_id + " #adoptButton"+strategy_id).hide();
+							}
+					        
+					      }
+					    },
+					    
+					    {
+					        text: 'Public',
+					        click: function() { 
+					        $(this).dialog('close'); 
+					        $.ajax({  				                
+						        type: "POST", 
+						        url: '<?php echo $ajaxModifyStrategy; ?>', 
+						        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&newStrategyName="+ new_strategy_name+"&newStrategyDescription="+ new_strategy_description+"&type="+ type+"&strategyType="+ strategy_type+"&page="+ 0+"&isPublic=1",
+						        dataType: "html",
+						        complete: function(data){				        
+									var val = data.responseText;       	
+									new_strategy_id = val;				                				                
+					            }  
+					        });  
+					        
+							if(strategy_type == 'tactic'){			
+							 	$("#new_tactic_place"+goal_id).append($("#liAdopt"+strategy_id).html());
+							 	$("#new_tactic_place"+goal_id).append("<br/>");
+							  	$("#adoptStrategyBox"+ strategy_id +" #liAdopt"+strategy_id).remove();
+							 	$("#new_tactic_place" + goal_id + " #removeButton"+strategy_id).show();				 	
+							 	$("#new_tactic_place" + goal_id + " #editButton"+strategy_id).show();
+							 	$("#new_tactic_place" + goal_id + " #adoptButton"+strategy_id).hide();
+							}else if (strategy_type == 'todo'){
+							 	$("#new_todo_place"+goal_id).append($("#liAdopt"+strategy_id).html());
+							 	$("#new_todo_place"+goal_id).append("<br/>");
+							  	$("#adoptStrategyBox"+ strategy_id +" #liAdopt"+strategy_id).remove();
+							  	$("#testCheck"+ strategy_id).remove();
+							 	$("#new_todo_place" + goal_id + " #removeButton"+strategy_id).show();				 	
+							 	$("#new_todo_place" + goal_id + " #editButton"+strategy_id).show();
+							 	$("#new_todo_place" + goal_id + " #adoptButton"+strategy_id).hide();
+							}else if (strategy_type == 'habit'){
+							 	$("#new_habit_place"+goal_id).append($("#liAdopt"+strategy_id).html());
+							 	$("#new_habit_place"+goal_id).append("<br/><br/>");
+							  	$("#adoptStrategyBox"+ strategy_id +" #liAdopt"+strategy_id).remove();
+							  	$("#testCheck"+ strategy_id).remove();
+							 	$("#new_habit_place" + goal_id + " #removeButton"+strategy_id).show();				 	
+							 	$("#new_habit_place" + goal_id + " #editButton"+strategy_id).show();
+							 	$("#new_habit_place" + goal_id + " #adoptButton"+strategy_id).hide();
+							}
+					        
+					    }
+					    
+					    }]);
+					}else{
+
 				    $.ajax({  
 				        type: "POST", 
 				        url: '<?php echo $ajaxModifyStrategy; ?>', 
-				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&newStrategyName="+ new_strategy_name+"&newStrategyDescription="+ new_strategy_description+"&type="+ type+"&strategyType="+ strategy_type+"&page="+ 0,
+				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&newStrategyName="+ new_strategy_name+"&newStrategyDescription="+ new_strategy_description+"&type="+ type+"&strategyType="+ strategy_type+"&page="+ 0+"&isPublic="+ is_public,
 				        dataType: "html",
 				        complete: function(data){				        
 							var val = data.responseText;       	
@@ -1998,10 +2375,20 @@ By winners, for winners.
 							 	$("#new_tactic_place"+goal_id).prepend(newTactichtml);
 							 	$("#tactic-lightbox-panel"+goal_id).hide();
 							 	$("#no_tactic_elements"+goal_id).hide();							
-				        	}  
+				        	}else if( (strategy_type == 'habit') && (type == 'create') ){						
+							
+								var newHabithtml = "<div class='tactic_label' id='strategyBox"+new_strategy_id+"'><li><div style='display:none;' id='element"+new_strategy_id+"'><input id='newStrategyName"+new_strategy_id+"' type='text' value='"+new_strategy_name+"' style='width:375px; font-size:13px; color:#666;'/><button onclick='modifyStrategy("+new_strategy_id+","+goal_id+", &quot;edit&quot;, &quot;"+strategy_type+"&quot;)'>submit</button><button  onclick='editElement("+new_strategy_id+",0)'>cancel</button></div><span id='curElementText"+new_strategy_id+"'>"+new_strategy_name+"</span><span class='editLink' id='editButton"+new_strategy_id+">' onclick='editElement("+new_strategy_id+",1)'> edit</span><span class='editLink' style='float:right;' id='removeButton"+new_strategy_id+"' onclick='modifyStrategy("+new_strategy_id+","+goal_id+", &quot;remove&quot;, &quot;"+strategy_type+"&quot;)'>x</span></li></div><div class='cl'>&nbsp;</div>";
+
+							 	$("#new_habit_place"+goal_id).prepend(newHabithtml);
+							 	$("#habit-lightbox-panel"+goal_id).hide();
+							 	$("#no_tactic_elements"+goal_id).hide();							
+				        	}
+
+				        	  
 				       }  
 				    });
 				}
+			}
 							 
 				 if(type == 'edit'){
 					$("#element"+strategy_id).hide();	
@@ -2016,48 +2403,16 @@ By winners, for winners.
 				 	}
 				 }else if (type == 'remove'){
     				if (answer){
-    				
 				 		$("#strategyBox"+strategy_id).hide();
 				 		if(strategy_type == 'todo'){
 				 			$("#testCheck"+strategy_id).hide();
 						}
-						
 				 	}
-				 }else if (type == 'adopt'){
-					if(strategy_type == 'tactic'){			
-					 	$("#new_tactic_place"+goal_id).append($("#liAdopt"+strategy_id).html());
-					 	$("#new_tactic_place"+goal_id).append("<br/>");
-					  	$("#adoptStrategyBox"+ strategy_id +" #liAdopt"+strategy_id).remove();
-					 	$("#new_tactic_place" + goal_id + " #removeButton"+strategy_id).show();				 	
-					 	$("#new_tactic_place" + goal_id + " #editButton"+strategy_id).show();
-					 	$("#new_tactic_place" + goal_id + " #adoptButton"+strategy_id).hide();
-					}else if (strategy_type == 'todo'){
-					 	$("#new_todo_place"+goal_id).append($("#liAdopt"+strategy_id).html());
-					 	$("#new_todo_place"+goal_id).append("<br/>");
-					  	$("#adoptStrategyBox"+ strategy_id +" #liAdopt"+strategy_id).remove();
-					  	$("#testCheck"+ strategy_id).remove();
-					 	$("#new_todo_place" + goal_id + " #removeButton"+strategy_id).show();				 	
-					 	$("#new_todo_place" + goal_id + " #editButton"+strategy_id).show();
-					 	$("#new_todo_place" + goal_id + " #adoptButton"+strategy_id).hide();
-					}else if (strategy_type == 'habit'){
-					 	$("#new_habit_place"+goal_id).append($("#liAdopt"+strategy_id).html());
-					 	$("#new_habit_place"+goal_id).append("<br/><br/>");
-					  	$("#adoptStrategyBox"+ strategy_id +" #liAdopt"+strategy_id).remove();
-					  	$("#testCheck"+ strategy_id).remove();
-					 	$("#new_habit_place" + goal_id + " #removeButton"+strategy_id).show();				 	
-					 	$("#new_habit_place" + goal_id + " #editButton"+strategy_id).show();
-					 	$("#new_habit_place" + goal_id + " #adoptButton"+strategy_id).hide();
-					}
-				 }
-				 
-				 
-				 
-				 
-				 
-				 
-				 
-				 
+				 } 
 			}
+			
+			
+			
 
 			function editElement(element_id, status){
 				if(status == 1){
@@ -2070,8 +2425,10 @@ By winners, for winners.
 					$("#curElementText"+element_id).show();	
 				}
 			}
-						
+										
 			function modifyKPI(kpi_id, goal_id, type, test_id){
+			
+				go = false;
 			
 				 if(type == 'edit'){
 					var new_kpi_name = $("#newKPIName" + kpi_id).attr("value");
@@ -2085,6 +2442,13 @@ By winners, for winners.
 					var new_kpi_test_name = $("#newKPITestName" + goal_id).attr("value");
 					var new_kpi_test_description = $("#newKPITestDescription" + goal_id).attr("value"); 
 					var new_kpi_test_frequency = $("#newKPITestFrequency" + goal_id).attr("value"); 
+					var is_public = $("#newKPIIsPublic" + goal_id + " option:selected").text();
+				}
+
+				if(is_public == "Public"){
+					is_public = 1;
+				}else if(is_public == "Private"){
+					is_public = 0;
 				}
 
 				if((( type == 'edit' ) && ( new_kpi_name != '' ))){
@@ -2099,11 +2463,121 @@ By winners, for winners.
 					}
 				}
 				
-				if(go){
+				if( ( is_public == 'None') && (type == 'create') ) {
+					go = false;
+					alert("Please choose a privacy setting");										
+				}				
+				
+				if(go == true){
+				
+					if (type == 'adopt') {
+						$('#dialog-confirm').show();
+						$('#dialog-confirm').dialog({
+						    resizable: true,
+						    height: 220
+						});		
+								
+					    $('#dialog-confirm').dialog('option', 'buttons', [
+					    {
+					        text: 'Private',
+					        click: function() { 
+					        $(this).dialog('close'); 
+					        $.ajax({  				                
+						        type: "POST", 
+						        url: '<?php echo $ajaxModifyKPI; ?>', 
+						        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&kpiID="+ kpi_id+"&newKPIName="+ new_kpi_name+"&type="+ type+"&newKPITestName="+ new_kpi_test_name+"&newKPIDescription="+ new_kpi_description+"&newKPITestDescription="+ new_kpi_test_description+"&newKPITestFrequency="+ new_kpi_test_frequency+"&testID="+ test_id+"&isPublic=0",
+						        dataType: "html",
+						        complete: function(data){
+									var val = jQuery.parseJSON(data.responseText);  
+		
+						        	// Get the new KPI id
+						        	var kpi_id = val[0];
+						        	// Get the new Test id
+						        	var kpi_test_id = val[1];
+						        	
+						        	if(typeof kpi_test_id == 'undefined'){
+						        		var kpi_test_id = '';
+						        	}
+						        	
+						        	if (typeof new_kpi_test_name == 'undefined'){
+										name_text = '';
+						        	}
+						        	
+								 	if( new_kpi_test_name != '') {
+								 		var display = '';
+								 		var name_text = " (" + new_kpi_test_name + ")";
+								 	}else{
+								 		var display = 'none';
+								 		var name_text = '';
+								 	}
+
+					            }  
+					        });  
+					        
+						 	$("#new_kpi_place"+goal_id).append($("#liKPIAdopt"+kpi_id).html());
+						 	$("#new_kpi_place"+goal_id).append("<br/>");
+						  	$("#adoptKPIBox"+ kpi_id +" #liKPIAdopt"+kpi_id).remove();
+						  	$("#testCheck"+ kpi_id).remove();
+						 	$("#new_kpi_place" + goal_id + " #removeKPIButton"+kpi_id).show();				 	
+						 	$("#new_kpi_place" + goal_id + " #editKPIButton"+kpi_id).show();
+						 	$("#new_kpi_place" + goal_id + " #adoptKPIButton"+kpi_id).hide();
+					        
+					      }
+					    },
+					    
+					    {
+					        text: 'Public',
+					        click: function() { 
+					        $(this).dialog('close'); 
+					        $.ajax({  				                
+						        type: "POST", 
+						        url: '<?php echo $ajaxModifyKPI; ?>', 
+						        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&kpiID="+ kpi_id+"&newKPIName="+ new_kpi_name+"&type="+ type+"&newKPITestName="+ new_kpi_test_name+"&newKPIDescription="+ new_kpi_description+"&newKPITestDescription="+ new_kpi_test_description+"&newKPITestFrequency="+ new_kpi_test_frequency+"&testID="+ test_id+"&isPublic=1",
+						        dataType: "html",
+						        complete: function(data){
+									var val = jQuery.parseJSON(data.responseText);  
+		
+						        	// Get the new KPI id
+						        	var kpi_id = val[0];
+						        	// Get the new Test id
+						        	var kpi_test_id = val[1];
+						        	
+						        	if(typeof kpi_test_id == 'undefined'){
+						        		var kpi_test_id = '';
+						        	}
+						        	
+						        	if (typeof new_kpi_test_name == 'undefined'){
+										name_text = '';
+						        	}
+						        	
+								 	if( new_kpi_test_name != '') {
+								 		var display = '';
+								 		var name_text = " (" + new_kpi_test_name + ")";
+								 	}else{
+								 		var display = 'none';
+								 		var name_text = '';
+								 	}
+					            }  
+					        });  
+					        
+						 	$("#new_kpi_place"+goal_id).append($("#liKPIAdopt"+kpi_id).html());
+						 	$("#new_kpi_place"+goal_id).append("<br/>");
+						  	$("#adoptKPIBox"+ kpi_id +" #liKPIAdopt"+kpi_id).remove();
+						  	$("#testCheck"+ kpi_id).remove();
+						 	$("#new_kpi_place" + goal_id + " #removeKPIButton"+kpi_id).show();				 	
+						 	$("#new_kpi_place" + goal_id + " #editKPIButton"+kpi_id).show();
+						 	$("#new_kpi_place" + goal_id + " #adoptKPIButton"+kpi_id).hide();
+					        
+					    	}
+					    
+					    }]);
+					  }
+					}else{				
+				
 				    $.ajax({  
 				        type: "POST", 
 				        url: '<?php echo $ajaxModifyKPI; ?>', 
-				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&kpiID="+ kpi_id+"&newKPIName="+ new_kpi_name+"&type="+ type+"&newKPITestName="+ new_kpi_test_name+"&newKPIDescription="+ new_kpi_description+"&newKPITestDescription="+ new_kpi_test_description+"&newKPITestFrequency="+ new_kpi_test_frequency+"&testID="+ test_id,
+				        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&kpiID="+ kpi_id+"&newKPIName="+ new_kpi_name+"&type="+ type+"&newKPITestName="+ new_kpi_test_name+"&newKPIDescription="+ new_kpi_description+"&newKPITestDescription="+ new_kpi_test_description+"&newKPITestFrequency="+ new_kpi_test_frequency+"&testID="+ test_id+"&isPublic="+ is_public,
 				        dataType: "html",
 				        complete: function(data){
 							var val = jQuery.parseJSON(data.responseText);  
@@ -2113,11 +2587,20 @@ By winners, for winners.
 				        	// Get the new Test id
 				        	var kpi_test_id = val[1];
 				        	
-						 	if(new_kpi_test_name != ''){
+				        	if(typeof kpi_test_id == 'undefined'){
+				        		var kpi_test_id = '';
+				        	}
+				        	
+				        	if (typeof new_kpi_test_name == 'undefined'){
+								name_text = '';
+				        	}
+				        	
+						 	if( new_kpi_test_name != '') {
 						 		var display = '';
 						 		var name_text = " (" + new_kpi_test_name + ")";
 						 	}else{
 						 		var display = 'none';
+						 		var name_text = '';
 						 	}
 						 	
 						 	// create the html for the new KPI and insert it into the html 
@@ -2154,19 +2637,7 @@ By winners, for winners.
 				 		$("#testKPICheck"+kpi_id).hide();
 				 		$("#kpiBox"+kpi_id).hide();
 				 	}
-				 }else if (type == 'adopt'){
-					 	$("#new_kpi_place"+goal_id).append($("#liKPIAdopt"+kpi_id).html());
-					 	$("#new_kpi_place"+goal_id).append("<br/>");
-					  	$("#adoptKPIBox"+ kpi_id +" #liKPIAdopt"+kpi_id).remove();
-					  	$("#testCheck"+ kpi_id).remove();
-					 	$("#new_kpi_place" + goal_id + " #removeKPIButton"+kpi_id).show();				 	
-					 	$("#new_kpi_place" + goal_id + " #editKPIButton"+kpi_id).show();
-					 	$("#new_kpi_place" + goal_id + " #adoptKPIButton"+kpi_id).hide();
-				}
-				 
-				 
-				 
-				 		 
+				 }				 
 			}
 			
 			function editKPIElement(element_id, status){
@@ -2182,15 +2653,131 @@ By winners, for winners.
 					$("#curKPITestText"+element_id).show();
 				}
 			}
+
+			function change_lock(goal_id, type){
+		
+					if(type == 'todo'){
+						var is_public = $("#newToDoIsPublic" + goal_id + " option:selected").text();
+					}else if(type == 'tactic'){
+						var is_public = $("#newTacticIsPublic" + goal_id + " option:selected").text();
+					}else if(type == 'habit'){
+						var is_public = $("#newHabitIsPublic" + goal_id + " option:selected").text();
+					}else if(type == 'kpi'){
+						var is_public = $("#newKPIIsPublic" + goal_id + " option:selected").text();
+					}
 			
+					if(is_public == "Public"){		
+						$("#"+ type +"Unlocked"+goal_id).show();
+						$("#"+ type +"Locked"+goal_id).hide();
+					}else if(is_public == "Private"){
+						$("#"+ type +"Unlocked"+goal_id).hide();
+						$("#"+ type +"Locked"+goal_id).show();
+					}
+			}
 
 
-			
+			function changeStrategyPrivacy(goal_id, strategy_id, status){
+				if(status == 'locked'){
+					$("#strategyUnlocked"+goal_id+strategy_id).show();
+					$("#strategyLocked"+goal_id+strategy_id).hide();
+					is_public = 1;
+				}else{
+					$("#strategyUnlocked"+goal_id+strategy_id).hide();
+					$("#strategyLocked"+goal_id+strategy_id).show();
+					is_public = 0;
+				}	
+
+			    $.ajax({  
+			        type: "POST", 
+			        url: '<?php echo $ajaxModifyStrategy; ?>', 
+			        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&type=privacy"+"&isPublic="+ is_public,
+			        dataType: "html",
+			        complete: function(data){				        
+						var val = data.responseText;       	
+			       }  
+			    });
+			}
+		
+			function changeKPIPrivacy(goal_id, kpi_id, status){
+				if(status == 'locked'){
+					$("#kpiUnlocked"+goal_id+kpi_id).show();
+					$("#kpiLocked"+goal_id+kpi_id).hide();
+					is_public = 1;
+				}else{
+					$("#kpiUnlocked"+goal_id+kpi_id).hide();
+					$("#kpiLocked"+goal_id+kpi_id).show();
+					is_public = 0;
+				}								
+
+			    $.ajax({  
+			        type: "POST", 
+			        url: '<?php echo $ajaxModifyKPI; ?>', 
+			        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&kpiID="+ kpi_id+"&type=privacy"+"&isPublic="+ is_public,
+			        dataType: "html",
+			        complete: function(data){
+			       }  
+			    });
+			}
+
+			function changeGoalPrivacy(goal_id, status){
+				if(status == 'locked'){
+					$("#goalUnlocked"+goal_id).show();
+					$("#goalLocked"+goal_id).hide();
+					is_public = 1;
+				}else{
+					$("#goalUnlocked"+goal_id).hide();
+					$("#goalLocked"+goal_id).show();
+					is_public = 0;
+				}								
+
+			    $.ajax({  
+			        type: "POST", 
+			        url: '<?php echo $ajaxModifyGoal; ?>', 
+			        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&type=privacy"+"&isPublic="+ is_public,
+			        dataType: "html",
+			        complete: function(data){
+			       }  
+			    });
+			}
+
 </script>
+
+<div id="dialog-confirm" title="Public or Private?" style="display:none;">
+    <p >You can always change your setting later.</p>
+</div>
+
+		<?php if(!$userHasGoal){?>
+				<div class="pre_adopt">
+					<p id="suggested_description"><strong> Description:</strong> <?php echo GPC::strToPrintable($goal_description); ?></p>
+					<button class="adopt-goal-btn" id="show_adopt_options" onclick="removeShowAdopt();">Adopt this goal</button>
+				</div>
+				
+		<?php 
+				$display = 'none';
+			}else{
+				$display = 'block';
+			} 
+			
+			if($goal->is_public == '1'){
+				$locked_status = 'none';
+				$unlocked_status = '';
+			}else{
+				$locked_status = '';
+				$unlocked_status = 'none';							
+			}
+			
+			?>
+
+					<div id="if_adopt" name="if_adopt" style="display:<?php echo $display; ?>;">
 						<!-- Box -->
 						<div class="box">
 							<!-- GOAL TITLE & LEVEL -->
-							<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->goal->id;?>"  onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')"> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->goal->name);?></a><!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')" href="#">+</a>--></div>
+							<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->goal->id;?>"  onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')"> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->goal->name);?></a>
+									<span>
+										<img id="goalLocked<?php echo $goal->goal->id;?>" class="large_lock_goal_page" class="small_lock_goal_page" onclick="changeGoalPrivacy(<?php echo $goal->goal->id;?>,'locked');" style="display:<?php echo $locked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock_small.png"/>
+										<img id="goalUnlocked<?php echo $goal->goal->id;?>" class="large_lock_goal_page" onclick="changeGoalPrivacy(<?php echo $goal->goal->id;?>, 'unlocked');" style="display:<?php echo $unlocked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock_small.png"/>
+									</span>
+							<!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')" href="#">+</a>--></div>
 
 							<!-- %%%%%%%%%%%% LIGHTBOXES FOR ELEMENT CREATION %%%%%%%%%%%% -->
 							
@@ -2224,6 +2811,16 @@ By winners, for winners.
 							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'tactic')">X</a>
 								<div class="newscore-row">
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Tactic</div>
+									<div class="new_tactic_privacy">
+										<form>
+											<img id="tacticLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="tacticUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
+											<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'tactic', 'strategy')" class="strategy_dropdown" name="newTacticIsPublic<?php echo $goal->goal->id;?>" id="newTacticIsPublic<?php echo $goal->goal->id;?>" >
+											  <option >Public</option>
+											  <option >Private</option>
+											</select>
+										</form>																				
+									</div>									
 									<div class="new_tactic">Tactic Name: <input type="text" class="text_input" id="newTacticName<?php echo $goal->goal->id;?>"  /></div>
 									<div class="new_tactic">Tactic Description: <input type="text" class="text_input" id="newTacticDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</span></div><br/>
 									<div class="cl">&nbsp;</div>
@@ -2239,6 +2836,16 @@ By winners, for winners.
 							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'todo')">X</a>
 								<div class="newscore-row">
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> ToDo</div>
+									<div class="new_tactic_privacy">
+										<form>
+											<img id="todoLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="todoUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
+											<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'todo')" class="strategy_dropdown" name="newToDoIsPublic<?php echo $goal->goal->id;?>" id="newToDoIsPublic<?php echo $goal->goal->id;?>" >
+											  <option >Public</option>
+											  <option >Private</option>
+											</select>
+										</form>																				
+									</div>
 									<div class="new_tactic">Todo Name: <input type="text" class="text_input" id="newToDoName<?php echo $goal->goal->id;?>"  /></div>
 									<div class="new_tactic">Todo Description: </span><input type="text" class="text_input" id="newToDoDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
 									<div class="cl">&nbsp;</div>
@@ -2248,11 +2855,48 @@ By winners, for winners.
 							</div><!-- /lightbox-panel -->						
 							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
 
+
+
+
+							<!-- Lightbox for creating Habits -->
+							<div class="lightbox-panel" id="habit-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
+							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'habit')">X</a>
+								<div class="newscore-row">
+									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Habit</div>
+									<div class="new_tactic_privacy">
+										<form>
+											<img id="habitLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="habitUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
+											<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'habit')" class="strategy_dropdown" name="newHabitIsPublic<?php echo $goal->goal->id;?>" id="newHabitIsPublic<?php echo $goal->goal->id;?>" >
+										  <option >Public</option>
+										  <option >Private</option>
+										</select>
+										</form>																				
+									</div>
+									<div class="new_tactic">Habit Name: <input type="text" class="text_input" id="newHabitName<?php echo $goal->goal->id;?>"  /></div>
+									<div class="new_tactic">Habit Description: </span><input type="text" class="text_input" id="newHabitDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
+									<div class="cl">&nbsp;</div>
+								</div>
+								<div class="cl">&nbsp;</div>
+								<center><button type="submit" value="submit"  onclick="modifyStrategy('', <?php echo $goal->goal->id; ?>, 'create','habit')" >submit</button></center>
+							</div><!-- /lightbox-panel -->						
+							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
+
+
+
 							<!-- Lightbox for creating Measuerments and Milestones -->
 							<div class="lightbox-panel" id="kpi-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
 							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'kpi')">X</a>
 								<div class="newscore-row">
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Measure / Milestone</div>
+									<div class="new_tactic_privacy">
+											<img id="kpiLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="kpiUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
+											<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'kpi')" class="strategy_dropdown" name="newKPIIsPublic<?php echo $goal->goal->id;?>" id="newKPIIsPublic<?php echo $goal->goal->id;?>" >
+											  <option >Public</option>
+											  <option >Private</option>
+											</select>																				
+									</div>
 									<div class="new_tactic">Name: <input type="text" class="text_input" id="newKPIName<?php echo $goal->goal->id;?>"  /></div>
 									<div class="new_tactic">Description: </span><input type="text" class="text_input" id="newKPIDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
 									<div class="new_tactic">Test Name: <input type="text" class="text_input" id="newKPITestName<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</span></div>
@@ -2263,11 +2907,7 @@ By winners, for winners.
 								<div class="cl">&nbsp;</div>
 								<center><button type="submit" value="submit"  onclick="modifyKPI(0, <?php echo $goal->goal->id; ?>, 'create',0)" >submit</button></center>
 							</div><!-- /lightbox-panel -->						
-							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
-
-
-						
-						
+							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->						
 						
 						
 		<!-- Tactics start here -->	
@@ -2281,6 +2921,19 @@ By winners, for winners.
 						if($dailytest->strategy_type == 'tactic'){
 							$isToDo = 1;
 							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, date("Y-m-d"))?"checked":"";
+							/*
+							echo "<pre>";
+							print_r($dailytest);
+							echo "</pre>";
+							*/
+							
+							if($dailytest->is_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
 	?>
 	
 							<div class="tactic_label" id="strategyBox<?php echo $dailytest->id;?>">
@@ -2290,7 +2943,12 @@ By winners, for winners.
 										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
 									</div> 
 									<span id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span>
+									<span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<span>
+										<img id="strategyLocked<?php echo $goal->goal->id;?><?php echo $dailytest->id;?>" class="small_lock_goal_page" class="small_lock_goal_page" onclick="changeStrategyPrivacy(<?php echo $goal->goal->id;?>,<?php echo $dailytest->id;?>,'locked');" style="display:<?php echo $locked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock_small.png"/>
+										<img id="strategyUnlocked<?php echo $goal->goal->id;?><?php echo $dailytest->id;?>" class="small_lock_goal_page" onclick="changeStrategyPrivacy(<?php echo $goal->goal->id;?>,<?php echo $dailytest->id;?>, 'unlocked');" style="display:<?php echo $unlocked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock_small.png"/>
+									</span>
 
 								</li>
 							</div>
@@ -2318,6 +2976,14 @@ By winners, for winners.
 						if($adoptableStrategiesItem->strategy_type == 'tactic'){
 							$isToDo = 1;
 							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $adoptableStrategiesItem->id, date("Y-m-d"))?"checked":"";
+							
+							if($adoptableStrategiesItem->is_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
 	?>
 	
 							<div class="tactic_label" id="adoptStrategyBox<?php echo $adoptableStrategiesItem->id;?>">
@@ -2332,7 +2998,7 @@ By winners, for winners.
 										
 										<span class="editLink" id="adoptButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id; ?>, 'adopt', 'tactic')">adopt</span>
 										<span class="editLink" style="display:none;" id="editButton<?php echo $adoptableStrategiesItem->id;?>" onclick="editElement(<?php echo $adoptableStrategiesItem->id;?>,1)">edit</span>
-										<span class="editLink"  style="float:right; display:none;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
+										<span class="editLinkRemove"  style="float:right; display:none;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
 									</div>
 								</li>
 							</div>
@@ -2368,6 +3034,14 @@ By winners, for winners.
 							}else{
 								$strikethrough = "";
 							}
+							
+							if($dailytest->is_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
 				?>
 									<label for="testCheck<?php echo $dailytest->id;?>" style="float:left;">
 										<input type="checkbox" value="Check" id="testCheck<?php echo $dailytest->id;?>" <?php echo $checkedVal; ?> onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'completed', '<?php echo $dailytest->strategy_type;?>')" />
@@ -2379,7 +3053,12 @@ By winners, for winners.
 										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
 									</div> 
 									<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span>
+									<span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<span>
+										<img id="strategyLocked<?php echo $goal->goal->id;?><?php echo $dailytest->id;?>" class="small_lock_goal_page" class="small_lock_goal_page" onclick="changeStrategyPrivacy(<?php echo $goal->goal->id;?>,<?php echo $dailytest->id;?>,'locked');" style="display:<?php echo $locked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock_small.png"/>
+										<img id="strategyUnlocked<?php echo $goal->goal->id;?><?php echo $dailytest->id;?>" class="small_lock_goal_page" onclick="changeStrategyPrivacy(<?php echo $goal->goal->id;?>,<?php echo $dailytest->id;?>, 'unlocked');" style="display:<?php echo $unlocked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock_small.png"/>
+									</span>
 							</div>
 							<div class="cl">&nbsp;</div>
 <?php					}
@@ -2408,6 +3087,18 @@ By winners, for winners.
 							}else{
 								$strikethrough = "";
 							}
+							
+							
+							if($adoptableStrategiesItem->is_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
+							
+							
+							
 				?>
 									<label for="testCheck<?php echo $adoptableStrategiesItem->id;?>" style="float:left;">
 										<input type="checkbox" value="Check" id="testCheck<?php echo $adoptableStrategiesItem->id;?>" <?php echo $checkedVal; ?> onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'completed', '<?php echo $adoptableStrategiesItem->strategy_type;?>')" />
@@ -2424,7 +3115,7 @@ By winners, for winners.
 										<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $adoptableStrategiesItem->id;?>"><?php echo GPC::strToPrintable($adoptableStrategiesItem->name);?></span>
 										<span class="editLink" id="adoptButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id; ?>, 'adopt', 'todo')">adopt</span>
 										<span class="editLink" style="display:none;" id="editButton<?php echo $adoptableStrategiesItem->id;?>" onclick="editElement(<?php echo $adoptableStrategiesItem->id;?>,1)">edit</span>
-										<span class="editLink"  style="float:right; display:none;" style="float:right;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
+										<span class="editLinkRemove"  style="float:right; display:none;" style="float:right;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
 								</div>
 							</div>
 							</div>
@@ -2444,7 +3135,7 @@ By winners, for winners.
 
 		<!-- Habits start here -->
 		<div class="user_page_items">
-			<span class="user_page_sub_title"> Habits </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->goal->id);?>,'todo')" href="#">+</a><br/><div class="adopted_strategies"  id="new_habit_place<?php echo GPC::strToPrintable($goal->goal->id);?>"></div>
+			<span class="user_page_sub_title"> Habits </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->goal->id);?>,'habit')" href="#">+</a><br/><div class="adopted_strategies"  id="new_habit_place<?php echo GPC::strToPrintable($goal->goal->id);?>"></div>
 		<?php 				
 				if(!empty($dailytests)){?>
 <?php				$isToDo = 0;
@@ -2458,6 +3149,15 @@ By winners, for winners.
 							}else{
 								$strikethrough = "";
 							}
+							
+							if($dailytest->is_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
+							
 				?>
 							<div class="todo_label" id="strategyBox<?php echo $dailytest->id;?>">
 									<div style="display:none;" id="element<?php echo $dailytest->id;?>"> 
@@ -2465,16 +3165,21 @@ By winners, for winners.
 										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
 									</div> 
 									<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<span>
+										<img id="strategyLocked<?php echo $goal->goal->id;?><?php echo $dailytest->id;?>" class="small_lock_goal_page" class="small_lock_goal_page" onclick="changeStrategyPrivacy(<?php echo $goal->goal->id;?>,<?php echo $dailytest->id;?>,'locked');" style="display:<?php echo $locked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock_small.png"/>
+										<img id="strategyUnlocked<?php echo $goal->goal->id;?><?php echo $dailytest->id;?>" class="small_lock_goal_page" onclick="changeStrategyPrivacy(<?php echo $goal->goal->id;?>,<?php echo $dailytest->id;?>, 'unlocked');" style="display:<?php echo $unlocked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock_small.png"/>
+									</span>
+									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span>
 							</div>
 							<div class="cl">&nbsp;</div>
 <?php					}
 					}
 					if($isToDo == 0){
-						 echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some ToDos here.</span>";
+						 echo "<span class='no_habit_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some Habits here.</span>";
 					}?>
 			<?php }else{
-					     echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some ToDos here.</span>";
+					     echo "<span class='no_habit_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some Habits here.</span>";
 			}?>			
 
 				<div style="clear:both;"/>
@@ -2497,6 +3202,16 @@ By winners, for winners.
 							}else{
 								$strikethrough = "";
 							}
+							
+							if($adoptableStrategiesItem->is_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
+							
+							
 				?>
 							<div class="adopt_todo_label" id="adoptStrategyBox<?php echo $adoptableStrategiesItem->id;?>">
 								<div id="liAdopt<?php echo $adoptableStrategiesItem->id;?>">
@@ -2509,7 +3224,7 @@ By winners, for winners.
 									<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $adoptableStrategiesItem->id;?>"><?php echo GPC::strToPrintable($adoptableStrategiesItem->name);?></span>
 									<span class="editLink" id="adoptButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id; ?>, 'adopt', 'habit')">adopt</span>
 									<span class="editLink" style="display:none;" id="editButton<?php echo $adoptableStrategiesItem->id;?>" onclick="editElement(<?php echo $adoptableStrategiesItem->id;?>,1)">edit</span>
-									<span class="editLink" style="display:none; float:right;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
+									<span class="editLinkRemove" style="display:none; float:right;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
 							</div>
 							</div>
 							</div>
@@ -2536,7 +3251,20 @@ By winners, for winners.
 			 if(!empty($kpis)){
 					foreach($kpis as $kpi) {	
 						if($kpi->kpi_active == 1){
-							$kpi_active = 1;						
+							$kpi_active = 1;		
+							/*
+							echo "<pre>";
+							print_r($kpi);
+							echo "</pre>";
+							*/			
+							if($kpi->kpi_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
+										
 							?>
 									<label for="testKPICheck<?php echo $kpi->id;?>" style="float:left;">
 										<input onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'completed','')" type="checkbox" value="Check" id="testKPICheck<?php echo $kpi->id;?>" <?php echo $checkedVal; ?> onclick="" />
@@ -2556,7 +3284,15 @@ By winners, for winners.
 									}
 
 									?><span style='display:'<?php echo $isTest;?>' id='curKPITestText<?php echo $kpi->id;?>'><?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo "("; echo $kpi->kpi_tests[0]->test_name; echo ")"; } ?></span>
-									<span class="editLink" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'remove','')">x</span>
+									<span class="editLinkRemove" style="float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'remove','')">x</span>
+									<span class="editLink" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span>
+									<span>
+										<img id="kpiLocked<?php echo $goal->goal->id;?><?php echo $kpi->id;?>" class="small_lock_goal_page" class="small_lock_goal_page" onclick="changeKPIPrivacy(<?php echo $goal->goal->id;?>,<?php echo $kpi->id;?>,'locked');" style="display:<?php echo $locked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock_small.png"/>
+										<img id="kpiUnlocked<?php echo $goal->goal->id;?><?php echo $kpi->id;?>" class="small_lock_goal_page" onclick="changeKPIPrivacy(<?php echo $goal->goal->id;?>,<?php echo $kpi->id;?>, 'unlocked');" style="display:<?php echo $unlocked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock_small.png"/>
+									</span>
+									
+									
+									
 							</div>
 							<div class="cl">&nbsp;</div>
 <?php					
@@ -2602,11 +3338,9 @@ By winners, for winners.
 										
 										<span class="editLink" id="adoptKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'adopt','')">adopt</span>
 										<span class="editLink" style="display:none;" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span>
-										<span class="editLink" style="display:none; float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'remove','')">x</span>
+										<span class="editLinkRemove" style="display:none; float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'remove','')">x</span>
 									</div>
 							</div>
-
-
 							</div>
 							<div class="cl">&nbsp;</div>
 <?php					
@@ -2621,7 +3355,13 @@ By winners, for winners.
 			?>
 					</div>
 					</div>
-				
+					
+					<div class="remove_goal">
+							<button class="remove-goal-btn" id="remove_goal" onclick="removeGoal();">Deactivate goal</button>
+					</div>
+					
+					
+				</div>			
 				
 				
 				

@@ -289,7 +289,7 @@ class StatusMessages {
 class Goal {
 
 	// public
-	public $id, $name, $description, $userID, $created_by, $date_created;
+	public $id, $name, $description, $userID, $created_by, $date_created, $is_public;
 	
 	// protected
 	
@@ -318,15 +318,14 @@ class Goal {
 
 		$goal_display_style = 0;
 		while($obj = mysql_fetch_object($rs)) {
-			
-			$goal_status_rs = $db->doQuery("SELECT display_style, description FROM goals_status WHERE user_id=%s AND goal_id = %s", $userID, $goalID);
+
+			$goal_status_rs = $db->doQuery("SELECT display_style, description, is_public FROM goals_status WHERE user_id=%s AND goal_id = %s", $userID, $goalID);
 			$goal = new Goal($obj);
 
 			while($obj_two = mysql_fetch_object($goal_status_rs)) {
-
 				$goal_display_style = $obj_two->display_style;
 				$goal_desc = $obj_two->description;
-
+				$is_public = $obj_two->is_public;
 			}
 
 			if($goal_display_style == 1){
@@ -345,7 +344,7 @@ class Goal {
 			$goal_obj->goal = $goal;
 			$goal_obj->display_style = $display_style;
 			$goal_obj->sub_description = $sub_description;
-
+			$goal_obj->is_public = $is_public;
 		}
 				
 		
@@ -629,7 +628,7 @@ class Dailytest {
 	
 	// &&&&&&
 	// public
-	public $id, $goalID, $name, $description, $strategy_type, $userID, $strategyID, $strategy_active, $created_by, $stashedStyleArray;
+	public $id, $goalID, $name, $description, $strategy_type, $userID, $strategyID, $strategy_active, $created_by, $stashedStyleArray, $is_public;
 
 	// private
 	
@@ -639,19 +638,20 @@ class Dailytest {
 	public static function createNew($goalID, $name, $description, $type, $userID) {
 		global $db;
 
-		if(empty($description)){ $description = ''; }		
-		$db->doQuery("INSERT INTO strategies (goal_id, name, description, strategy_type, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW())", $goalID, $name, $description, $type, $userID);
-		
+		if(empty($description)){ $description = ''; }
+			if(!empty($name)){	
+				$db->doQuery("INSERT INTO strategies (goal_id, name, description, strategy_type, created_by, date_created) VALUES (%s, %s, %s, %s, %s, NOW()) ON DUPLICATE KEY UPDATE goal_id = goal_id", $goalID, $name, $description, $type, $userID);
+			}	
 		$newID = mysql_insert_id();
 		
 		return $newID;
 	}
 
 
-	public static function adoptStrategy($userID, $strategyID, $goalID) {
+	public static function adoptStrategy($userID, $strategyID, $goalID, $is_public) {
 		global $db;
 		
-		$db->doQuery("INSERT INTO user_strategies (user_id, strategy_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active =1, date_created = NOW()", $userID, $strategyID, $goalID);
+		$db->doQuery("INSERT INTO user_strategies (user_id, strategy_id, goal_id, is_active, is_public, date_created) VALUES (%s, %s, %s, 1, %s, NOW()) ON DUPLICATE KEY UPDATE is_active =1, is_public = %s, date_created = NOW()", $userID, $strategyID, $goalID, $is_public, $is_public);
 				
 	}	
 
@@ -699,6 +699,15 @@ class Dailytest {
 		}
 	}
 
+
+	public static function editPrivacy($userID, $strategyID, $goalID, $is_public) {
+		global $db;
+
+			$db->doQuery("UPDATE user_strategies SET is_public = %s WHERE strategy_id = %s", $is_public, $strategyID);
+	}
+
+
+
 	public static function getCompletedStatus($userID, $strategyID) {
 		global $db; 
 
@@ -738,22 +747,41 @@ class Dailytest {
 		
 		$list = array();
 		$obj = null;
-		
-		while($obj = mysql_fetch_object($rs)) {
 
-				$strategy_is_active = $db->doQueryOne("SELECT is_active FROM user_strategies WHERE user_id=%s AND strategy_id = %s AND goal_id = %s", $userID, $obj->id, $goalID);
-				if(!empty($strategy_is_active)){
+
+
+		while($obj = mysql_fetch_object($rs)) {
+			$strategy_active = '0';						
+			$is_public = '0';
+
+			$strategy_is_active = $db->doQuery("SELECT is_active, is_public FROM user_strategies WHERE user_id=%s AND strategy_id = %s AND goal_id = %s", $userID, $obj->id, $goalID);
+			while($user_strategy_obj = mysql_fetch_object($strategy_is_active)) {
+
+				if($user_strategy_obj->is_active == 1){
 					$strategy_active = '1';
+				}elseif($user_strategy_obj->is_active == 0){
+					$strategy_active = '1';					
 				}else{
-					$strategy_active = '0';
+					$strategy_active = '0';						
 				}
-				
-				$obj->strategy_active = $strategy_active;						
+
+				if($user_strategy_obj->is_public == 1){
+					$is_public = '1';
+				}elseif($user_strategy_obj->is_public == 0){
+					$is_public = '0';					
+				}else{
+					$is_public = '0';						
+				}
+
+			}
+			
+			$obj->strategy_active = $strategy_active;
+			$obj->is_public = $is_public;
 
 
 			$list[] = new Dailytest($obj);
 		}
-
+				
 		return $list;
 	}
 	
@@ -766,6 +794,7 @@ class Dailytest {
 		$this->strategy_type = $dbData->strategy_type;
 		$this->strategy_active = $dbData->strategy_active;
 		$this->stashedStyleArray = null;
+		$this->is_public = $dbData->is_public;
 	}
 		
 	// HACK: there has GOT to be a better way to do this...
@@ -810,7 +839,7 @@ class Dailytest {
 class KPI {
 	
 	// private
-	public $kpi_name, $kpi_desc, $kpi_active, $id, $kpi_tests;
+	public $kpi_name, $kpi_desc, $kpi_active, $id, $kpi_tests, $kpi_public;
 	
 	
 	// protected
@@ -842,17 +871,17 @@ class KPI {
 		return $info;
 	}	
 
-	public static function adoptTest($userID, $kpiID, $goalID, $testID) {
+	public static function adoptTest($userID, $kpiID, $goalID, $testID, $is_public) {
 		global $db;
 
-		$db->doQuery("INSERT INTO user_tests (user_id, goal_id, kpi_id, test_id, is_active, date_created) VALUES (%s, %s, %s, %s, 1, NOW())", $userID, $goalID, $kpiID, $testID);
+		$db->doQuery("INSERT INTO user_tests (user_id, goal_id, kpi_id, test_id, is_active, is_public, date_created) VALUES (%s, %s, %s, %s, 1, %s, NOW()) ON DUPLICATE KEY UPDATE is_public = %s", $userID, $goalID, $kpiID, $testID, $is_public, $is_public);
 		
 	}	
 
-	public static function adoptKPI($userID, $kpiID, $goalID) {
+	public static function adoptKPI($userID, $kpiID, $goalID, $is_public) {
 		global $db;
-				
-		$db->doQuery("INSERT INTO user_kpis (user_id, kpi_id, goal_id, is_active, date_created) VALUES (%s, %s, %s, 1, NOW()) ON DUPLICATE KEY UPDATE is_active = %s, date_created = NOW()", $userID, $kpiID, $goalID, 1);
+
+		$db->doQuery("INSERT INTO user_kpis (user_id, kpi_id, goal_id, is_active, is_public, date_created) VALUES (%s, %s, %s, 1, %s, NOW()) ON DUPLICATE KEY UPDATE is_active = 1, is_public = %s, date_created = NOW()", $userID, $kpiID, $goalID, $is_public, $is_public);
 				
 	}	
 
@@ -871,6 +900,15 @@ class KPI {
 		$db->doQuery("UPDATE user_kpis SET is_active = 1, date_created = NOW() WHERE user_id = %s AND kpi_id = %s AND goal_id = %s", $userID, $kpiID, $goalID);
 		
 		$db->doQuery("UPDATE user_tests SET is_active = 1 , date_created = NOW() WHERE user_id = %s AND kpi_id = %s AND goal_id = %s", $userID, $kpiID, $goalID);
+		
+	}	
+
+	public static function editPrivacy($userID, $kpiID, $goalID, $is_public) {
+		global $db;
+		
+		$db->doQuery("UPDATE user_kpis SET is_active = 1, is_public = %s, date_created = NOW() WHERE user_id = %s AND kpi_id = %s AND goal_id = %s", $is_public, $userID, $kpiID, $goalID);
+		
+		$db->doQuery("UPDATE user_tests SET is_active = 1, is_public = %s, date_created = NOW() WHERE user_id = %s AND kpi_id = %s AND goal_id = %s", $is_public, $userID, $kpiID, $goalID);
 		
 	}	
 
@@ -959,18 +997,34 @@ class KPI {
 			# for each kpi_id, get the kpi_name and description
 			$tests = array();
 			$kpi_id = $obj->kpi_id;
+
+			$kpi_public = '0';
+			$kpi_active = '0';
+
 			
 			$res = $db->doQuery("SELECT * FROM kpis WHERE id=%s", $obj->kpi_id);
 					while($obj_two = mysql_fetch_object($res)) {
 						$kpi_name = $obj_two->kpi_name;
 						$kpi_desc = $obj_two->kpi_desc;
 						
-						$kpi_is_active = $db->doQueryOne("SELECT is_active FROM user_kpis WHERE user_id=%s AND kpi_id = %s AND goal_id = %s", $userID, $obj->kpi_id, $goalID);
-						if(!empty($kpi_is_active)){
-							$kpi_active = '1';
-						}else{
-							$kpi_active = '0';
+						$kpi_is_active = $db->doQuery("SELECT is_active, is_public FROM user_kpis WHERE user_id=%s AND kpi_id = %s AND goal_id = %s", $userID, $obj->kpi_id, $goalID);
+
+						while($status = mysql_fetch_object($kpi_is_active)) {
+
+							if($status->is_active == 1){
+								$kpi_active = '1';
+							}else{
+								$kpi_active = '0';
+							}
+
+							if($status->is_public == 1){
+								$kpi_public = '1';
+							}else{
+								$kpi_public = '0';
+							}
 						}
+						
+						
 					}
 					
 			# for each kpi_id, get all kpi_test data for the active tests and put it in an array
@@ -993,6 +1047,7 @@ class KPI {
 			$kpi_obj->kpi_desc = $kpi_desc;
 			$kpi_obj->kpi_active = $kpi_active;
 			$kpi_obj->kpi_tests = $tests;
+			$kpi_obj->kpi_public = $kpi_public;
 		
 			$list[] = new KPI($kpi_obj);
 
@@ -1010,6 +1065,7 @@ class KPI {
 		$this->kpi_desc = $dbData->kpi_desc;
 		$this->kpi_active = $dbData->kpi_active;
 		$this->kpi_tests = $dbData->kpi_tests;
+		$this->kpi_public = $dbData->kpi_public;
 	}
 	
 	# Stubs with whitelisting for some fields
@@ -1083,16 +1139,21 @@ class GoalStatus {
 	}
 	public static function setUserGoalLevel($userID, $goalID, $newLevel) {
 		global $db;
-		
 		$db->doQuery("UPDATE goals_status SET level=%s, latest_change = NOW() WHERE user_id=%s AND goal_id=%s", $newLevel, $userID, $goalID);
 	}
+	
+	public static function editPrivacy($userID, $goalID, $is_public) {
+		global $db;
+		$db->doQuery("UPDATE goals_status SET is_public=%s, latest_change = NOW() WHERE user_id=%s AND goal_id=%s", $is_public, $userID, $goalID);
+	}
+	
 	public static function getAverageGoalScore($goalID) {
 		global $db;
 		
 		return $db->doQueryOne("SELECT AVG(level) FROM goals_status WHERE goal_id=%s", $goalID);
 	}
 	
-	public static function userAdoptGoalSimple($userID, $goalID) {
+	public static function userAdoptGoalSimple($userID, $goalID, $is_public) {
 		global $db;
 		
 		$nextIndex = $db->doQueryOne("SELECT MAX(position_index)+1 FROM goals_status WHERE goal_id=%s AND user_id=%s", $goalID, $userID);
@@ -1103,8 +1164,9 @@ class GoalStatus {
 		// by default all goals are public until we put up goal adoption page
 		$reportingStyle = 0;
 		$goalDesc = '';
-
-		$db->doQuery("INSERT INTO goals_status (goal_id, user_id, level, description, is_active, is_public, position_index, display_style, date_created, latest_change) VALUES (%s, %s, 5, %s, TRUE, TRUE, %s, %s, NOW(), NOW()) ON DUPLICATE KEY UPDATE is_active = 1, latest_change = NOW()", $goalID, $userID, $goalDesc, $nextIndex, $reportingStyle);
+		
+		echo "INSERT INTO goals_status (goal_id, user_id, level, is_active, is_public, position_index, display_style, date_created, latest_change) VALUES ($goalID, $userID, 5, TRUE, $is_public, $nextIndex, $reportingStyle, NOW(), NOW()) ON DUPLICATE KEY UPDATE is_active = 1, is_public = $is_public, latest_change = NOW()";
+		$db->doQuery("INSERT INTO goals_status (goal_id, user_id, level, is_active, is_public, position_index, display_style, date_created, latest_change) VALUES (%s, %s, 5, TRUE, %s, %s, %s, NOW(), NOW()) ON DUPLICATE KEY UPDATE is_active = 1, is_public = %s, latest_change = NOW()", $goalID, $userID, $is_public, $nextIndex, $reportingStyle, $is_public);
 	}
 	
 	public static function userRemoveGoal($userID, $goalID) {
