@@ -4072,7 +4072,7 @@ class MobileView extends BaseView {
 			}
 			
 			//&&&&&& Get all the strategies from the DB
-			$strategies = Dailytest::getListFromGoalID($goal->id, $user->id);
+			$strategies = Dailytest::getListFromUserIDGoalID($goal->id, $user->id, 'user');
 
 			$this->PrintStrategyList($strategies, $user->id);
 ?>
