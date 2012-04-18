@@ -1541,11 +1541,11 @@ By winners, for winners.
     						<div class="newscore-row">
     							<div class="new_habit" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->name);?> Habit</div>
 									<div class="new_tactic_privacy">
-											<img id="habitLocked<?php echo $goal->id;?>" src="<?php echo BASEPATH_UI;?>/web/css/images/lock.png"/>
-											<img id="habitUnlocked<?php echo $goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/web/css/images/unlock.png"/>
+											<img id="habitLocked<?php echo $goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="habitUnlocked<?php echo $goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
 											<select onclick="change_lock(<?php echo $goal->id;?>, 'habit')" class="strategy_dropdown" name="isPublic" id="isPublic" >
-										  <option>Private</option>
 										  <option >Public</option>
+										  <option >Private</option>
 										</select>
 									</div>    							
     							<div class="new_habit">Habit Name: <input type="text" class="text_input" name="newStrategyName" id="newStrategyName<?php echo $goal->id;?>"  /></div>
@@ -1677,11 +1677,11 @@ By winners, for winners.
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->name);?> Tactic</div>
 									<div class="new_tactic_privacy">
 										<form>
-											<img id="tacticLocked<?php echo $goal->id;?>" src="<?php echo BASEPATH_UI;?>/web/css/images/lock.png"/>
-											<img id="tacticUnlocked<?php echo $goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/web/css/images/unlock.png"/>
+											<img id="tacticLocked<?php echo $goal->id;?>" style="display:none;"  style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="tacticUnlocked<?php echo $goal->id;?>" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
 											<select onclick="change_lock(<?php echo $goal->id;?>, 'tactic', 'strategy')" class="strategy_dropdown" name="newTacticIsPublic<?php echo $goal->id;?>" id="newTacticIsPublic<?php echo $goal->id;?>" >
-											  <option>Private</option>
 											  <option >Public</option>
+											  <option >Private</option>
 											</select>
 										</form>																				
 									</div>
@@ -1702,11 +1702,11 @@ By winners, for winners.
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->name);?> ToDo</div>
 									<div class="new_tactic_privacy">
 										<form>
-											<img id="todoLocked<?php echo $goal->id;?>" src="<?php echo BASEPATH_UI;?>/web/css/images/lock.png"/>
-											<img id="todoUnlocked<?php echo $goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/web/css/images/unlock.png"/>
+											<img id="todoLocked<?php echo $goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="todoUnlocked<?php echo $goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
 											<select onclick="change_lock(<?php echo $goal->id;?>, 'todo')" class="strategy_dropdown" name="newToDoIsPublic<?php echo $goal->id;?>" id="newToDoIsPublic<?php echo $goal->id;?>" >
-											  <option>Private</option>
 											  <option >Public</option>
+											  <option >Private</option>
 											</select>
 										</form>																				
 									</div>
@@ -1725,11 +1725,11 @@ By winners, for winners.
 								<div class="newscore-row">
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->name);?> Measure / Milestone</div>
 									<div class="new_tactic_privacy">
-										<img id="kpiLocked<?php echo $goal->id;?>" src="<?php echo BASEPATH_UI;?>/web/css/images/lock.png"/>
-										<img id="kpiUnlocked<?php echo $goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/web/css/images/unlock.png"/>
+										<img id="kpiLocked<?php echo $goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+										<img id="kpiUnlocked<?php echo $goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
 										<select onclick="change_lock(<?php echo $goal->id;?>, 'kpi')" class="strategy_dropdown" name="newKPIIsPublic<?php echo $goal->id;?>" id="newKPIIsPublic<?php echo $goal->id;?>" >
-										  <option>Private</option>
 										  <option >Public</option>
+										  <option >Private</option>
 										</select>																				
 									</div>
 									<div class="new_tactic">Name: <input type="text" class="text_input" id="newKPIName<?php echo $goal->id;?>"  /></div>
@@ -1769,7 +1769,7 @@ By winners, for winners.
 										<?php if($is_user){ ?><button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button><?php } ?>
 									</div> 
 									<span id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span><?php } ?>
+									<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span><?php } ?>
 
 								</li>
 							</div>
@@ -1816,7 +1816,7 @@ By winners, for winners.
 										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
 									</div> 
 									<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span><?php } ?>
+									<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span><?php } ?>
 							</div>
 							<div class="cl">&nbsp;</div>
 <?php					}
@@ -2694,11 +2694,11 @@ By winners, for winners.
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Tactic</div>
 									<div class="new_tactic_privacy">
 										<form>
-											<img id="tacticLocked<?php echo $goal->goal->id;?>" src="<?php echo BASEPATH_UI;?>/web/css/images/lock.png"/>
-											<img id="tacticUnlocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/web/css/images/unlock.png"/>
+											<img id="tacticLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="tacticUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
 											<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'tactic', 'strategy')" class="strategy_dropdown" name="newTacticIsPublic<?php echo $goal->goal->id;?>" id="newTacticIsPublic<?php echo $goal->goal->id;?>" >
-											  <option>Private</option>
 											  <option >Public</option>
+											  <option >Private</option>
 											</select>
 										</form>																				
 									</div>									
@@ -2719,11 +2719,11 @@ By winners, for winners.
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> ToDo</div>
 									<div class="new_tactic_privacy">
 										<form>
-											<img id="todoLocked<?php echo $goal->goal->id;?>" src="<?php echo BASEPATH_UI;?>/web/css/images/lock.png"/>
-											<img id="todoUnlocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/web/css/images/unlock.png"/>
+											<img id="todoLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="todoUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
 											<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'todo')" class="strategy_dropdown" name="newToDoIsPublic<?php echo $goal->goal->id;?>" id="newToDoIsPublic<?php echo $goal->goal->id;?>" >
-											  <option>Private</option>
 											  <option >Public</option>
+											  <option >Private</option>
 											</select>
 										</form>																				
 									</div>
@@ -2746,11 +2746,11 @@ By winners, for winners.
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Habit</div>
 									<div class="new_tactic_privacy">
 										<form>
-											<img id="habitLocked<?php echo $goal->goal->id;?>" src="<?php echo BASEPATH_UI;?>/web/css/images/lock.png"/>
-											<img id="habitUnlocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/web/css/images/unlock.png"/>
+											<img id="habitLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="habitUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
 											<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'habit')" class="strategy_dropdown" name="newHabitIsPublic<?php echo $goal->goal->id;?>" id="newHabitIsPublic<?php echo $goal->goal->id;?>" >
-										  <option>Private</option>
 										  <option >Public</option>
+										  <option >Private</option>
 										</select>
 										</form>																				
 									</div>
@@ -2771,11 +2771,11 @@ By winners, for winners.
 								<div class="newscore-row">
 									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Measure / Milestone</div>
 									<div class="new_tactic_privacy">
-											<img id="kpiLocked<?php echo $goal->goal->id;?>" src="<?php echo BASEPATH_UI;?>/web/css/images/lock.png"/>
-											<img id="kpiUnlocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/web/css/images/unlock.png"/>
+											<img id="kpiLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+											<img id="kpiUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
 											<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'kpi')" class="strategy_dropdown" name="newKPIIsPublic<?php echo $goal->goal->id;?>" id="newKPIIsPublic<?php echo $goal->goal->id;?>" >
-											  <option>Private</option>
 											  <option >Public</option>
+											  <option >Private</option>
 											</select>																				
 									</div>
 									<div class="new_tactic">Name: <input type="text" class="text_input" id="newKPIName<?php echo $goal->goal->id;?>"  /></div>
@@ -2792,6 +2792,53 @@ By winners, for winners.
 
 
 						
+						<script>
+						
+						
+							function changeStrategyPrivacy(goal_id, strategy_id, status){
+								if(status == 'locked'){
+									$("#strategyUnlocked"+goal_id+strategy_id).show();
+									$("#strategyLocked"+goal_id+strategy_id).hide();
+									is_public = 1;
+								}else{
+									$("#strategyUnlocked"+goal_id+strategy_id).hide();
+									$("#strategyLocked"+goal_id+strategy_id).show();
+									is_public = 0;
+								}	
+
+							    $.ajax({  
+							        type: "POST", 
+							        url: '<?php echo $ajaxModifyStrategy; ?>', 
+							        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&strategyID="+ strategy_id+"&type=privacy"+"&isPublic="+ is_public,
+							        dataType: "html",
+							        complete: function(data){				        
+										var val = data.responseText;       	
+							       }  
+							    });
+							}
+						
+							function changeKPIPrivacy(goal_id, kpi_id, status){
+								if(status == 'locked'){
+									$("#kpiUnlocked"+goal_id+kpi_id).show();
+									$("#kpiLocked"+goal_id+kpi_id).hide();
+									is_public = 1;
+								}else{
+									$("#kpiUnlocked"+goal_id+kpi_id).hide();
+									$("#kpiLocked"+goal_id+kpi_id).show();
+									is_public = 0;
+								}								
+
+							    $.ajax({  
+							        type: "POST", 
+							        url: '<?php echo $ajaxModifyKPI; ?>', 
+							        data: "userID="+<?php echo $user->id; ?>+"&goalID="+goal_id+"&kpiID="+ kpi_id+"&type=privacy"+"&isPublic="+ is_public,
+							        dataType: "html",
+							        complete: function(data){
+							       }  
+							    });
+							}
+						
+						</script>
 						
 						
 						
@@ -2806,6 +2853,19 @@ By winners, for winners.
 						if($dailytest->strategy_type == 'tactic'){
 							$isToDo = 1;
 							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, date("Y-m-d"))?"checked":"";
+							/*
+							echo "<pre>";
+							print_r($dailytest);
+							echo "</pre>";
+							*/
+							
+							if($dailytest->is_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
 	?>
 	
 							<div class="tactic_label" id="strategyBox<?php echo $dailytest->id;?>">
@@ -2815,7 +2875,12 @@ By winners, for winners.
 										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
 									</div> 
 									<span id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span>
+									<span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<span>
+										<img id="strategyLocked<?php echo $goal->goal->id;?><?php echo $dailytest->id;?>" class="small_lock_goal_page" class="small_lock_goal_page" onclick="changeStrategyPrivacy(<?php echo $goal->goal->id;?>,<?php echo $dailytest->id;?>,'locked');" style="display:<?php echo $locked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock_small.png"/>
+										<img id="strategyUnlocked<?php echo $goal->goal->id;?><?php echo $dailytest->id;?>" class="small_lock_goal_page" onclick="changeStrategyPrivacy(<?php echo $goal->goal->id;?>,<?php echo $dailytest->id;?>, 'unlocked');" style="display:<?php echo $unlocked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock_small.png"/>
+									</span>
 
 								</li>
 							</div>
@@ -2843,6 +2908,14 @@ By winners, for winners.
 						if($adoptableStrategiesItem->strategy_type == 'tactic'){
 							$isToDo = 1;
 							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $adoptableStrategiesItem->id, date("Y-m-d"))?"checked":"";
+							
+							if($adoptableStrategiesItem->is_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
 	?>
 	
 							<div class="tactic_label" id="adoptStrategyBox<?php echo $adoptableStrategiesItem->id;?>">
@@ -2857,7 +2930,7 @@ By winners, for winners.
 										
 										<span class="editLink" id="adoptButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id; ?>, 'adopt', 'tactic')">adopt</span>
 										<span class="editLink" style="display:none;" id="editButton<?php echo $adoptableStrategiesItem->id;?>" onclick="editElement(<?php echo $adoptableStrategiesItem->id;?>,1)">edit</span>
-										<span class="editLink"  style="float:right; display:none;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
+										<span class="editLinkRemove"  style="float:right; display:none;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
 									</div>
 								</li>
 							</div>
@@ -2893,6 +2966,14 @@ By winners, for winners.
 							}else{
 								$strikethrough = "";
 							}
+							
+							if($dailytest->is_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
 				?>
 									<label for="testCheck<?php echo $dailytest->id;?>" style="float:left;">
 										<input type="checkbox" value="Check" id="testCheck<?php echo $dailytest->id;?>" <?php echo $checkedVal; ?> onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'completed', '<?php echo $dailytest->strategy_type;?>')" />
@@ -2904,7 +2985,12 @@ By winners, for winners.
 										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
 									</div> 
 									<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span>
+									<span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<span>
+										<img id="strategyLocked<?php echo $goal->goal->id;?><?php echo $dailytest->id;?>" class="small_lock_goal_page" class="small_lock_goal_page" onclick="changeStrategyPrivacy(<?php echo $goal->goal->id;?>,<?php echo $dailytest->id;?>,'locked');" style="display:<?php echo $locked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock_small.png"/>
+										<img id="strategyUnlocked<?php echo $goal->goal->id;?><?php echo $dailytest->id;?>" class="small_lock_goal_page" onclick="changeStrategyPrivacy(<?php echo $goal->goal->id;?>,<?php echo $dailytest->id;?>, 'unlocked');" style="display:<?php echo $unlocked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock_small.png"/>
+									</span>
 							</div>
 							<div class="cl">&nbsp;</div>
 <?php					}
@@ -2933,6 +3019,18 @@ By winners, for winners.
 							}else{
 								$strikethrough = "";
 							}
+							
+							
+							if($adoptableStrategiesItem->is_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
+							
+							
+							
 				?>
 									<label for="testCheck<?php echo $adoptableStrategiesItem->id;?>" style="float:left;">
 										<input type="checkbox" value="Check" id="testCheck<?php echo $adoptableStrategiesItem->id;?>" <?php echo $checkedVal; ?> onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'completed', '<?php echo $adoptableStrategiesItem->strategy_type;?>')" />
@@ -2949,7 +3047,7 @@ By winners, for winners.
 										<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $adoptableStrategiesItem->id;?>"><?php echo GPC::strToPrintable($adoptableStrategiesItem->name);?></span>
 										<span class="editLink" id="adoptButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id; ?>, 'adopt', 'todo')">adopt</span>
 										<span class="editLink" style="display:none;" id="editButton<?php echo $adoptableStrategiesItem->id;?>" onclick="editElement(<?php echo $adoptableStrategiesItem->id;?>,1)">edit</span>
-										<span class="editLink"  style="float:right; display:none;" style="float:right;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
+										<span class="editLinkRemove"  style="float:right; display:none;" style="float:right;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
 								</div>
 							</div>
 							</div>
@@ -2983,6 +3081,15 @@ By winners, for winners.
 							}else{
 								$strikethrough = "";
 							}
+							
+							if($dailytest->is_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
+							
 				?>
 							<div class="todo_label" id="strategyBox<?php echo $dailytest->id;?>">
 									<div style="display:none;" id="element<?php echo $dailytest->id;?>"> 
@@ -2990,7 +3097,12 @@ By winners, for winners.
 										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
 									</div> 
 									<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span>
+									<span>
+										<img id="strategyLocked<?php echo $goal->goal->id;?><?php echo $dailytest->id;?>" class="small_lock_goal_page" class="small_lock_goal_page" onclick="changeStrategyPrivacy(<?php echo $goal->goal->id;?>,<?php echo $dailytest->id;?>,'locked');" style="display:<?php echo $locked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock_small.png"/>
+										<img id="strategyUnlocked<?php echo $goal->goal->id;?><?php echo $dailytest->id;?>" class="small_lock_goal_page" onclick="changeStrategyPrivacy(<?php echo $goal->goal->id;?>,<?php echo $dailytest->id;?>, 'unlocked');" style="display:<?php echo $unlocked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock_small.png"/>
+									</span>
+									<span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span>
 							</div>
 							<div class="cl">&nbsp;</div>
 <?php					}
@@ -3022,6 +3134,16 @@ By winners, for winners.
 							}else{
 								$strikethrough = "";
 							}
+							
+							if($adoptableStrategiesItem->is_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
+							
+							
 				?>
 							<div class="adopt_todo_label" id="adoptStrategyBox<?php echo $adoptableStrategiesItem->id;?>">
 								<div id="liAdopt<?php echo $adoptableStrategiesItem->id;?>">
@@ -3034,7 +3156,7 @@ By winners, for winners.
 									<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $adoptableStrategiesItem->id;?>"><?php echo GPC::strToPrintable($adoptableStrategiesItem->name);?></span>
 									<span class="editLink" id="adoptButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id; ?>, 'adopt', 'habit')">adopt</span>
 									<span class="editLink" style="display:none;" id="editButton<?php echo $adoptableStrategiesItem->id;?>" onclick="editElement(<?php echo $adoptableStrategiesItem->id;?>,1)">edit</span>
-									<span class="editLink" style="display:none; float:right;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
+									<span class="editLinkRemove" style="display:none; float:right;" id="removeButton<?php echo $adoptableStrategiesItem->id;?>" onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'remove', '<?php echo $adoptableStrategiesItem->strategy_type;?>')">x</span>
 							</div>
 							</div>
 							</div>
@@ -3061,7 +3183,20 @@ By winners, for winners.
 			 if(!empty($kpis)){
 					foreach($kpis as $kpi) {	
 						if($kpi->kpi_active == 1){
-							$kpi_active = 1;						
+							$kpi_active = 1;		
+							/*
+							echo "<pre>";
+							print_r($kpi);
+							echo "</pre>";
+							*/			
+							if($kpi->kpi_public == '1'){
+								$locked_status = 'none';
+								$unlocked_status = '';
+							}else{
+								$locked_status = '';
+								$unlocked_status = 'none';							
+							}
+										
 							?>
 									<label for="testKPICheck<?php echo $kpi->id;?>" style="float:left;">
 										<input onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'completed','')" type="checkbox" value="Check" id="testKPICheck<?php echo $kpi->id;?>" <?php echo $checkedVal; ?> onclick="" />
@@ -3081,7 +3216,15 @@ By winners, for winners.
 									}
 
 									?><span style='display:'<?php echo $isTest;?>' id='curKPITestText<?php echo $kpi->id;?>'><?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo "("; echo $kpi->kpi_tests[0]->test_name; echo ")"; } ?></span>
-									<span class="editLink" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span><span class="editLink" style="float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'remove','')">x</span>
+									<span class="editLinkRemove" style="float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'remove','')">x</span>
+									<span class="editLink" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span>
+									<span>
+										<img id="kpiLocked<?php echo $goal->goal->id;?><?php echo $kpi->id;?>" class="small_lock_goal_page" class="small_lock_goal_page" onclick="changeKPIPrivacy(<?php echo $goal->goal->id;?>,<?php echo $kpi->id;?>,'locked');" style="display:<?php echo $locked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock_small.png"/>
+										<img id="kpiUnlocked<?php echo $goal->goal->id;?><?php echo $kpi->id;?>" class="small_lock_goal_page" onclick="changeKPIPrivacy(<?php echo $goal->goal->id;?>,<?php echo $kpi->id;?>, 'unlocked');" style="display:<?php echo $unlocked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock_small.png"/>
+									</span>
+									
+									
+									
 							</div>
 							<div class="cl">&nbsp;</div>
 <?php					
@@ -3127,7 +3270,7 @@ By winners, for winners.
 										
 										<span class="editLink" id="adoptKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'adopt','')">adopt</span>
 										<span class="editLink" style="display:none;" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span>
-										<span class="editLink" style="display:none; float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'remove','')">x</span>
+										<span class="editLinkRemove" style="display:none; float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->goal->id;?>, 'remove','')">x</span>
 									</div>
 							</div>
 							</div>

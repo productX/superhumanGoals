@@ -629,7 +629,7 @@ class Dailytest {
 	
 	// &&&&&&
 	// public
-	public $id, $goalID, $name, $description, $strategy_type, $userID, $strategyID, $strategy_active, $created_by, $stashedStyleArray;
+	public $id, $goalID, $name, $description, $strategy_type, $userID, $strategyID, $strategy_active, $created_by, $stashedStyleArray, $is_public;
 
 	// private
 	
@@ -700,6 +700,15 @@ class Dailytest {
 		}
 	}
 
+
+	public static function editPrivacy($userID, $strategyID, $goalID, $is_public) {
+		global $db;
+
+			$db->doQuery("UPDATE user_strategies SET is_public = %s WHERE strategy_id = %s", $is_public, $strategyID);
+	}
+
+
+
 	public static function getCompletedStatus($userID, $strategyID) {
 		global $db; 
 
@@ -742,19 +751,34 @@ class Dailytest {
 		
 		while($obj = mysql_fetch_object($rs)) {
 
-				$strategy_is_active = $db->doQueryOne("SELECT is_active FROM user_strategies WHERE user_id=%s AND strategy_id = %s AND goal_id = %s", $userID, $obj->id, $goalID);
-				if(!empty($strategy_is_active)){
-					$strategy_active = '1';
-				}else{
-					$strategy_active = '0';
+				$strategy_is_active = $db->doQuery("SELECT is_active, is_public FROM user_strategies WHERE user_id=%s AND strategy_id = %s AND goal_id = %s", $userID, $obj->id, $goalID);
+				while($user_strategy_obj = mysql_fetch_object($strategy_is_active)) {
+
+					if($user_strategy_obj->is_active == 1){
+						$strategy_active = '1';
+					}elseif($user_strategy_obj->is_active == 0){
+						$strategy_active = '1';					
+					}else{
+						$strategy_active = '0';						
+					}
+
+					if($user_strategy_obj->is_public == 1){
+						$is_public = '1';
+					}elseif($user_strategy_obj->is_public == 0){
+						$is_public = '0';					
+					}else{
+						$is_public = '0';						
+					}
+
 				}
 				
-				$obj->strategy_active = $strategy_active;						
+				$obj->strategy_active = $strategy_active;
+				$obj->is_public = $is_public;
 
 
 			$list[] = new Dailytest($obj);
 		}
-
+				
 		return $list;
 	}
 	
@@ -767,6 +791,7 @@ class Dailytest {
 		$this->strategy_type = $dbData->strategy_type;
 		$this->strategy_active = $dbData->strategy_active;
 		$this->stashedStyleArray = null;
+		$this->is_public = $dbData->is_public;
 	}
 		
 	// HACK: there has GOT to be a better way to do this...
@@ -811,7 +836,7 @@ class Dailytest {
 class KPI {
 	
 	// private
-	public $kpi_name, $kpi_desc, $kpi_active, $id, $kpi_tests;
+	public $kpi_name, $kpi_desc, $kpi_active, $id, $kpi_tests, $kpi_public;
 	
 	
 	// protected
@@ -872,6 +897,15 @@ class KPI {
 		$db->doQuery("UPDATE user_kpis SET is_active = 1, date_created = NOW() WHERE user_id = %s AND kpi_id = %s AND goal_id = %s", $userID, $kpiID, $goalID);
 		
 		$db->doQuery("UPDATE user_tests SET is_active = 1 , date_created = NOW() WHERE user_id = %s AND kpi_id = %s AND goal_id = %s", $userID, $kpiID, $goalID);
+		
+	}	
+
+	public static function editPrivacy($userID, $kpiID, $goalID, $is_public) {
+		global $db;
+		
+		$db->doQuery("UPDATE user_kpis SET is_active = 1, is_public = %s, date_created = NOW() WHERE user_id = %s AND kpi_id = %s AND goal_id = %s", $is_public, $userID, $kpiID, $goalID);
+		
+		$db->doQuery("UPDATE user_tests SET is_active = 1, is_public = %s, date_created = NOW() WHERE user_id = %s AND kpi_id = %s AND goal_id = %s", $is_public, $userID, $kpiID, $goalID);
 		
 	}	
 
@@ -967,12 +1001,27 @@ class KPI {
 						$kpi_name = $obj_two->kpi_name;
 						$kpi_desc = $obj_two->kpi_desc;
 						
-						$kpi_is_active = $db->doQueryOne("SELECT is_active FROM user_kpis WHERE user_id=%s AND kpi_id = %s AND goal_id = %s", $userID, $obj->kpi_id, $goalID);
-						if(!empty($kpi_is_active)){
-							$kpi_active = '1';
-						}else{
-							$kpi_active = '0';
+						$kpi_is_active = $db->doQuery("SELECT is_active, is_public FROM user_kpis WHERE user_id=%s AND kpi_id = %s AND goal_id = %s", $userID, $obj->kpi_id, $goalID);
+
+						while($status = mysql_fetch_object($kpi_is_active)) {
+
+							if($status->is_active == 1){
+								$kpi_active = '1';
+							}else{
+								$kpi_active = '0';
+							}
+
+							if($status->is_public == 1){
+								$kpi_public = '1';
+							}else{
+								$kpi_public = '0';
+							}
+
+
+							
 						}
+						
+						
 					}
 					
 			# for each kpi_id, get all kpi_test data for the active tests and put it in an array
@@ -995,6 +1044,7 @@ class KPI {
 			$kpi_obj->kpi_desc = $kpi_desc;
 			$kpi_obj->kpi_active = $kpi_active;
 			$kpi_obj->kpi_tests = $tests;
+			$kpi_obj->kpi_public = $kpi_public;
 		
 			$list[] = new KPI($kpi_obj);
 
@@ -1012,6 +1062,7 @@ class KPI {
 		$this->kpi_desc = $dbData->kpi_desc;
 		$this->kpi_active = $dbData->kpi_active;
 		$this->kpi_tests = $dbData->kpi_tests;
+		$this->kpi_public = $dbData->kpi_public;
 	}
 	
 	# Stubs with whitelisting for some fields

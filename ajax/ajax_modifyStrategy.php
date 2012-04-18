@@ -30,13 +30,10 @@ if($type == 'adopt'){
 }elseif($type == 'completed'){
 	Dailytest::editTodo($userID,$strategyID,$goalID);
 	//echo "Strategy Edited!";
+}elseif($type == 'privacy'){
+	Dailytest::editPrivacy($userID,$strategyID,$goalID,$is_public);
+	//echo "Strategy Edited!";
 }elseif($type == 'create'){
-
-echo "<pre>";
-print_r($_POST);
-echo "</pre>";
-echo $is_public;
-
 	if($is_public > -1){
 		$strategyID = Dailytest::createNew($goalID, $newStrategyName, $newStrategyDescription, $strategyType, $userID);
 		if($strategyID > 0){
@@ -48,5 +45,9 @@ echo $is_public;
 		}
 	echo $strategyID;
 }
+
+
+
+
 
 ?>

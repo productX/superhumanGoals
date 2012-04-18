@@ -29,6 +29,9 @@ if($type == 'adopt'){
 }elseif($type == 'edit'){
 	KPI::editKPI($userID,$kpiID,$goalID,$newKPIName,$newKPITestName, $testID);
 	echo "KPI Edited!";
+}elseif($type == 'privacy'){
+	KPI::editPrivacy($userID,$kpiID,$goalID, $is_public);
+	echo "KPI Edited!";
 }elseif($type == 'create'){
 	$kpiInfo = KPI::createNew($goalID, $newKPIName, $newKPIDescription, $newKPITestDescription, $newKPITestName, $newKPITestFrequency, $userID);
 	$kpiID = $kpiInfo[0];
