@@ -3151,13 +3151,13 @@ By winners, for winners.
 								$unlocked_status = 'none';							
 							}
 							
-							
+					/*		
 							
 				?>
 									<label for="testCheck<?php echo $adoptableStrategiesItem->id;?>" style="float:left;">
 										<input type="checkbox" value="Check" id="testCheck<?php echo $adoptableStrategiesItem->id;?>" <?php echo $checkedVal; ?> onclick="modifyStrategy(<?php echo $adoptableStrategiesItem->id;?>,<?php echo $goal->goal->id;?>, 'completed', '<?php echo $adoptableStrategiesItem->strategy_type;?>')" />
 									</label>
-
+<?php */ ?> 
 							<div class="adopt_todo_label" id="adoptStrategyBox<?php echo $adoptableStrategiesItem->id;?>">
 								<div id="liAdopt<?php echo $adoptableStrategiesItem->id;?>">
 									<div style="display:none;" id="element<?php echo $adoptableStrategiesItem->id;?>"> 
