@@ -1120,16 +1120,10 @@ By winners, for winners.
 		if(empty($dailytests)){
 			$noHabitStrategies = 1;
 		}
-
-		if(	(count($dailytests) == 1) && ( $dailytests[0]->strategy_type != 'adherence')){		
-			$noHabitStrategies = 1;
-		}
 		
 		foreach($dailytests as $dailytest) {
 			if($dailytest->strategy_type == 'adherence'){
-				$noHabitStrategies = 0;
-			}else{
-				$noHabitStrategies = 1;
+				$noHabitStrategies == 0;
 			}
 		}
 		
@@ -1503,6 +1497,7 @@ By winners, for winners.
 			
 </script>
 <?php 
+
 				if( ( $type == 'habits') && ( !empty($dailytests)) && ($noHabitStrategies != 1) ) {
 				
 					// Check if there are any habits that are not private. If none or if the goal is private show nothing
@@ -1600,9 +1595,8 @@ By winners, for winners.
 						}
 						?><?php
 
-
 					foreach($dailytests as $dailytest) {
-					
+						
 						if($dailytest->strategy_type == 'adherence'){
 							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, date("Y-m-d"))?"checked":"";
 							
