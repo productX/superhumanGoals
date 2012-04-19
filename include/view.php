@@ -431,8 +431,20 @@ class WebView extends BaseView {
 		<script src="<?php echo BASEPATH_UI;?>/web/js/jquery.fileinput.js" type="text/javascript"></script>
 		<script src="<?php echo BASEPATH_UI;?>/web/js/functions.js" type="text/javascript"></script>
 		<script type="text/javascript" src="<?php echo BASEPATH_UI;?>/web/js/jquery-ui-1.8.19.custom.min.js"></script>		
-		
-		
+
+		<!-- GA -->		
+		<script type="text/javascript">
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-30993891-1']);
+			_gaq.push(['_setDomainName', 'superhumangoals.com']);
+			_gaq.push(['_trackPageview']);
+
+			(function() {
+				var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+				ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+				var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
 		<script type="text/javascript">
 			$(document).ready(function() { autoHeightContainer(); })
 		</script>

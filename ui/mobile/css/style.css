@@ -127,7 +127,7 @@ h2 .arrows { width: 23px; height: 29px; background: url(images/arrows.png) no-re
 .daily-entry-page .num { width: 60px; height: 40px; text-align: center; background: #bf3030; font-size: 38px; line-height: 40px; color: #fff; letter-spacing: -1px; -webkit-border-radius: 6px; -moz-border-radius: 6px; border-radius: 6px; float: left; display: inline; }
 .daily-entry-page .num.green { background: #4abf30; }
 .daily-entry-page .num.yellow { background: #dddf38; }
-.daily-entry-page h5 { float: left; display: inline; font-size: 38px; font-weight: normal; line-height: 40px; height: 40px; overflow: hidden;  margin: 0 47px 0 20px; width: 470px; }
+.daily-entry-page h5 { float: left; display: inline; font-size: 38px; font-weight: normal; line-height: 40px; height: 40px; overflow: hidden;  margin: 0 47px 0 20px; width: 390px; }
 .daily-entry-page .arrow { display: block; width: 44px; height: 44px; background: url(images/d-arrow.png) no-repeat center center ; font-size: 0; line-height: 0; text-indent: -4000px; position: absolute ; top: 20px; right: 18px; }
 .daily-entry-page .arrow.opened { background-image: url(images/up-arrow.png); }
 /*.daily-entry-page .holder { display: none; }*/
