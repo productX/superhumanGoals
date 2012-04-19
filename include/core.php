@@ -312,42 +312,47 @@ class Goal {
 
 	public static function getFullObjFromGoalID($goalID,$userID) {
 		global $db;
-	
-	
+		
+		// get goal
 		$rs = $db->doQuery("SELECT * FROM goals WHERE id=%s", $goalID);
+		$obj = mysql_fetch_object($rs);
+		assert(!is_null($obj));
+		$goal = new Goal($obj);
 
-		$goal_display_style = 0;
-		while($obj = mysql_fetch_object($rs)) {
+		// get goal status
+		$goal_status_rs = $db->doQuery("SELECT display_style, description, is_public FROM goals_status WHERE user_id=%s AND goal_id = %s", $userID, $goalID);
+		$obj_two = mysql_fetch_object($goal_status_rs);
 
-			$goal_status_rs = $db->doQuery("SELECT display_style, description, is_public FROM goals_status WHERE user_id=%s AND goal_id = %s", $userID, $goalID);
-			$goal = new Goal($obj);
-
-			while($obj_two = mysql_fetch_object($goal_status_rs)) {
-				$goal_display_style = $obj_two->display_style;
-				$goal_desc = $obj_two->description;
-				$is_public = $obj_two->is_public;
-			}
-
+		$display_style=null;
+		$sub_description=null;
+		$is_public=null;
+		if(!($obj_two===false)) {
+			$goal_display_style = $obj_two->display_style;
+			$goal_desc = $obj_two->description;
+			$is_public = $obj_two->is_public;
+			$display_style = null;
 			if($goal_display_style == 1){
 				$display_style = '1';
-			}else{
+			}
+			else{
 				$display_style = '0';
 			}
-
+			$sub_description = null;
 			if(empty($goal_desc)){
 				$sub_description = 'none';
-			}else{
+			}
+			else{
 				$sub_description = $goal_desc;
 			}
-			
-			$goal_obj = new stdClass;
-			$goal_obj->goal = $goal;
-			$goal_obj->display_style = $display_style;
-			$goal_obj->sub_description = $sub_description;
-			$goal_obj->is_public = $is_public;
 		}
-				
 		
+		// make obj for return
+		$goal_obj = new stdClass;
+		$goal_obj->goal = $goal;
+		$goal_obj->display_style = $display_style;
+		$goal_obj->sub_description = $sub_description;
+		$goal_obj->is_public = $is_public;
+					
 		return $goal_obj;
 	}
 
@@ -734,21 +739,20 @@ class Dailytest {
 		
 	}	
 
-	public static function getListFromUserIDGoalID($goalID,$userID,$type) {
+	public static function getListFromUserIDGoalID($goalID, $userID, $type) {
 		global $db;
 
 		// This is actually getting the list of strategies that are active for a user
 		
-		if($type == 'user'){
-		$rs = $db->doQuery("SELECT strategies.id, strategies.goal_id, strategies.name, strategies.description, strategies.strategy_type, strategies.created_by, strategies.date_created FROM strategies, user_strategies WHERE strategies.goal_id=%s AND strategies.goal_id = user_strategies.goal_id AND user_strategies.user_id = %s AND strategies.id = user_strategies.strategy_id AND user_strategies.is_active = 1", $goalID, $userID );
-		}elseif($type == 'adoptable'){
-		$rs = $db->doQuery("SELECT * FROM strategies WHERE goal_id = %s AND id NOT IN (SELECT strategy_id FROM user_strategies WHERE user_id = %s AND goal_id = %s AND is_active = 1); ", $goalID, $userID, $goalID );
+		if($type == 'user') {
+			$rs = $db->doQuery("SELECT strategies.id, strategies.goal_id, strategies.name, strategies.description, strategies.strategy_type, strategies.created_by, strategies.date_created FROM strategies, user_strategies WHERE strategies.goal_id=%s AND strategies.goal_id = user_strategies.goal_id AND user_strategies.user_id = %s AND strategies.id = user_strategies.strategy_id AND user_strategies.is_active = 1", $goalID, $userID );
+		}
+		elseif($type == 'adoptable') {
+			$rs = $db->doQuery("SELECT * FROM strategies WHERE goal_id = %s AND id NOT IN (SELECT strategy_id FROM user_strategies WHERE user_id = %s AND goal_id = %s AND is_active = 1); ", $goalID, $userID, $goalID );
 		}
 		
 		$list = array();
 		$obj = null;
-
-
 
 		while($obj = mysql_fetch_object($rs)) {
 			$strategy_active = '0';						

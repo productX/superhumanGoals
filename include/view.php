@@ -909,6 +909,7 @@ class WebView extends BaseView {
 <?php	}
 			else {
 ?>
+<br/>
 	&nbsp;&nbsp;&nbsp;&nbsp;Don't see your goal here? <a href="http://superhuman.uservoice.com/forums/158093-general">Let us know.</a><br/>
 <?php
 			}
@@ -1502,12 +1503,9 @@ By winners, for winners.
 			
 </script>
 <?php 
-				$goal_pub = Goal::getFullObjFromGoalID($goal->id, $viewUserID);
-
 				if( ( $type == 'habits') && ( !empty($dailytests)) && ($noHabitStrategies != 1) ) {
 				
-				
-				// Check if there are any habits that are not private. If none or if the goal is private show nothing
+					// Check if there are any habits that are not private. If none or if the goal is private show nothing
 					$show_goal = 0;
 					foreach($dailytests as $dailytest) {
 						if($dailytest->strategy_type == 'adherence'){
@@ -1591,7 +1589,7 @@ By winners, for winners.
 					<!-- HABITS -->
 					<div class="tests">
 <?php
-						for($t=0;$t<10;$t++){
+						for($t=0;$t<9;$t++){
 							$today = date("D", strtotime("-".$t." day")); 	
 							$today = (string)$today;
 							if($t == 0){ $margin = '263px; font-size:12px; font-weight:bold';}elseif( $t == 1 ){ $margin = '14px; font-size:14px'; }else{ $margin = '7px; font-size:14px'; }
@@ -1666,18 +1664,16 @@ By winners, for winners.
 			
 
 			}
-		}elseif($type == 'goals'){
-			
-			if($is_user){
+		}
+		elseif($type == 'goals') {
+			if($is_user) {
 				$user_id = $user->id;
-			}else{
+			}
+			else {
 				$user_id = $viewUserID;
 			}
 			
 			$kpis = KPI::getListFromGoalID($goal->id, $user_id);
-
-
-
 
 		?>
 						<!-- Box -->
@@ -1786,146 +1782,191 @@ By winners, for winners.
 							</div><!-- /lightbox-panel -->						
 							<div class="lightbox" id="lightbox<?php echo $goal->id; ?>"> </div><!-- /lightbox -->
 
+<?php		
+			// pull out tactics, habits, todos
+			$numTactics = 0;
+			$numHabits = 0;
+			$numTodos = 0;
+			$tactics = array();
+			$habits = array();
+			$todos = array();
+			foreach($dailytests as $dailytest) {
+				switch($dailytest->strategy_type) {
+					case 'tactic':
+						$tactics[] = $dailytest;
+						$numTactics++;
+						break;
+					case 'adherence':
+						$habits[] = $dailytest;
+						$numHabits++;
+						break;
+					case 'todo':
+						$todos[] = $dailytest;
+						$numTodos++;
+						break;
+					default:
+						// shouldn't be another type
+						assert(false);
+				}
+			}
 
-
-
-
-						
-		<!-- Tactics start here -->	
+			// TACTICS
+			if($is_user || ($numTactics>0)) {
+?>
 			<div class="user_page_items">
 				<span class="user_page_sub_title"> Tactics </span><?php if($is_user){ ?><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'tactic')" href="#">+</a><?php } ?><br/><div id="new_tactic_place<?php echo GPC::strToPrintable($goal->id);?>"></div>
-		<?php if(!empty($dailytests)){?>
-						<ul style="list-style-type:square;">
-<?php				$isToDo = 0;
-					foreach($dailytests as $dailytest) {
-					
-						if($dailytest->strategy_type == 'tactic'){
-							$isToDo = 1;
-							$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $dailytest->id, date("Y-m-d"))?"checked":"";
-	?>
-	
-							<div class="tactic_label" id="strategyBox<?php echo $dailytest->id;?>">
+<?php
+			}
+			if($numTactics>0) {
+?>
+					<ul style="list-style-type:square;">
+<?php
+				foreach($tactics as $tactic) {
+					$checkedVal = DailytestStatus::getTodayStatus($goalstatus->userID, $tactic->id, date("Y-m-d"))?"checked":"";
+?>
+							<div class="tactic_label" id="strategyBox<?php echo $tactic->id;?>">
 								<li>
-									<div style="display:none;" id="element<?php echo $dailytest->id;?>"> 
-										<input id="newStrategyName<?php echo $dailytest->id;?>" type="text" value="<?php echo GPC::strToPrintable($dailytest->name);?>" style="width:375px; font-size:13px; color:#666;"/>
-										<?php if($is_user){ ?><button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button><?php } ?>
+									<div style="display:none;" id="element<?php echo $tactic->id;?>"> 
+										<input id="newStrategyName<?php echo $tactic->id;?>" type="text" value="<?php echo GPC::strToPrintable($tactic->name);?>" style="width:375px; font-size:13px; color:#666;"/>
+										<?php if($is_user){ ?><button onclick="modifyStrategy(<?php echo $tactic->id;?>,<?php echo $goal->id;?>, 'edit', '<?php echo $tactic->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $tactic->id;?>,0)">cancel</button><?php } ?>
 									</div> 
-									<span id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span><?php } ?>
-
+									<span id="curElementText<?php echo $tactic->id;?>"><?php echo GPC::strToPrintable($tactic->name);?></span>
+									<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $tactic->id;?>" onclick="editElement(<?php echo $tactic->id;?>,1)">edit</span><span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $tactic->id;?>" onclick="modifyStrategy(<?php echo $tactic->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $tactic->strategy_type;?>')">x</span><?php } ?>
 								</li>
 							</div>
 							<div class="cl">&nbsp;</div>
-<?php					}
-					}
-					?></ul> <?php
-					if($isToDo == 0){
-						if($is_user){ echo "<span class='no_tactic_elements' id='no_tactic_elements" . $goal->id . "'>  Adopt some Tactics here.</span>";}
-					}
-					?>
-			<?php }else{
-					if($is_user){ echo "<span class='no_tactic_elements' id='no_tactic_elements" . $goal->id . "'> Adopt some Tactics here.</span>";}
-			}?>
-			</div>		
+<?php
+				}
+?>
+					</ul>
+<?php
+			}
+			else {
+				if($is_user) {
+					echo "<span class='no_tactic_elements' id='no_tactic_elements" . $goal->id . "'> Adopt some Tactics here.</span>";
+				}
+			}
+			if($is_user || ($numTactics>0)) {
+?>
+				</div>
+<?php
+			}
 
-
-		<!-- TODOS start here -->
+			// TODOS
+			if($is_user || ($numTodos>0)) {
+?>
 		<div class="user_page_items">
 			<span class="user_page_sub_title"> ToDos </span><?php if($is_user){ ?><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'todo')" href="#">+</a><?php } ?><br/><div id="new_todo_place<?php echo GPC::strToPrintable($goal->id);?>"></div>
-		<?php 				
-				if(!empty($dailytests)){?>
-<?php				$isToDo = 0;
-					foreach($dailytests as $dailytest) {
-					
-						if($dailytest->strategy_type == 'todo'){
-							$isToDo = 1;
-							$checkedVal = Dailytest::getCompletedStatus($user->id, $dailytest->id)?"checked":"";
-							if($checkedVal == "checked"){
-								$strikethrough = "text-decoration: line-through;";
-							}else{
-								$strikethrough = "";
-							}
-							if($isEditable) {
-				?>
-									<label for="testCheck<?php echo $dailytest->id;?>" style="float:left;">
-										<input type="checkbox" value="Check" id="testCheck<?php echo $dailytest->id;?>" <?php echo $checkedVal; ?> onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'completed', '<?php echo $dailytest->strategy_type;?>')" />
-									</label>
-				<?php
-							}?>
-							<div class="todo_label" id="strategyBox<?php echo $dailytest->id;?>">
-									<div style="display:none;" id="element<?php echo $dailytest->id;?>"> 
-										<input id="newStrategyName<?php echo $dailytest->id;?>" type="text" value="<?php echo GPC::strToPrintable($dailytest->name);?>" style="width:375px; font-size:13px; color:#666;"/>
-										<button onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'edit', '<?php echo $dailytest->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $dailytest->id;?>,0)">cancel</button>
-									</div> 
-									<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $dailytest->id;?>"><?php echo GPC::strToPrintable($dailytest->name);?></span>
-									<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $dailytest->id;?>" onclick="editElement(<?php echo $dailytest->id;?>,1)">edit</span><span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $dailytest->id;?>" onclick="modifyStrategy(<?php echo $dailytest->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $dailytest->strategy_type;?>')">x</span><?php } ?>
-							</div>
-							<div class="cl">&nbsp;</div>
-<?php					}
-					}
-					if($isToDo == 0){
-						if($is_user){ echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->id . "'> Adopt some ToDos here.</span>";}
-					}?>
-			<?php }else{
-					if($is_user){ echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->id . "'> Adopt some ToDos here.</span>";}
-			}?>			
-		</div>		
 
-
-
-		<!-- KPIS start here -->
-					<div class="user_page_items">
-						<span class="user_page_sub_title"> Measurements and Milestones </span><?php if($is_user){ ?><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'kpi')" href="#">+</a><?php } ?><br/><div id="new_kpi_place<?php echo GPC::strToPrintable($goal->id);?>"></div>
-		<?php 
-			 $kpi_active = 0;
-			 if(!empty($kpis)){
-					foreach($kpis as $kpi) {	
-						if($kpi->kpi_active == 1){
-							$kpi_active = 1;						
-							if($isEditable) {?>
-									<label for="testKPICheck<?php echo $kpi->id;?>" style="float:left;">
-										<input onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->id;?>, 'completed','')" type="checkbox" value="Check" id="testKPICheck<?php echo $kpi->id;?>" <?php echo $checkedVal; ?> onclick="" />
-									</label>
-						<?php } ?>
-							<div class="kpi_label" id="kpiBox<?php echo $kpi->id;?>">
-									<div style="display:none;" id="KPIElement<?php echo $kpi->id;?>"> 
-										Name: <input id="newKPIName<?php echo $kpi->id;?>" type="text" value="<?php echo GPC::strToPrintable($kpi->kpi_name);?>" style="width:275px; font-size:13px; color:#666;"/> Test: <input id="newKPITestName<?php echo $kpi->id;?>" type="text" value="<?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo $kpi->kpi_tests[0]->test_name;}?>" style="width:145px; font-size:13px; color:#666;"/>
-										<button onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->id;?>, 'edit', <?php if(!empty($kpi->kpi_tests[0]->id)){ echo $kpi->kpi_tests[0]->id; }else{ echo '';} ?>)">submit</button><button  onclick="editKPIElement(<?php echo $kpi->id;?>,0)">cancel</button>
-									</div> 
-									<span style="<?php echo $strikethrough; ?>" id="curKPIElementText<?php echo $kpi->id;?>"><?php echo GPC::strToPrintable($kpi->kpi_name);?></span>
-									
-									<?php if(!empty($kpi->kpi_tests[0]->test_name)){
-										$isTest = "";
-									}else{ 
-										$isTest = "none"; 
-									}
-
-									?><span style='display:'<?php echo $isTest;?>' id='curKPITestText<?php echo $kpi->id;?>'><?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo "("; echo $kpi->kpi_tests[0]->test_name; echo ")"; } ?></span>
-									<?php if($is_user){ ?><span class="editLink" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span>
-									<span class="editLink" style="float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->id;?>, 'remove','')">x</span><?php } ?> 
-							</div>
-							<div class="cl">&nbsp;</div>
-<?php					
-						}
-					}
-					?>
-			<?php }
-			if($kpi_active == 0){
-						if($is_user){ echo "<span class='no_kpi_elements' id='no_kpi_elements" . $goal->id . "'> Adopt some Measurements and Milestones here.</span>"; }
+<?php 				
 			}
-			?>
-					</div>		
+			if($numTodos>0) {
+				foreach($todos as $todo) {
+					$checkedVal = Dailytest::getCompletedStatus($user->id, $todo->id)?"checked":"";
+					if($checkedVal == "checked") {
+						$strikethrough = "text-decoration: line-through;";
+					}
+					else {
+						$strikethrough = "";
+					}
+					if($isEditable) {
+?>
+				<label for="testCheck<?php echo $todo->id;?>" style="float:left;">
+					<input type="checkbox" value="Check" id="testCheck<?php echo $todo->id;?>" <?php echo $checkedVal; ?> onclick="modifyStrategy(<?php echo $todo->id;?>,<?php echo $goal->id;?>, 'completed', '<?php echo $todo->strategy_type;?>')" />
+				</label>
+<?php
+					}
+?>
+				<div class="todo_label" id="strategyBox<?php echo $todo->id;?>">
+						<div style="display:none;" id="element<?php echo $todo->id;?>"> 
+							<input id="newStrategyName<?php echo $todo->id;?>" type="text" value="<?php echo GPC::strToPrintable($todo->name);?>" style="width:375px; font-size:13px; color:#666;"/>
+							<button onclick="modifyStrategy(<?php echo $todo->id;?>,<?php echo $goal->id;?>, 'edit', '<?php echo $todo->strategy_type;?>')">submit</button><button  onclick="editElement(<?php echo $todo->id;?>,0)">cancel</button>
+						</div> 
+						<span style="<?php echo $strikethrough; ?>" id="curElementText<?php echo $todo->id;?>"><?php echo GPC::strToPrintable($todo->name);?></span>
+						<?php if($is_user){ ?><span class="editLink" id="editButton<?php echo $todo->id;?>" onclick="editElement(<?php echo $todo->id;?>,1)">edit</span><span class="editLinkRemove" style="float:right;" id="removeButton<?php echo $todo->id;?>" onclick="modifyStrategy(<?php echo $todo->id;?>,<?php echo $goal->id;?>, 'remove', '<?php echo $todo->strategy_type;?>')">x</span><?php } ?>
 				</div>
-						<!-- End Box -->
+				<div class="cl">&nbsp;</div>
+<?php			}
+			}
+			else {
+				if($is_user) {
+					echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->id . "'> Adopt some ToDos here.</span>";
+				}
+			}
+			if($is_user || ($numTodos>0)) {
+?>
+		</div>		
+<?php
+			}
+
+			// KPIs
+			$activeKPIs = array();
+			foreach($kpis as $kpi) {
+				if($kpi->kpi_active==1) {
+					$activeKPIs[] = $kpi;
+				}
+			}
+			if($is_user || count($activeKPIs)) {
+?>
+		<div class="user_page_items">
+			<span class="user_page_sub_title"> Measurements and Milestones </span><?php if($is_user){ ?><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->id);?>,'kpi')" href="#">+</a><?php } ?><br/><div id="new_kpi_place<?php echo GPC::strToPrintable($goal->id);?>"></div>
+<?php 
+			}
+			foreach($activeKPIs as $kpi) {
+				if($isEditable) {
+?>
+			<label for="testKPICheck<?php echo $kpi->id;?>" style="float:left;">
+				<input onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->id;?>, 'completed','')" type="checkbox" value="Check" id="testKPICheck<?php echo $kpi->id;?>" <?php echo $checkedVal; ?> onclick="" />
+			</label>
+<?php
+				}
+?>
+			<div class="kpi_label" id="kpiBox<?php echo $kpi->id;?>">
+				<div style="display:none;" id="KPIElement<?php echo $kpi->id;?>"> 
+					Name: <input id="newKPIName<?php echo $kpi->id;?>" type="text" value="<?php echo GPC::strToPrintable($kpi->kpi_name);?>" style="width:275px; font-size:13px; color:#666;"/> Test: <input id="newKPITestName<?php echo $kpi->id;?>" type="text" value="<?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo $kpi->kpi_tests[0]->test_name;}?>" style="width:145px; font-size:13px; color:#666;"/>
+					<button onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->id;?>, 'edit', <?php if(!empty($kpi->kpi_tests[0]->id)){ echo $kpi->kpi_tests[0]->id; }else{ echo '';} ?>)">submit</button><button  onclick="editKPIElement(<?php echo $kpi->id;?>,0)">cancel</button>
+				</div> 
+				<span style="" id="curKPIElementText<?php echo $kpi->id;?>"><?php echo GPC::strToPrintable($kpi->kpi_name);?></span>
+					
+<?php
+				if(!empty($kpi->kpi_tests[0]->test_name)) {
+					$isTest = "";
+				}
+				else {
+					$isTest = "none"; 
+				}
+
+?>
+				<span style='display:'<?php echo $isTest;?>' id='curKPITestText<?php echo $kpi->id;?>'><?php if(!empty($kpi->kpi_tests[0]->test_name)){ echo "("; echo $kpi->kpi_tests[0]->test_name; echo ")"; } ?></span>
+				<?php if($is_user){ ?><span class="editLink" id="editKPIButton<?php echo $kpi->id;?>" onclick="editKPIElement(<?php echo $kpi->id;?>,1)">edit</span>
+				<span class="editLink" style="float:right;" id="removeKPIButton<?php echo $kpi->id;?>" onclick="modifyKPI(<?php echo $kpi->id;?>,<?php echo $goal->id;?>, 'remove','')">x</span><?php } ?> 
+			</div>
+			<div class="cl">&nbsp;</div>
+<?php					
+			}
+			if(!count($activeKPIs)) {
+				if($is_user) {
+					echo "<span class='no_kpi_elements' id='no_kpi_elements" . $goal->id . "'> Adopt some Measurements and Milestones here.</span>";
+				}
+			}
+			if($is_user || count($activeKPIs)) {
+?>
+		</div>
+<?php
+			}
+?>
+	</div>
 <?php
 		}
 	}
-			
+
 	public function printGoalPage($goalID) {
 		global $db, $user;
 		
-		$rs = $db->doQuery("SELECT * FROM goals_status WHERE user_id=%s AND is_active = 1", $user->id);
-		while($obj = mysql_fetch_object($rs)) {
+		$obj = $db->doQueryRFR("SELECT * FROM goals_status WHERE user_id=%s AND goal_id=%s AND is_active = 1", $user->id, $goalID);
+		$userHasGoal = !is_null($obj);
+		$goalstatus = null;
+		if($userHasGoal) {
 			$goalstatus = GoalStatus::getObjFromDBData($obj);
 		}
 
@@ -1940,11 +1981,7 @@ By winners, for winners.
 		$ajaxSaveDailytestPath = PAGE_AJAX_SAVEDAILYTEST;
 		$ajaxSaveEventPath = PAGE_AJAX_SAVEEVENT;
 
-
-		// get the ID & determine if user has the goal
-		$userHasGoal = GoalStatus::doesUserHaveGoal($user->id, $goalID);
-
-		$goal = Goal::getFullObjFromGoalID($goalID,$user->id);
+		$goal = Goal::getFullObjFromGoalID($goalID, $user->id);
 
 		$goal_name = $goal->goal->name;
 		$goal_description = $goal->goal->description;
@@ -1955,7 +1992,6 @@ By winners, for winners.
 		$kpis = KPI::getListFromGoalID($goal->goal->id, $user->id);
 		$dailytests = Dailytest::getListFromUserIDGoalID($goal->goal->id, $user->id, 'user');
 		$adoptableStrategiesList = Dailytest::getListFromUserIDGoalID($goal->goal->id, $user->id, 'adoptable');
-		
 		
 		if(isset($_GET["t"])) {
 			$mode = $_GET["t"];
@@ -1989,7 +2025,6 @@ By winners, for winners.
 					));
 					
 		switch($mode) {
-		
 			case PAGEMODE_EDIT:
 				$numAdopters = $goal->goal->getNumAdopters();
 				$average = GoalStatus::getAverageGoalScore($goalID);
@@ -2000,13 +2035,10 @@ By winners, for winners.
 				static $testID = 1;
 				$dayID = 1;
 				$noHabitStrategies = 0;	
-				
 					
 				if(	(count($dailytests) == 1) && ( $dailytests[0]->strategy_type != 'adherence')){		
 					$noHabitStrategies = 1;
 				}
-				
-				
 				
 ?>
 <script>
@@ -2016,7 +2048,7 @@ By winners, for winners.
 		////////////////////////////////////////////////////////////////
 			
 			function removeShowAdopt(){				
-					modifyGoal('insert');
+				modifyGoal('insert');
 			}
 		
 			function removeGoal(){
@@ -2140,9 +2172,9 @@ By winners, for winners.
 
 			if(type == 'goal'){
 				if(display == 1){
-				     $("#lightbox-panel"+element_id).show();
+				     $("#goal-lightbox-panel"+element_id).show();
 				}else{
-				     $("#lightbox-panel"+element_id).hide();
+				     $("#goal-lightbox-panel"+element_id).hide();
 				}
 			}else if(type == 'tactic'){
 				if(display == 1){
@@ -2191,7 +2223,7 @@ By winners, for winners.
 			$("#eventNewScore" + goal_id).attr("value","");
 			$("#eventWhy" + goal_id).attr("value","");
 			$("#goalLevel" + goal_id).html(new_level);
-		    $("#lightbox-panel").fadeOut();
+		    $("#goal-lightbox-panel" + goal_id).fadeOut();
 		    
 		}
 
@@ -2746,173 +2778,189 @@ By winners, for winners.
     <p >You can always change your setting later.</p>
 </div>
 
-		<?php if(!$userHasGoal){?>
+<?php 		if(!$userHasGoal){?>
 				<div class="pre_adopt">
 					<p id="suggested_description"><strong> Description:</strong> <?php echo GPC::strToPrintable($goal_description); ?></p>
 					<button class="adopt-goal-btn" id="show_adopt_options" onclick="removeShowAdopt();">Adopt this goal</button>
 				</div>
 				
-		<?php 
+<?php 
 				$display = 'none';
-			}else{
+			}
+			else{
 				$display = 'block';
-			} 
+			}
 			
 			if($goal->is_public == '1'){
 				$locked_status = 'none';
 				$unlocked_status = '';
-			}else{
+			}
+			else{
 				$locked_status = '';
 				$unlocked_status = 'none';							
-			}
-			
+			}			
 			?>
 
 					<div id="if_adopt" name="if_adopt" style="display:<?php echo $display; ?>;">
 						<!-- Box -->
 						<div class="box">
 							<!-- GOAL TITLE & LEVEL -->
-							<div class="habit_title"><span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->goal->id;?>"  onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')"> <?php echo $goalstatus->level; ?></span><a href="<?php echo $goal->goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->goal->name);?></a>
-									<span>
-										<img id="goalLocked<?php echo $goal->goal->id;?>" class="large_lock_goal_page" class="small_lock_goal_page" onclick="changeGoalPrivacy(<?php echo $goal->goal->id;?>,'locked');" style="display:<?php echo $locked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock_small.png"/>
-										<img id="goalUnlocked<?php echo $goal->goal->id;?>" class="large_lock_goal_page" onclick="changeGoalPrivacy(<?php echo $goal->goal->id;?>, 'unlocked');" style="display:<?php echo $unlocked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock_small.png"/>
-									</span>
-							<!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')" href="#">+</a>--></div>
+							<div class="habit_title">
+								<span class="goal_level" style="margin-right:4px;" id="goalLevel<?php echo $goal->goal->id;?>">
+<?php 
+			if(!is_null($goalstatus)) {
+				echo $goalstatus->level;
+			}
+			else {
+				echo "5";
+			}
+?>
+								</span>
+								<a href="<?php echo $goal->goal->getPagePath();?>" class="title"><?php echo GPC::strToPrintable($goal->goal->name);?></a>
+								<span>
+									<img id="goalLocked<?php echo $goal->goal->id;?>" class="large_lock_goal_page" class="small_lock_goal_page" onclick="changeGoalPrivacy(<?php echo $goal->goal->id;?>,'locked');" style="display:<?php echo $locked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock_small.png"/>
+									<img id="goalUnlocked<?php echo $goal->goal->id;?>" class="large_lock_goal_page" onclick="changeGoalPrivacy(<?php echo $goal->goal->id;?>, 'unlocked');" style="display:<?php echo $unlocked_status; ?>;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock_small.png"/>
+								</span>
+								<span style="float:right">
+									<a class="add_goal_comment" style="border:1px #999 solid; width:auto; padding:3px; font-size:15px;" onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')" >
+										Set Level
+									</a>
+								</span>
+								<!--<a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo $goal->goal->id; ?>,'goal')" href="#">+</a>--></div>
 
-							<!-- %%%%%%%%%%%% LIGHTBOXES FOR ELEMENT CREATION %%%%%%%%%%%% -->
+								<!-- %%%%%%%%%%%% LIGHTBOXES FOR ELEMENT CREATION %%%%%%%%%%%% -->
 							
-							<!-- Lightbox for creating Goal Events -->
-							<div class="lightbox-panel" id="lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
-							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'goal')">X</a>
-								<div class="newscore-row">
-									<span class="new_level" style="font-weight:bold;"><?php echo GPC::strToPrintable($goal->goal->name);?> </span><br/>
-									<span class="new_level">New Level:</span><input type="text" class="field" id="eventNewScore<?php echo $goal->goal->id;?>"  />
-									<div class="cl">&nbsp;</div>
-								</div>
-								<div class="grade-row">
-									<span class="new_level">Letter grade:</span>
-									<select name="grade" id="eventLetterGrade<?php echo $goal->goal->id;?>" size="1">
-										<option value="A" >A</option>
-										<option value="B" >B</option>
-										<option value="C" >C</option>
-										<option value="D" >D</option>
-										<option value="F" >F</option>
-									</select>
-								</div>
-								<div class="cl">&nbsp;</div>
-								<textarea name="textarea" style="color:#999; margin-top:5px;" onclick="clearWhy(<?php echo $goal->goal->id;?>)" id="eventWhy<?php echo $goal->goal->id;?>" class="field" rows="4" cols="40">Why?</textarea>
-								<button type="submit" value="submit"  onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->goal->id; ?>, <?php echo $goalstatus->level; ?>)" >submit</button>
-							</div><!-- /lightbox-panel -->						
-							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
-
-
-							<!-- Lightbox for creating Tactics -->
-							<div class="lightbox-panel" id="tactic-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
-							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'tactic')">X</a>
-								<div class="newscore-row">
-									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Tactic</div>
-									<div class="new_tactic_privacy">
-										<form>
-											<img id="tacticLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
-											<img id="tacticUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
-											<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'tactic', 'strategy')" class="strategy_dropdown" name="newTacticIsPublic<?php echo $goal->goal->id;?>" id="newTacticIsPublic<?php echo $goal->goal->id;?>" >
-											  <option >Public</option>
-											  <option >Private</option>
-											</select>
-										</form>																				
-									</div>									
-									<div class="new_tactic">Tactic Name: <input type="text" class="text_input" id="newTacticName<?php echo $goal->goal->id;?>"  /></div>
-									<div class="new_tactic">Tactic Description: <input type="text" class="text_input" id="newTacticDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</span></div><br/>
-									<div class="cl">&nbsp;</div>
-								</div>
-								<div class="cl">&nbsp;</div>
-								<center><button type="submit" value="submit"  onclick="modifyStrategy('', <?php echo $goal->goal->id; ?>, 'create','tactic')" >submit</button></center>
-							</div><!-- /lightbox-panel -->						
-							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
-
-
-							<!-- Lightbox for creating Todos -->
-							<div class="lightbox-panel" id="todo-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
-							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'todo')">X</a>
-								<div class="newscore-row">
-									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> ToDo</div>
-									<div class="new_tactic_privacy">
-										<form>
-											<img id="todoLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
-											<img id="todoUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
-											<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'todo')" class="strategy_dropdown" name="newToDoIsPublic<?php echo $goal->goal->id;?>" id="newToDoIsPublic<?php echo $goal->goal->id;?>" >
-											  <option >Public</option>
-											  <option >Private</option>
-											</select>
-										</form>																				
+								<!-- Lightbox for creating Goal Events -->
+								<div class="lightbox-panel" id="goal-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
+									<a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'goal')">X</a>
+									<div class="newscore-row">
+										<span class="new_level" style="font-weight:bold;"><?php echo GPC::strToPrintable($goal->goal->name);?> </span><br/>
+										<span class="new_level">New Level:</span><input type="text" class="field" id="eventNewScore<?php echo $goal->goal->id;?>"  />
+										<div class="cl">&nbsp;</div>
 									</div>
-									<div class="new_tactic">Todo Name: <input type="text" class="text_input" id="newToDoName<?php echo $goal->goal->id;?>"  /></div>
-									<div class="new_tactic">Todo Description: </span><input type="text" class="text_input" id="newToDoDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
-									<div class="cl">&nbsp;</div>
-								</div>
-								<div class="cl">&nbsp;</div>
-								<center><button type="submit" value="submit"  onclick="modifyStrategy('', <?php echo $goal->goal->id; ?>, 'create','todo')" >submit</button></center>
-							</div><!-- /lightbox-panel -->						
-							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
-
-
-
-
-							<!-- Lightbox for creating Habits -->
-							<div class="lightbox-panel" id="habit-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
-							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'habit')">X</a>
-								<div class="newscore-row">
-									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Habit</div>
-									<div class="new_tactic_privacy">
-										<form>
-											<img id="habitLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
-											<img id="habitUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
-											<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'habit')" class="strategy_dropdown" name="newHabitIsPublic<?php echo $goal->goal->id;?>" id="newHabitIsPublic<?php echo $goal->goal->id;?>" >
-										  <option >Public</option>
-										  <option >Private</option>
+									<div class="grade-row">
+										<span class="new_level">Letter grade:</span>
+										<select name="grade" id="eventLetterGrade<?php echo $goal->goal->id;?>" size="1">
+											<option value="A" >A</option>
+											<option value="B" >B</option>
+											<option value="C" >C</option>
+											<option value="D" >D</option>
+											<option value="F" >F</option>
 										</select>
-										</form>																				
 									</div>
-									<div class="new_tactic">Habit Name: <input type="text" class="text_input" id="newHabitName<?php echo $goal->goal->id;?>"  /></div>
-									<div class="new_tactic">Habit Description: </span><input type="text" class="text_input" id="newHabitDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
 									<div class="cl">&nbsp;</div>
-								</div>
-								<div class="cl">&nbsp;</div>
-								<center><button type="submit" value="submit"  onclick="modifyStrategy('', <?php echo $goal->goal->id; ?>, 'create','habit')" >submit</button></center>
-							</div><!-- /lightbox-panel -->						
-							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
+									<textarea name="textarea" style="color:#999; margin-top:5px;" onclick="clearWhy(<?php echo $goal->goal->id;?>)" id="eventWhy<?php echo $goal->goal->id;?>" class="field" rows="4" cols="40">Why?</textarea>
+									<button type="submit" value="submit"  onclick="issueGoalEvent(<?php echo $user->id; ?>, <?php echo $goal->goal->id; ?>, <?php echo $goalstatus->level; ?>)" >submit</button>
+								</div><!-- /lightbox-panel -->						
+								<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
+
+
+								<!-- Lightbox for creating Tactics -->
+								<div class="lightbox-panel" id="tactic-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
+									<a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'tactic')">X</a>
+									<div class="newscore-row">
+										<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Tactic</div>
+										<div class="new_tactic_privacy">
+											<form>
+												<img id="tacticLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+												<img id="tacticUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
+												<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'tactic', 'strategy')" class="strategy_dropdown" name="newTacticIsPublic<?php echo $goal->goal->id;?>" id="newTacticIsPublic<?php echo $goal->goal->id;?>" >
+												  <option >Public</option>
+												  <option >Private</option>
+												</select>
+											</form>																				
+										</div>									
+										<div class="new_tactic">Tactic Name: <input type="text" class="text_input" id="newTacticName<?php echo $goal->goal->id;?>"  /></div>
+										<div class="new_tactic">Tactic Description: <input type="text" class="text_input" id="newTacticDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</span></div><br/>
+										<div class="cl">&nbsp;</div>
+									</div>
+									<div class="cl">&nbsp;</div>
+									<center><button type="submit" value="submit"  onclick="modifyStrategy('', <?php echo $goal->goal->id; ?>, 'create','tactic')" >submit</button></center>
+								</div><!-- /lightbox-panel -->						
+								<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
+
+
+								<!-- Lightbox for creating Todos -->
+								<div class="lightbox-panel" id="todo-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
+									<a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'todo')">X</a>
+									<div class="newscore-row">
+										<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> ToDo</div>
+										<div class="new_tactic_privacy">
+											<form>
+												<img id="todoLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+												<img id="todoUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
+												<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'todo')" class="strategy_dropdown" name="newToDoIsPublic<?php echo $goal->goal->id;?>" id="newToDoIsPublic<?php echo $goal->goal->id;?>" >
+												  <option >Public</option>
+												  <option >Private</option>
+												</select>
+											</form>																				
+										</div>
+										<div class="new_tactic">Todo Name: <input type="text" class="text_input" id="newToDoName<?php echo $goal->goal->id;?>"  /></div>
+										<div class="new_tactic">Todo Description: </span><input type="text" class="text_input" id="newToDoDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
+										<div class="cl">&nbsp;</div>
+									</div>
+									<div class="cl">&nbsp;</div>
+									<center><button type="submit" value="submit"  onclick="modifyStrategy('', <?php echo $goal->goal->id; ?>, 'create','todo')" >submit</button></center>
+								</div><!-- /lightbox-panel -->						
+								<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
 
 
 
-							<!-- Lightbox for creating Measuerments and Milestones -->
-							<div class="lightbox-panel" id="kpi-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
-							    <a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'kpi')">X</a>
-								<div class="newscore-row">
-									<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Measure / Milestone</div>
-									<div class="new_tactic_privacy">
-											<img id="kpiLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
-											<img id="kpiUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
-											<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'kpi')" class="strategy_dropdown" name="newKPIIsPublic<?php echo $goal->goal->id;?>" id="newKPIIsPublic<?php echo $goal->goal->id;?>" >
+
+								<!-- Lightbox for creating Habits -->
+								<div class="lightbox-panel" id="habit-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
+									<a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'habit')">X</a>
+									<div class="newscore-row">
+										<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Habit</div>
+										<div class="new_tactic_privacy">
+											<form>
+												<img id="habitLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+												<img id="habitUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
+												<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'habit')" class="strategy_dropdown" name="newHabitIsPublic<?php echo $goal->goal->id;?>" id="newHabitIsPublic<?php echo $goal->goal->id;?>" >
 											  <option >Public</option>
 											  <option >Private</option>
-											</select>																				
+											</select>
+											</form>																				
+										</div>
+										<div class="new_tactic">Habit Name: <input type="text" class="text_input" id="newHabitName<?php echo $goal->goal->id;?>"  /></div>
+										<div class="new_tactic">Habit Description: </span><input type="text" class="text_input" id="newHabitDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
+										<div class="cl">&nbsp;</div>
 									</div>
-									<div class="new_tactic">Name: <input type="text" class="text_input" id="newKPIName<?php echo $goal->goal->id;?>"  /></div>
-									<div class="new_tactic">Description: </span><input type="text" class="text_input" id="newKPIDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
-									<div class="new_tactic">Test Name: <input type="text" class="text_input" id="newKPITestName<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</span></div>
-									<div class="new_tactic">Test Description: </span><input type="text" class="text_input" id="newKPITestDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
-									<div class="new_tactic">Test Frequency: </span><input type="text" class="text_input" id="newKPITestFrequency<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
 									<div class="cl">&nbsp;</div>
-								</div>
-								<div class="cl">&nbsp;</div>
-								<center><button type="submit" value="submit"  onclick="modifyKPI(0, <?php echo $goal->goal->id; ?>, 'create',0)" >submit</button></center>
-							</div><!-- /lightbox-panel -->						
-							<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->						
+									<center><button type="submit" value="submit"  onclick="modifyStrategy('', <?php echo $goal->goal->id; ?>, 'create','habit')" >submit</button></center>
+								</div><!-- /lightbox-panel -->						
+								<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->
+
+
+
+								<!-- Lightbox for creating Measuerments and Milestones -->
+								<div class="lightbox-panel" id="kpi-lightbox-panel<?php echo $goal->goal->id; ?>" style="display:none;">
+									<a class="close_window" id="close-panel" href="#" onclick="modify_lightbox(0, <?php echo $goal->goal->id; ?>,'kpi')">X</a>
+									<div class="newscore-row">
+										<div class="new_tactic" style="font-weight:bold;">New <?php echo GPC::strToPrintable($goal->goal->name);?> Measure / Milestone</div>
+										<div class="new_tactic_privacy">
+												<img id="kpiLocked<?php echo $goal->goal->id;?>" style="display:none;" src="<?php echo BASEPATH_UI;?>/src/lock_icons/lock.png"/>
+												<img id="kpiUnlocked<?php echo $goal->goal->id;?>"  src="<?php echo BASEPATH_UI;?>/src/lock_icons/unlock.png"/>
+												<select onclick="change_lock(<?php echo $goal->goal->id;?>, 'kpi')" class="strategy_dropdown" name="newKPIIsPublic<?php echo $goal->goal->id;?>" id="newKPIIsPublic<?php echo $goal->goal->id;?>" >
+												  <option >Public</option>
+												  <option >Private</option>
+												</select>																				
+										</div>
+										<div class="new_tactic">Name: <input type="text" class="text_input" id="newKPIName<?php echo $goal->goal->id;?>"  /></div>
+										<div class="new_tactic">Description: </span><input type="text" class="text_input" id="newKPIDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
+										<div class="new_tactic">Test Name: <input type="text" class="text_input" id="newKPITestName<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</span></div>
+										<div class="new_tactic">Test Description: </span><input type="text" class="text_input" id="newKPITestDescription<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
+										<div class="new_tactic">Test Frequency: </span><input type="text" class="text_input" id="newKPITestFrequency<?php echo $goal->goal->id;?>"  /><span class="optional_input">(optional)</div>
+										<div class="cl">&nbsp;</div>
+									</div>
+									<div class="cl">&nbsp;</div>
+									<center><button type="submit" value="submit"  onclick="modifyKPI(0, <?php echo $goal->goal->id; ?>, 'create',0)" >submit</button></center>
+								</div><!-- /lightbox-panel -->						
+								<div class="lightbox" id="lightbox<?php echo $goal->goal->id; ?>"> </div><!-- /lightbox -->						
 						
-						
-		<!-- Tactics start here -->	
-			<div class="user_page_items">
-				<span class="user_page_sub_title"> Tactics </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->goal->id);?>,'tactic')" href="#">+</a><br/><div class="adopted_strategies" id="new_tactic_place<?php echo GPC::strToPrintable($goal->goal->id);?>"></div>
+								<!-- Tactics start here -->	
+								<div class="user_page_items">
+									<span class="user_page_sub_title"> Tactics </span><a class="add_goal_comment" id="show-panel" onclick="modify_lightbox(1, <?php echo GPC::strToPrintable($goal->goal->id);?>,'tactic')" href="#">+</a><br/><div class="adopted_strategies" id="new_tactic_place<?php echo GPC::strToPrintable($goal->goal->id);?>"></div>
 		<?php if(!empty($dailytests)){?>
 						<ul style="list-style-type:square;">
 <?php				$isToDo = 0;
@@ -3370,6 +3418,13 @@ By winners, for winners.
 				break;
 				
 			case PAGEMODE_ACTIVITY:
+				// they can adopt if they don't have goal
+				if(!$userHasGoal) {
+?>
+<a href="<?php echo PAGE_GOAL."?id=$goalID&t=".PAGEMODE_EDIT; ?>">Click here to adopt -&gt;</a><br/><br/>
+<?php
+				}
+				
 				// only returns event type stories for this goal
 				$rs = $db->doQuery("SELECT * FROM stories WHERE is_public=TRUE AND type='".EventStory::STORY_TYPENAME."' AND event_goal_id=%s ORDER BY entered_at DESC LIMIT 100", $goalID);
 				
