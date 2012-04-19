@@ -192,10 +192,7 @@ h1#logo a:hover { background-position: 0 bottom; }
 .box .tests .row { padding: 4px 0; }
 .box .tests .row .dailies { display:none; }
 .box .tests .row label { background: #fff; width: 42px; height: 42px; border: solid 1px #868686; float: left; display: inline; margin-right: 7px; cursor: pointer; }
-.box .tests .row label.checked { 
-
-
-background: url(images/check.png) no-repeat 0 0; }
+.box .tests .row label.checked { background: white url(images/check.png) no-repeat 0 0; }
 .box .tests .test-cnt { float: left; display: inline; padding: 0 0 0 7px; font-size: 11px; line-height: 11px; }
 .box .tests .test-cnt p { padding: 0 0 5px 0; }
 .box .tests .test-cnt .scale { border: solid 1px #868686; border-left: 0; }
