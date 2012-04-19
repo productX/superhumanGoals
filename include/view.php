@@ -3692,7 +3692,7 @@ class MobileView extends BaseView {
 ?>
 					<li>
 						<div class="text">
-							<a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('userid=<?php echo $user->id; ?>')" id="<?php echo "imgholder_$divID";?>">
+							<a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')" id="<?php echo "imgholder_$divID";?>">
 								<img class='img' src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" />
 								<!-- HA/CK: image is inserted later. if specified literally here, safari will load the page 2x. no other fix could be found. -->
 							</a>
@@ -3702,7 +3702,7 @@ class MobileView extends BaseView {
 									document.getElementById(divID).innerHTML="<img class='img' src='"+imgPath+"' />";
 								}
 							</script>-->
-							<h4><a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('userid=<?php echo $user->id; ?>')"><?php echo "$user->firstName $user->lastName"; ?></a> <?php echo $changeWord; ?> his level for <a href="#<?php echo NAVNAME_GOAL;?>" onclick="setNextQS('goalid=<?php echo $goal->id; ?>')"><?php echo GPC::strToPrintable($goal->name); ?></a> from <?php echo $eventStory->oldLevel; ?> to <?php echo $eventStory->newLevel; ?>.</h4>
+							<h4><a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')"><?php echo "$user->firstName $user->lastName"; ?></a> <?php echo $changeWord; ?> his level for <a href="#<?php echo NAVNAME_GOAL;?>" onclick="setNextQS('id=<?php echo $goal->id; ?>')"><?php echo GPC::strToPrintable($goal->name); ?></a> from <?php echo $eventStory->oldLevel; ?> to <?php echo $eventStory->newLevel; ?>.</h4>
 							
 							<p class="letter" ><?php echo GPC::strToPrintable($eventStory->letterGrade); ?></p>
 							<div class="quote">
@@ -3727,10 +3727,10 @@ class MobileView extends BaseView {
 ?>
 					<li>
 						<!--<div class="img" style="background:url();">-->
-							<a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('userid=<?php echo $user->id; ?>')"><img class="img" src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" alt="<?php echo "$user->firstName $user->lastName"; ?>" /></a>
+							<a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')"><img class="img" src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" alt="<?php echo "$user->firstName $user->lastName"; ?>" /></a>
 						<!--</div>-->
 						<div class="text">
-							<h4><a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('userid=<?php echo $user->id; ?>')"><?php echo "$user->firstName $user->lastName"; ?></a> just entered daily goal progress, touching <?php echo $numGoalsTouched; ?> out of <?php echo $totalGoals; ?> of their goals.</h4>
+							<h4><a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')"><?php echo "$user->firstName $user->lastName"; ?></a> just entered daily goal progress, touching <?php echo $numGoalsTouched; ?> out of <?php echo $totalGoals; ?> of their goals.</h4>
 							
 							<p class="percent" ><?php echo $score; ?><span>%</span></p>
 							<div class="links">
@@ -3870,12 +3870,12 @@ class MobileView extends BaseView {
 	protected function userPrintCardPrint($user, $numGoals, $visitFreqText) {
 ?>
 						<div class="box left">
-							<h5><a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('userid=<?php echo $user->id; ?>')" data-transition="fade"><?php echo "$user->firstName <b>$user->lastName</b>";?></a></h5>
+							<h5><a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')" data-transition="fade"><?php echo "$user->firstName <b>$user->lastName</b>";?></a></h5>
 							<p>
 								<?php echo $numGoals;?> goals<br/>
 								<?php echo $visitFreqText;?>
 							</p>
-							<a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('userid=<?php echo $user->id; ?>')" data-transition="fade"><img class="img" src="<?php echo GPC::strToPrintable($user->pictureURL);?>" alt="<?php echo "$user->firstName $user->lastName";?>" /></a>
+							<a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')" data-transition="fade"><img class="img" src="<?php echo GPC::strToPrintable($user->pictureURL);?>" alt="<?php echo "$user->firstName $user->lastName";?>" /></a>
 						</div>
 <?php
 	}
@@ -3958,7 +3958,7 @@ class MobileView extends BaseView {
 						<form action="#" method="post" class="jqtransform" >
 							<div class="title">
 								<p class="num <?php echo $goalNumColor;?>" id="levelBox<?php echo $rowID;?>"><?php echo $goalstatus->level;?></p>
-								<h5 onclick="setNextQS('goalid=<?php echo $goal->id; ?>'); $.mobile.changePage('#<?php echo NAVNAME_GOAL; ?>');" style="cursor:pointer"><?php echo GPC::strToPrintable($goal->name);?></h5>
+								<h5 onclick="setNextQS('id=<?php echo $goal->id; ?>'); $.mobile.changePage('#<?php echo NAVNAME_GOAL; ?>');" style="cursor:pointer"><?php echo GPC::strToPrintable($goal->name);?></h5>
 <?php
 		if(($type=="goals") && ($numNonHabits<2) && $isEditable) {
 ?>
