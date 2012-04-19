@@ -1133,8 +1133,8 @@ By winners, for winners.
               $is_user = false;
         }else{
               $is_user = true;
-        }
-		
+		}
+
 ?>
 
 <script>
@@ -3606,7 +3606,7 @@ class MobileView extends BaseView {
 	?>
 			<div class="profile" id="profile<?php echo $headerID; ?>">
 				<a href="#" class="link" >
-					<img src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" alt="" style="width:87px;height:87px" />
+					<img src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" alt="" style="width:70px;height:70px" />
 					<span class="arrow" >&nbsp;</span>
 				</a>
 				<div class="dropdown">
@@ -3680,7 +3680,7 @@ class MobileView extends BaseView {
 ?>
 					<li>
 						<div class="text">
-							<a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')" id="<?php echo "imgholder_$divID";?>">
+							<a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('userid=<?php echo $user->id; ?>')" id="<?php echo "imgholder_$divID";?>">
 								<img class='img' src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" />
 								<!-- HA/CK: image is inserted later. if specified literally here, safari will load the page 2x. no other fix could be found. -->
 							</a>
@@ -3690,7 +3690,7 @@ class MobileView extends BaseView {
 									document.getElementById(divID).innerHTML="<img class='img' src='"+imgPath+"' />";
 								}
 							</script>-->
-							<h4><a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')"><?php echo "$user->firstName $user->lastName"; ?></a> <?php echo $changeWord; ?> his level for <a href="#<?php echo NAVNAME_GOAL;?>" onclick="setNextQS('id=<?php echo $goal->id; ?>')"><?php echo GPC::strToPrintable($goal->name); ?></a> from <?php echo $eventStory->oldLevel; ?> to <?php echo $eventStory->newLevel; ?>.</h4>
+							<h4><a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('userid=<?php echo $user->id; ?>')"><?php echo "$user->firstName $user->lastName"; ?></a> <?php echo $changeWord; ?> his level for <a href="#<?php echo NAVNAME_GOAL;?>" onclick="setNextQS('goalid=<?php echo $goal->id; ?>')"><?php echo GPC::strToPrintable($goal->name); ?></a> from <?php echo $eventStory->oldLevel; ?> to <?php echo $eventStory->newLevel; ?>.</h4>
 							
 							<p class="letter" ><?php echo GPC::strToPrintable($eventStory->letterGrade); ?></p>
 							<div class="quote">
@@ -3715,10 +3715,10 @@ class MobileView extends BaseView {
 ?>
 					<li>
 						<!--<div class="img" style="background:url();">-->
-							<a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')"><img class="img" src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" alt="<?php echo "$user->firstName $user->lastName"; ?>" /></a>
+							<a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('userid=<?php echo $user->id; ?>')"><img class="img" src="<?php echo GPC::strToPrintable($user->pictureURL); ?>" alt="<?php echo "$user->firstName $user->lastName"; ?>" /></a>
 						<!--</div>-->
 						<div class="text">
-							<h4><a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')"><?php echo "$user->firstName $user->lastName"; ?></a> just entered daily goal progress, touching <?php echo $numGoalsTouched; ?> out of <?php echo $totalGoals; ?> of their goals.</h4>
+							<h4><a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('userid=<?php echo $user->id; ?>')"><?php echo "$user->firstName $user->lastName"; ?></a> just entered daily goal progress, touching <?php echo $numGoalsTouched; ?> out of <?php echo $totalGoals; ?> of their goals.</h4>
 							
 							<p class="percent" ><?php echo $score; ?><span>%</span></p>
 							<div class="links">
@@ -3858,12 +3858,12 @@ class MobileView extends BaseView {
 	protected function userPrintCardPrint($user, $numGoals, $visitFreqText) {
 ?>
 						<div class="box left">
-							<h5><a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')" data-transition="fade"><?php echo "$user->firstName <b>$user->lastName</b>";?></a></h5>
+							<h5><a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('userid=<?php echo $user->id; ?>')" data-transition="fade"><?php echo "$user->firstName <b>$user->lastName</b>";?></a></h5>
 							<p>
 								<?php echo $numGoals;?> goals<br/>
 								<?php echo $visitFreqText;?>
 							</p>
-							<a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('id=<?php echo $user->id; ?>')" data-transition="fade"><img class="img" src="<?php echo GPC::strToPrintable($user->pictureURL);?>" alt="<?php echo "$user->firstName $user->lastName";?>" /></a>
+							<a href="#<?php echo NAVNAME_MYGOALS;?>" onclick="setNextQS('userid=<?php echo $user->id; ?>')" data-transition="fade"><img class="img" src="<?php echo GPC::strToPrintable($user->pictureURL);?>" alt="<?php echo "$user->firstName $user->lastName";?>" /></a>
 						</div>
 <?php
 	}
@@ -3928,22 +3928,40 @@ class MobileView extends BaseView {
 			$goalNumColor = "red";
 		}
 		
-		
-		if($type=="habits") {
-			$hasHabits=false;
-			foreach($dailytests as $test) {
-				$hasHabits|=$test->strategy_type=="adherence";
+		$numHabits=0;
+		$numNonHabits=0;
+		foreach($dailytests as $test) {
+			if($test->strategy_type=="adherence") {
+				$numHabits++;
 			}
-			if(!$hasHabits) {
-				return;
+			else {
+				$numNonHabits++;
 			}
+		}
+		if(($type=="habits")&&($numHabits==0)) {
+			return;
 		}
 ?>
 					<li>
 						<form action="#" method="post" class="jqtransform" >
 							<div class="title">
 								<p class="num <?php echo $goalNumColor;?>" id="levelBox<?php echo $rowID;?>"><?php echo $goalstatus->level;?></p>
-								<h5 onclick="setNextQS('id=<?php echo $goal->id; ?>'); $.mobile.changePage('#<?php echo NAVNAME_GOAL; ?>');" style="cursor:pointer"><?php echo GPC::strToPrintable($goal->name);?></h5>
+								<h5 onclick="setNextQS('goalid=<?php echo $goal->id; ?>'); $.mobile.changePage('#<?php echo NAVNAME_GOAL; ?>');" style="cursor:pointer"><?php echo GPC::strToPrintable($goal->name);?></h5>
+<?php
+		if(($type=="goals") && ($numNonHabits<2) && $isEditable) {
+?>
+								<div class="buttons-hor">
+									<a href="#" class="minus" onclick="adjustLevel<?php echo $rowID;?>(-1);" style="position:relative; z-index:10">-</a>
+									<div style="position:relative; display:inline;">
+										<font style="font-size:40px; color:#888; top:-31px; left:-6px; position:absolute">|</font>
+									</div>
+									<div style="position:relative; display:inline;">
+										<a href="#" class="plus" onclick="adjustLevel<?php echo $rowID;?>(1);" style="margin-left:14px;position:relative; bottom:3px">+</a>
+									</div>
+								</div>
+<?php
+		}
+?>
 								<div class="cl">&nbsp;</div>
 							</div>
 							<div class="holder">
@@ -4004,10 +4022,16 @@ class MobileView extends BaseView {
 								<input type="hidden" id="eventNewLevel<?php echo $rowID;?>" value="<?php echo $newLevelVal; ?>" />
 								<input type="hidden" id="eventOriginalLevel<?php echo $rowID;?>" value="<?php echo $originalLevelVal; ?>" />
 								<input type="hidden" id="eventLetterGrade<?php echo $rowID;?>" value="" />
+<?php
+				if($numNonHabits>=2) {
+?>
 								<div class="buttons">
 									<a href="#" class="plus" onclick="adjustLevel<?php echo $rowID;?>(1);" style="position:relative; z-index:10">+</a>
 									<a href="#" class="minus" onclick="adjustLevel<?php echo $rowID;?>(-1);" style="position:relative">-</a>
 								</div>
+<?php
+				}
+?>
 								<script type="text/javascript">
 									function adjustLevel<?php echo $rowID;?>(adjustment) {
 										var currentLevel = document.getElementById('eventNewLevel<?php echo $rowID;?>').value;
@@ -4049,11 +4073,17 @@ class MobileView extends BaseView {
 										document.getElementById('testsDisplay<?php echo $rowID;?>').style.display="block";
 									}
 								</script>
+<?php
+			}
+?>
 								<div class="holder-right-strategies" id="testsDisplay<?php echo $rowID;?>">
 <?php
-				$this->printStrategyList($dailytests, $goalstatus->userID, false);
+			$this->printStrategyList($dailytests, $goalstatus->userID, false, $isEditable);
 ?>
 								</div>
+<?php
+			if($isEditable) {
+?>
 								<div class="holder-right" id="eventDisplay<?php echo $rowID;?>" style="display:none;">
 									<fieldset>
 										<textarea rows="4" cols="50" class="field" id="eventWhy<?php echo $rowID;?>" onkeyup="onChangeEvent<?php echo $rowID;?>();" ><?php echo $whyVal; ?></textarea> 
@@ -4121,14 +4151,13 @@ class MobileView extends BaseView {
 			
 			//&&&&&& Get all the strategies from the DB
 			$strategies = Dailytest::getListFromUserIDGoalID($goal->id, $user->id, 'user');
-
-			$this->PrintStrategyList($strategies, $user->id);
+			$this->printStrategyList($strategies, $user->id);
 ?>
 			</div>
 <?php
 		}
 	}
-	private function printStrategyList($strategies, $userID, $showEmptyCategories=true) {
+	private function printStrategyList($strategies, $userID, $showEmptyCategories=true, $isEditable=true) {
 		$tactics = array();
 		$todoIDs = array();
 		$todoNames = array();
@@ -4174,6 +4203,7 @@ class MobileView extends BaseView {
 <?php
 		}
 		if($showEmptyCategories || count($todoIDs)) {
+			if($isEditable) {
 ?>				
 				<script type="text/javascript">
 					// modify state of a todo
@@ -4197,6 +4227,9 @@ class MobileView extends BaseView {
 						}
 					}
 				</script>
+<?php
+			}
+?>
 				<h4>To-do's:</h4>
 				<form action="#" method="post" class="jqtransform" >
 					<ul class="list">
@@ -4215,7 +4248,18 @@ class MobileView extends BaseView {
 ?>
 						<li>
 							<p id="todoText<?php echo $id;?>" style="text-decoration:<?php echo $check?"line-through":"";?>"><?php echo $name;?></p>
-							<input type="checkbox" data-role="none" <?php echo $check?"checked":"";?> id="todoCheck<?php echo $id;?>" onclick="modifyTodo(<?php echo $id;?>);" />
+							<input type="checkbox" data-role="none" <?php echo $check?"checked":"";?> id="todoCheck<?php echo $id;?>"
+<?php
+				if($isEditable) {
+?>
+								onclick="modifyTodo(<?php echo $id;?>);"
+<?php
+				}
+				else {
+					echo "disabled";
+				}
+?>
+							/>
 						</li>
 <?php
 			}

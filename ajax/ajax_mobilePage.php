@@ -10,7 +10,7 @@ $page = GPC::strToStr($_GET["page"]);
 
 // HACK: print statements below will error if view isn't mobile
 
-echo "<div style='height:160px'>&nbsp</div>";
+echo "<div style='height:135px'>&nbsp</div>";
 switch($page) {
 	case NAVNAME_USERS:
 		$view->printAllUsersPageMainDiv();

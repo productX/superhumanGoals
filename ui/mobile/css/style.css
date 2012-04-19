@@ -40,11 +40,11 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#383838', end
 h1#logo { width: 383px; height: 51px; display: block; padding: 19px 0 0 10px; float: left; display: inline; }
 h1#logo a { width: 383px; height: 51px; display: block; font-size: 0; line-height: 0; text-indent: -4000px; background: url(images/logo.png) no-repeat 0 0 ; }
 h1#logo a:hover { background-position: 0 bottom; }
-.profile { float: right; display: inline; width: 106px;  position: absolute ; top: 11px; right: 12px; }
+.profile { float: right; display: inline; position: absolute ; top: 11px; right: 12px; }
 .profile .link { display: block; padding: 8px 8px 20px; background: #fff; border: 1px solid #000; position: relative ; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px;  }
 .profile .link .arrow { position: absolute ; bottom: 6px; right: 10px; display: block; width: 14px; height: 11px; background: url(images/arrow.png) no-repeat 0 0 ; font-size: 0; line-height: 0; text-indent: -4000px; }
 .profile .link { text-decoration: none; }
-.profile .dropdown { width: 236px; background: #fff; position: absolute ; top: 122px; right: 0; border: 1px solid #a3a3a3; padding-top: 7px; overflow: hidden; -webkit-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4); -moz-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4); box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4); -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px; display: none; }
+.profile .dropdown { width: 236px; background: #fff; position: absolute ; top: 104px; right: 0; border: 1px solid #a3a3a3; padding-top: 7px; overflow: hidden; -webkit-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4); -moz-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4); box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4); -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px; display: none; }
 .profile .dropdown ul { list-style: none outside none; }
 .profile .dropdown ul li { width: 100%; padding: 0 0 5px; display: block; }
 .profile .dropdown ul li a { display: block; font-size: 22px; color: #000; padding: 7px 14px; } 
@@ -101,7 +101,7 @@ filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', end
 
 /*----- Start "Comment" -----*/
 /*------ End "Comment" ------*/
-h2 { float: left; display: inline; font-size: 41px; line-height: 60px; font-weight: normal; color: #000; background: #fff; margin: 0 12px 12px; padding: 0 22px; position: fixed; top: 82px; left: 15px; z-index: 60; -moz-border-radius-topleft: 0px; -moz-border-radius-topright: 0px; -moz-border-radius-bottomright: 5px; -moz-border-radius-bottomleft: 5px; -webkit-border-radius: 0px 0px 5px 5px; border-radius: 0px 0px 5px 5px; -webkit-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4); -moz-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4); box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);  }
+h2 { float: left; display: inline; font-size: 30px; line-height: 42px; font-weight: normal; color: #000; background: #fff; margin: 0 12px 12px; padding: 0 22px; position: fixed; top: 82px; left: 15px; z-index: 60; -moz-border-radius-topleft: 0px; -moz-border-radius-topright: 0px; -moz-border-radius-bottomright: 5px; -moz-border-radius-bottomleft: 5px; -webkit-border-radius: 0px 0px 5px 5px; border-radius: 0px 0px 5px 5px; -webkit-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4); -moz-box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4); box-shadow: 3px 3px 3px 0px rgba(0, 0, 0, 0.4);  }
 h2.arrow { padding-right: 50px; }
 h2 .arrow { float: left; display: inline; width: 16px; height: 23px; background: url(images/b-arrow.png) no-repeat 0 0 ; font-size: 0; line-height: 0; text-indent: -4000px; margin: 15px 18px 0 0; }
 h2 .arrows { width: 23px; height: 29px; background: url(images/arrows.png) no-repeat 0 0 ; font-size: 0; line-height: 0; text-indent: -4000px; margin: 20px 17px 0 17px; position: absolute ; top: 0; right: 0; }
@@ -131,15 +131,24 @@ h2 .arrows { width: 23px; height: 29px; background: url(images/arrows.png) no-re
 .daily-entry-page .arrow { display: block; width: 44px; height: 44px; background: url(images/d-arrow.png) no-repeat center center ; font-size: 0; line-height: 0; text-indent: -4000px; position: absolute ; top: 20px; right: 18px; }
 .daily-entry-page .arrow.opened { background-image: url(images/up-arrow.png); }
 /*.daily-entry-page .holder { display: none; }*/
-.daily-entry-page .field { display: block; width: 498px; height: 155px; border: 1px solid #7d7d7d; background: #fff; -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px; -webkit-box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.15); box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.15); resize: none; font-size: 20px; padding: 5px; }
+.daily-entry-page .field { display: block; width: 480px; height: 155px; border: 1px solid #7d7d7d; background: #fff; -webkit-border-radius: 4px; -moz-border-radius: 4px; border-radius: 4px; -webkit-box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.15); -moz-box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.15); box-shadow: 0px 0px 5px 0px rgba(0, 0, 0, 0.15); resize: none; font-size: 20px; padding: 5px; }
 .daily-entry-page fieldset { border: 0; background: transparent;  float: right; display: inline; width: 510px; padding: 22px 17px 8px 0; }
+
 .daily-entry-page .buttons { float: left; display: inline; width: 44px; height: 90px; margin: 22px 0 0 5px; background: #c5c5c5; color: #fff; text-align: center; -webkit-box-shadow: inset -2px -2px 2px 0px rgba(0, 0, 0, 0.3) , inset 3px 3px 3px 0px rgba(255, 255, 255, 0.3); -moz-box-shadow: inset -2px -2px 2px 0px rgba(0, 0, 0, 0.3) , inset 3px 3px 3px 0px rgba(255, 255, 255, 0.3); box-shadow: inset -2px -2px 2px 0px rgba(0, 0, 0, 0.3) , inset 3px 3px 3px 0px rgba(255, 255, 255, 0.3); -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; border: 2px solid #868686; }
 .daily-entry-page .buttons a { display: block; width: 44px; height: 44px; color: #fff; text-align: center; line-height: 44px; font-family: 'Calibri', sans-serif; }
-.daily-entry-page .buttons a.plus { font-size: 52px; line-height: 42px; border-bottom: 2px solid #868686; }
-.daily-entry-page .buttons a.minus { font-size: 72px; line-height: 30px; }
 .daily-entry-page .buttons a:hover,
 .daily-entry-page .buttons a:active { text-decoration: none; -webkit-box-shadow: inset 0px 0px 4px 0px rgba(0, 0, 0, 0.8); -moz-box-shadow: inset 0px 0px 4px 0px rgba(0, 0, 0, 0.8); box-shadow: inset 0px 0px 4px 0px rgba(0, 0, 0, 0.8); }
-.daily-entry-page .ui-btn { position: absolute ; top: 20px;  right: 22px; display: none; width: 107px; height: 46px; font-size: 34px; background: #c5c5c5; color: #fff; text-align: center; -webkit-box-shadow: inset -2px -2px 2px 0px rgba(0, 0, 0, 0.3) , inset 3px 3px 3px 0px rgba(255, 255, 255, 0.3); -moz-box-shadow: inset -2px -2px 2px 0px rgba(0, 0, 0, 0.3) , inset 3px 3px 3px 0px rgba(255, 255, 255, 0.3); box-shadow: inset -2px -2px 2px 0px rgba(0, 0, 0, 0.3) , inset 3px 3px 3px 0px rgba(255, 255, 255, 0.3); -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; border: 2px solid #868686; font-weight: bold; cursor: pointer; -webkit-appearance: none; margin: 0; }
+.daily-entry-page .buttons a.plus { font-size: 52px; line-height: 42px; border-bottom: 2px solid #868686; }
+.daily-entry-page .buttons a.minus { font-size: 72px; line-height: 30px; }
+
+.daily-entry-page .buttons-hor { float: left; margin-left: 10px; display: inline; width: 90px; height: 44px; background: #c5c5c5; color: #fff; text-align: center; -webkit-box-shadow: inset -2px -2px 2px 0px rgba(0, 0, 0, 0.3) , inset 3px 3px 3px 0px rgba(255, 255, 255, 0.3); -moz-box-shadow: inset -2px -2px 2px 0px rgba(0, 0, 0, 0.3) , inset 3px 3px 3px 0px rgba(255, 255, 255, 0.3); box-shadow: inset -2px -2px 2px 0px rgba(0, 0, 0, 0.3) , inset 3px 3px 3px 0px rgba(255, 255, 255, 0.3); -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; border: 2px solid #868686; }
+.daily-entry-page .buttons-hor a { display: inline; width: 44px; height: 44px; color: #fff; text-align: center; line-height: 44px; font-family: 'Calibri', sans-serif; }
+.daily-entry-page .buttons-hor a:hover,
+.daily-entry-page .buttons-hor a:active { text-decoration: none; }
+.daily-entry-page .buttons-hor a.minus { font-size: 72px; line-height: 30px; }
+.daily-entry-page .buttons-hor a.plus { font-size: 52px; line-height: 42px; }
+
+.daily-entry-page .ui-btn { position: absolute ; top: 8px;  right: 22px; display: none; width: 107px; height: 46px; font-size: 34px; background: #c5c5c5; color: #fff; text-align: center; -webkit-box-shadow: inset -2px -2px 2px 0px rgba(0, 0, 0, 0.3) , inset 3px 3px 3px 0px rgba(255, 255, 255, 0.3); -moz-box-shadow: inset -2px -2px 2px 0px rgba(0, 0, 0, 0.3) , inset 3px 3px 3px 0px rgba(255, 255, 255, 0.3); box-shadow: inset -2px -2px 2px 0px rgba(0, 0, 0, 0.3) , inset 3px 3px 3px 0px rgba(255, 255, 255, 0.3); -webkit-border-radius: 5px; -moz-border-radius: 5px; border-radius: 5px; border: 2px solid #868686; font-weight: bold; cursor: pointer; -webkit-appearance: none; margin: 0; }
 .daily-entry-page .ui-btn .ui-btn-inner { padding: 0; }
 .daily-entry-page .ui-btn input { display: none; }
 .daily-entry-page .holder-right { float: left; margin-left: 15px; display: inline;  width: 600px; padding: 15px 0 0; } 
