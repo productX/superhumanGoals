@@ -53,6 +53,11 @@ class User {
 			var_dump(debug_backtrace());
 			assert(false);
 		}
+		
+		if(empty($user->pictureURL)){
+			$user->pictureURL = 'http://superhumangoals.com/ui/src/default_profile_pic.png';			
+		}
+		
 		return $user;
 	}
 	
@@ -182,7 +187,7 @@ class User {
 	
 	# Stub for setting values
 	public function __set($name, $val) {
-		static $publicSetVars = array();
+		static $publicSetVars = array("pictureURL");
 		
 		if(in_array($name, $publicSetVars)) {
 			$this->$name = $val;
