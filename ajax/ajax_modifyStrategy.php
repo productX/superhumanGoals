@@ -1,16 +1,16 @@
 <?php
 include("../template/userFacingBase.php");
 
-$userID = $_POST['userID'];
-$goalID = $_POST['goalID'];
-$strategyID = $_POST['strategyID'];
-$type = $_POST['type'];
-$newStrategyName = $_POST['newStrategyName'];
-$strategyType  = $_POST['strategyType'];
-$newStrategyDescription  = $_POST['newStrategyDescription'];
-$page = $_POST['page'];
-if(isset($_POST['isPublic'])){
-	$is_public = $_POST['isPublic'];
+$userID = $_REQUEST['userID'];
+$goalID = $_REQUEST['goalID'];
+$strategyID = $_REQUEST['strategyID'];
+$type = $_REQUEST['type'];
+$newStrategyName = $_REQUEST['newStrategyName'];
+$strategyType  = $_REQUEST['strategyType'];
+$newStrategyDescription  = $_REQUEST['newStrategyDescription'];
+$page = $_REQUEST['page'];
+if(isset($_REQUEST['isPublic'])){
+	$is_public = $_REQUEST['isPublic'];
 }else{
 	$is_public = 0;
 }
@@ -34,7 +34,12 @@ if($type == 'adopt'){
 	Dailytest::editPrivacy($userID,$strategyID,$goalID,$is_public);
 	//echo "Strategy Edited!";
 }elseif($type == 'create'){
+	//$db->debugMode(true);
 	if($is_public > -1){
+		// HACK: should be updated to "habit" everywhere
+		if($strategyType=="habit") {
+			$strategyType="adherence";
+		}
 		$strategyID = Dailytest::createNew($goalID, $newStrategyName, $newStrategyDescription, $strategyType, $userID);
 		if($strategyID > 0){
 			Dailytest::adoptStrategy($userID, $strategyID, $goalID, $is_public);

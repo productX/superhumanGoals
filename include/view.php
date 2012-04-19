@@ -3188,24 +3188,23 @@ By winners, for winners.
 				if(!empty($dailytests)){?>
 <?php				$isToDo = 0;
 					foreach($dailytests as $dailytest) {
-					
 						if($dailytest->strategy_type == 'adherence'){
 							$isToDo = 1;
 							$checkedVal = Dailytest::getCompletedStatus($user->id, $dailytest->id)?"checked":"";
 							if($checkedVal == "checked"){
 								$strikethrough = "text-decoration: line-through;";
-							}else{
+							}
+							else{
 								$strikethrough = "";
 							}
-							
 							if($dailytest->is_public == '1'){
 								$locked_status = 'none';
 								$unlocked_status = '';
-							}else{
+							}
+							else{
 								$locked_status = '';
 								$unlocked_status = 'none';							
 							}
-							
 				?>
 							<div class="todo_label" id="strategyBox<?php echo $dailytest->id;?>">
 									<div style="display:none;" id="element<?php echo $dailytest->id;?>"> 
@@ -3280,10 +3279,10 @@ By winners, for winners.
 <?php					}
 					}
 					if($isToDo == 0){
-						 echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some ToDos here.</span>";
+						 echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some Habits here.</span>";
 					}?>
 			<?php }else{
-					     echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some ToDos here.</span>";
+					     echo "<span class='no_todo_elements' id='no_todo_elements" . $goal->goal->id . "'> Adopt some Habits here.</span>";
 			}?>			
 		</div>		
 		</div>
